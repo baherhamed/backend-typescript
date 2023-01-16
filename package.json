@@ -1,0 +1,45 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "backend with typescript",
+  "main": "src/server.ts",
+  "scripts": {
+    "start": "nodemon dist/server.js --trace-deprecation",
+    "dev": "nodemon src/server.ts --trace-deprecation",
+    "prettier": "prettier --config .prettierrc \"src/**/*.ts\" --write",
+    "lint": "eslint **/*.ts",
+    "build": "rm -rf dist && npm run lint && npm run prettier && npx tsc && cp src/.env dist/.env"
+  },
+  "author": "Baher Hamed",
+  "license": "MIT",
+  "dependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/mongodb": "^4.0.7",
+    "@types/mongoose": "^5.11.97",
+    "@types/mongoose-autopopulate": "^0.10.3",
+    "@types/mongoose-paginate-v2": "^1.6.5",
+    "bcrypt": "^5.1.0",
+    "body-parser": "^1.20.1",
+    "browser-detect": "^0.2.28",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^6.8.3",
+    "mongoose-autopopulate": "^0.17.1",
+    "mongoose-paginate-v2": "^1.7.1",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "@types/express": "^4.17.15",
+    "@types/jsonwebtoken": "^9.0.1",
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.48.1",
+    "@typescript-eslint/parser": "^5.48.1",
+    "eslint": "^8.31.0",
+    "prettier": "^2.8.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4"
+  }
+}
