@@ -60,12 +60,13 @@ const login = async (req: Request, res: Response) => {
     }
 
     const user = {
-      userId: foundUser._id,
+      user_id: foundUser._id,
       name: foundUser.name,
+      isDeveloper: foundUser?.isDeveloper,
     };
 
     const token = jwt.sign(user, String(process.env.ACCESS_TOKEN_SECRET), {
-      expiresIn: '1d',
+      expiresIn: '10h',
     });
 
     const routesList = foundUser.routesList;

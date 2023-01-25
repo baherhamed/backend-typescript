@@ -225,8 +225,10 @@ const update = async (req: Request, res: Response) => {
                 name: Object(doc?.language_id).name,
               },
               active: doc?.active,
-              add_info: doc?.add_info,
-              last_update_info: doc?.last_update_info,
+              add_info: requestInfo.isAdmin ? doc?.add_info : undefined,
+              last_update_info: requestInfo.isAdmin
+                ? doc?.last_update_info
+                : undefined,
             },
           })
           .status(200);
@@ -331,6 +333,7 @@ const getAll = async (req: Request, res: Response) => {
     };
 
     const where = {
+      isDeveloper: false,
       deleted: false,
     };
 
@@ -363,8 +366,10 @@ const getAll = async (req: Request, res: Response) => {
             name: Object(doc.language_id).name,
           },
           active: doc.active,
-          add_info: doc.add_info,
-          last_update_info: doc.last_update_info,
+          add_info: requestInfo.isAdmin ? doc.add_info : undefined,
+          last_update_info: requestInfo.isAdmin
+            ? doc.last_update_info
+            : undefined,
         });
       }
     }
@@ -463,8 +468,10 @@ const search = async (req: Request, res: Response) => {
             name: Object(doc.language_id).name,
           },
           active: doc.active,
-          add_info: doc.add_info,
-          last_update_info: doc.last_update_info,
+          add_info: requestInfo.isAdmin ? doc.add_info : undefined,
+          last_update_info: requestInfo.isAdmin
+            ? doc.last_update_info
+            : undefined,
         });
       }
     }
@@ -538,7 +545,7 @@ async function validateData(req: Request) {
 
 const usersRouters = async (app: express.Application) => {
   app.post(`${definitions.api}/security/users/add`, verifyJwtToken, add);
-  app.patch(`${definitions.api}/security/users/update`, verifyJwtToken, update);
+  app.put(`${definitions.api}/security/users/update`, verifyJwtToken, update);
   app.delete(
     `${definitions.api}/security/users/delete`,
     verifyJwtToken,

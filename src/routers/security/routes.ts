@@ -171,13 +171,9 @@ const update = async (req: Request, res: Response) => {
         deleted: false,
       };
 
-      const checkIfRouteExisit = await Route.findOne(findRoute);
-      const selectedRoute = await Route.findOne({ _id });
+      const selectedRoute = await Route.findOne(findRoute);
 
-      if (
-        checkIfRouteExisit &&
-        String(checkIfRouteExisit['_id']) !== String(_id)
-      ) {
+      if (selectedRoute && String(selectedRoute['_id']) !== String(_id)) {
         const message = await responseLanguage(
           requestInfo.language,
           responseMessages.routeExisit
@@ -192,16 +188,17 @@ const update = async (req: Request, res: Response) => {
       }
       if (selectedRoute && String(selectedRoute['_id']) === String(_id)) {
         const updatedRouteData = {
-          name: request.name || selectedRoute.name,
-          ar: request.ar || selectedRoute.ar,
-          en: request.en || selectedRoute.ar,
-          active: request.active || selectedRoute.ar,
+          name: request.name,
+          ar: request.ar,
+          en: request.en,
+          active: request.active,
           last_update_info: requestInfo,
         };
 
         const doc = await Route.findOneAndUpdate({ _id }, updatedRouteData, {
           new: true,
         });
+
         const permissionsList = [];
         if (request.permissionsList) {
           for await (const permission of request.permissionsList) {
@@ -231,8 +228,10 @@ const update = async (req: Request, res: Response) => {
                 ar: permission.ar,
                 en: permission.en,
                 active: permission.active,
-                add_info: permission.add_info,
-                last_update_info: permission.last_update_info,
+                add_info: requestInfo.isAdmin ? permission.add_info : undefined,
+                last_update_info: requestInfo.isAdmin
+                  ? permission.last_update_info
+                  : undefined,
               });
             }
           }
@@ -242,7 +241,6 @@ const update = async (req: Request, res: Response) => {
           requestInfo.language,
           responseMessages.updated
         );
-
         return res
           .send({
             success: true,
@@ -254,8 +252,10 @@ const update = async (req: Request, res: Response) => {
               en: doc?.en,
               active: doc?.active,
               permissionsList,
-              add_info: doc?.add_info,
-              last_update_info: doc?.last_update_info,
+              add_info: requestInfo.isAdmin ? doc?.add_info : undefined,
+              last_update_info: requestInfo.isAdmin
+                ? doc?.last_update_info
+                : undefined,
             },
           })
           .status(200);
@@ -411,18 +411,19 @@ const getAll = async (req: Request, res: Response) => {
           });
         }
       }
-      if (doc) {
-        data.push({
-          _id: doc._id,
-          name: doc.name,
-          ar: doc.ar,
-          en: doc.en,
-          active: doc.active,
-          permissionsList,
-          add_info: doc.add_info,
-          last_update_info: doc.last_update_info,
-        });
-      }
+
+      data.push({
+        _id: doc._id,
+        name: doc.name,
+        ar: doc.ar,
+        en: doc.en,
+        active: doc.active,
+        permissionsList,
+        add_info: requestInfo.isAdmin ? doc.add_info : undefined,
+        last_update_info: requestInfo.isAdmin
+          ? doc.last_update_info
+          : undefined,
+      });
     }
     const paginationInfo = {
       totalDocs: result.totalDocs,
@@ -532,8 +533,10 @@ const search = async (req: Request, res: Response) => {
           en: doc.en,
           active: doc.active,
           permissionsList,
-          add_info: doc.add_info,
-          last_update_info: doc.last_update_info,
+          add_info: requestInfo.isAdmin ? doc.add_info : undefined,
+          last_update_info: requestInfo.isAdmin
+            ? doc.last_update_info
+            : undefined,
         });
       }
     }
@@ -577,6 +580,71 @@ const search = async (req: Request, res: Response) => {
   }
 };
 
+const getActive = async (req: Request, res: Response) => {
+  const requestInfo = req.body.requestInfo;
+
+  try {
+    const where = {
+      active: true,
+      deleted: false,
+    };
+
+    const result = await Route.find(where);
+
+    if (!result.length) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.noData
+      );
+
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(200);
+    }
+
+    const data = [];
+    for await (const doc of result) {
+      if (doc) {
+        data.push({
+          _id: doc._id,
+          name: doc.name,
+          ar: doc.ar,
+          en: doc.en,
+          active: doc.active,
+        });
+      }
+    }
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.done
+    );
+
+    return res
+      .send({
+        success: true,
+        message,
+        data,
+      })
+      .status(200);
+  } catch (error) {
+    console.log(`Routes => Get Active routes ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
+  }
+};
 async function validateData(req: Request) {
   const request = req.body;
   const routeName = request.name;
@@ -613,11 +681,7 @@ async function validateData(req: Request) {
 
 const routessRouters = async (app: express.Application) => {
   app.post(`${definitions.api}/security/routes/add`, verifyJwtToken, add);
-  app.patch(
-    `${definitions.api}/security/routes/update`,
-    verifyJwtToken,
-    update
-  );
+  app.put(`${definitions.api}/security/routes/update`, verifyJwtToken, update);
   app.delete(
     `${definitions.api}/security/routes/delete`,
     verifyJwtToken,
@@ -629,6 +693,11 @@ const routessRouters = async (app: express.Application) => {
     getAll
   );
   app.post(`${definitions.api}/security/routes/search`, verifyJwtToken, search);
+  app.post(
+    `${definitions.api}/security/routes/get_active`,
+    verifyJwtToken,
+    getActive
+  );
 };
 
 export default routessRouters;

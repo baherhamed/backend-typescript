@@ -5,6 +5,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 
 import browser from 'browser-detect';
 import { responseLanguage, responseMessages, setRequestLanguage } from '.';
+import isJwtTokenExpired from 'jwt-check-expiry';
 
 interface RequestInfo {
   browser: {
@@ -19,22 +20,22 @@ interface RequestInfo {
   user_id: string | undefined;
   language: string;
   date: Date;
+  isAdmin?: boolean;
 }
 export const verifyJwtToken = async function (
   req: Request,
   res: Response,
   next: () => void
 ) {
-  const requestLanguage = await setRequestLanguage(req);
+  const language = await setRequestLanguage(req);
 
   try {
     const ip = req.ip.split('fff:');
     const ua = req.headers['user-agent'];
     const ip_address = ip[1];
-
     if (!req.headers.authorization) {
       const message = await responseLanguage(
-        requestLanguage,
+        language,
         responseMessages.authorizationData
       );
       return res.send({
@@ -42,9 +43,10 @@ export const verifyJwtToken = async function (
         message,
       });
     }
+
     if (!ua) {
       const message = await responseLanguage(
-        requestLanguage,
+        language,
         responseMessages.userAgentData
       );
       return res.send({
@@ -55,21 +57,40 @@ export const verifyJwtToken = async function (
 
     try {
       const token = req.headers['authorization'];
-
       const jwtPayload = token.split('Bearer ')[1];
+      const isExpired = isJwtTokenExpired(jwtPayload);
+
       const decoded = jwt.verify(
         jwtPayload,
         String(process.env.ACCESS_TOKEN_SECRET)
       ) as JwtPayload;
-      //   //  what happed when token not expired
-      if (decoded) {
+      //  what happed when token not expired
+
+      if (isExpired) {
+        const message = await responseLanguage(
+          language,
+          responseMessages.authorizationData
+        );
+        return res
+          .send({
+            success: false,
+            message,
+          })
+          .status(401);
+      }
+
+      if (!isExpired && decoded) {
         const request_browser = browser(req.headers['user-agent']);
         const selectedUser = await User.findOne({
-          _id: decoded.userId,
+          _id: decoded.user_id,
           active: true,
           deleted: false,
         });
 
+        let isAdmin = false;
+        if (selectedUser?.isAdmin) {
+          isAdmin = true;
+        }
         if (selectedUser) {
           const requestInfo: RequestInfo = {
             browser: {
@@ -82,14 +103,16 @@ export const verifyJwtToken = async function (
             },
             ip_address,
             user_id: String(selectedUser._id),
-            language: requestLanguage || 'en',
+            language,
             date: new Date(),
+            isAdmin,
           };
+
           req.body['requestInfo'] = requestInfo;
           next();
         } else {
           const message = await responseLanguage(
-            requestLanguage,
+            language,
             responseMessages.authorizationData
           );
           return res
@@ -103,7 +126,7 @@ export const verifyJwtToken = async function (
     } catch (error) {
       console.log(`Verify Request => No Authorization ${error}`);
       const message = await responseLanguage(
-        requestLanguage,
+        language,
         responseMessages.authorizationData
       );
       return res

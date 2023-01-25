@@ -1,7 +1,21 @@
-import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
-import mongoosePaginate from 'mongoose-paginate-v2';
+import mongoose, {
+  Schema,
+  Document,
+  PaginateModel,
+  PaginateOptions,
+} from 'mongoose';
+import paginate from 'mongoose-paginate-v2';
+import autopopulate from 'mongoose-autopopulate';
+import { RequestInfo } from '..';
 import { inputsLength } from '../../shared/inputs-length';
+interface ILanguage extends Document {
+  name: string;
+  active: boolean;
+  deleted: boolean;
+  add_info: RequestInfo;
+  last_update_info: RequestInfo;
+  deleted_info: RequestInfo;
+}
 
 const LanguageSchema = new Schema(
   {
@@ -24,14 +38,20 @@ const LanguageSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    add_info: {},
-    last_update_info: {},
-    deleted_info: {},
+    add_info: RequestInfo,
+    last_update_info: RequestInfo,
+    delete_info: RequestInfo,
   },
   {
     versionKey: false,
   }
 );
-LanguageSchema.plugin(mongoosePaginate);
 
-export const Language = mongoose.model('languages', LanguageSchema);
+LanguageSchema.plugin(paginate);
+LanguageSchema.plugin(autopopulate);
+
+export const Language = mongoose.model<
+  ILanguage,
+  PaginateModel<ILanguage>,
+  PaginateOptions
+>('languages', LanguageSchema);

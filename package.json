@@ -14,7 +14,6 @@
   "license": "MIT",
   "dependencies": {
     "@types/cors": "^2.8.13",
-    "@types/mongodb": "^4.0.7",
     "@types/mongoose": "^5.11.97",
     "@types/mongoose-autopopulate": "^0.10.3",
     "@types/mongoose-paginate-v2": "^1.6.5",
@@ -25,6 +24,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
+    "jwt-check-expiry": "^1.0.10",
     "mongoose": "^6.8.3",
     "mongoose-autopopulate": "^0.17.1",
     "mongoose-paginate-v2": "^1.7.1",
