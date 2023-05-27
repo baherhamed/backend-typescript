@@ -1,3 +1,4 @@
+import { Language } from '../../models';
 import {
   definitions,
   responseLanguage,
@@ -5,7 +6,6 @@ import {
   verifyJwtToken,
 } from '../../shared';
 import express, { Request, Response } from 'express';
-import { Language } from '../../models';
 
 const getActiveLanguages = async (req: Request, res: Response) => {
   const requestInfo = req.body.requestInfo;

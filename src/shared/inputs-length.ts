@@ -8,4 +8,6 @@ export const inputsLength = {
   language: 2,
   permissionName: 3,
   routeName: 3,
+  govName: 3,
+  cityName: 3,
 };

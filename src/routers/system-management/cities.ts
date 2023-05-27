@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
-import { Route, Permission } from '../../models';
+import { City } from '../../models';
+
 import {
   inputsLength,
   responseMessages,
@@ -18,7 +19,7 @@ const add = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.addRoute
+    PermissionsNames.addCity
   );
 
   if (hasPermission) {
@@ -34,27 +35,18 @@ const add = async (req: Request, res: Response) => {
           .status(400);
       }
 
-      const findRoute = {
-        $or: [
-          {
-            name: request.name,
-          },
-          {
-            ar: request.ar,
-          },
-          {
-            en: request.en,
-          },
-        ],
+      const findCity = {
+        gov_id: request.gov_id,
+        name: request.name,
         deleted: false,
       };
 
-      const checkNewRoute = await Route.findOne(findRoute);
+      const checkNewCity = await City.findOne(findCity);
 
-      if (checkNewRoute) {
+      if (checkNewCity) {
         const message = await responseLanguage(
           requestInfo.language,
-          responseMessages.routeExisit
+          responseMessages.cityExisit
         );
         return res
           .send({
@@ -64,51 +56,29 @@ const add = async (req: Request, res: Response) => {
           .status(400);
       }
 
-      const doc = new Route({
+      const doc = new City({
+        gov_id: request.gov_id,
         name: request.name,
-        ar: request.ar,
-        en: request.en,
         active: request.active,
         deleted: false,
         add_info: requestInfo,
       });
 
-      doc.save(async (err) => {
+      doc.save(async (err: any) => {
         if (err) {
-          console.log(`Route => Add Route ${err}`);
-          // const message = await responseLanguage(
-          //   requestInfo.language,
-          //   responseMessages.err,
-          //   String(err)
-          // );
+          console.log(`City => Add City ${err}`);
+          const message = await responseLanguage(
+            requestInfo.language,
+            responseMessages.err,
+            String(err)
+          );
 
-          // return res
-          //   .send({
-          //     success: true,
-          //     message,
-          //   })
-          //   .status(200);
-        }
-        const permissionsList = [];
-        if (request.permissionsList) {
-          for await (const permission of request.permissionsList) {
-            const newPermission = new Permission({
-              route_id: doc._id,
-              name: permission.name,
-              ar: permission.ar,
-              en: permission.en,
-              active: permission.active,
-              add_info: requestInfo,
-            });
-            await newPermission.save();
-            permissionsList.push({
-              _id: newPermission._id,
-              name: permission.name,
-              ar: permission.ar,
-              en: permission.en,
-              active: permission.active,
-            });
-          }
+          return res
+            .send({
+              success: true,
+              message,
+            })
+            .status(200);
         }
 
         const message = await responseLanguage(
@@ -122,13 +92,12 @@ const add = async (req: Request, res: Response) => {
             message,
             data: {
               _id: doc._id,
-              permissionsList,
             },
           })
           .status(200);
       });
     } catch (error) {
-      console.log(`Route => Add Route ${error}`);
+      console.log(`City => Add City ${error}`);
       const message = await responseLanguage(
         requestInfo.language,
         responseMessages.invalidData
@@ -151,32 +120,23 @@ const update = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.updateRoute
+    PermissionsNames.updateCity
   );
 
   if (hasPermission) {
     try {
-      const findRoute = {
-        $or: [
-          {
-            name: request.name,
-          },
-          {
-            ar: request.ar,
-          },
-          {
-            en: request.en,
-          },
-        ],
+      const findCity = {
+        name: request.name,
+
         deleted: false,
       };
 
-      const selectedRoute = await Route.findOne(findRoute);
+      const selectedCity = await City.findOne(findCity);
 
-      if (selectedRoute && String(selectedRoute['_id']) !== String(_id)) {
+      if (selectedCity && String(selectedCity['_id']) !== String(_id)) {
         const message = await responseLanguage(
           requestInfo.language,
-          responseMessages.routeExisit
+          responseMessages.cityExisit
         );
 
         return res
@@ -187,76 +147,19 @@ const update = async (req: Request, res: Response) => {
           .status(400);
       }
       if (
-        !selectedRoute ||
-        (selectedRoute && String(selectedRoute['_id']) === String(_id))
+        !selectedCity ||
+        (selectedCity && String(selectedCity['_id']) === String(_id))
       ) {
-        const updatedRouteData = {
+        const updatedCityData = {
           name: request.name,
-          ar: request.ar,
-          en: request.en,
+
           active: request.active,
           last_update_info: requestInfo,
         };
 
-        const doc = await Route.findOneAndUpdate({ _id }, updatedRouteData, {
+        const doc = await City.findOneAndUpdate({ _id }, updatedCityData, {
           new: true,
         });
-
-        const permissionsList = [];
-
-        if (request.permissionsList) {
-          for await (const permission of request.permissionsList) {
-            const exisitPermission = await Permission.findOne({
-              _id: permission?._id,
-              name: permission.name,
-            });
-
-            if (exisitPermission) {
-              await Permission.findOneAndUpdate(
-                {
-                  _id: permission?._id,
-                },
-                {
-                  name: permission.name,
-                  ar: permission.ar,
-                  en: permission.en,
-                  active: permission.active,
-                  last_update_info: requestInfo,
-                }
-              );
-            } else {
-              const newPermission = new Permission({
-                route_id: doc?._id,
-                name: permission.name,
-                ar: permission.ar,
-                en: permission.en,
-                active: permission.active,
-                add_info: requestInfo,
-              });
-              await newPermission.save();
-            }
-          }
-          const selectedPermissions = await Permission.find({
-            route_id: doc?._id,
-            deleted: false,
-          });
-
-          if (selectedPermissions) {
-            for await (const permission of selectedPermissions) {
-              permissionsList.push({
-                _id: permission._id,
-                name: permission.name,
-                ar: permission.ar,
-                en: permission.en,
-                active: permission.active,
-                add_info: requestInfo.isAdmin ? permission.add_info : undefined,
-                last_update_info: requestInfo.isAdmin
-                  ? permission.last_update_info
-                  : undefined,
-              });
-            }
-          }
-        }
 
         const message = await responseLanguage(
           requestInfo.language,
@@ -268,11 +171,12 @@ const update = async (req: Request, res: Response) => {
             message,
             data: {
               _id: doc?._id,
+              gov: {
+                _id: Object(doc?.gov_id)._id,
+                name: Object(doc?.gov_id).name,
+              },
               name: doc?.name,
-              ar: doc?.ar,
-              en: doc?.en,
               active: doc?.active,
-              permissionsList,
               add_info: requestInfo.isAdmin ? doc?.add_info : undefined,
               last_update_info: requestInfo.isAdmin
                 ? doc?.last_update_info
@@ -282,7 +186,7 @@ const update = async (req: Request, res: Response) => {
           .status(200);
       }
     } catch (error) {
-      console.log(`Route => Update Route ${error}`);
+      console.log(`City => Update City ${error}`);
 
       const message = await responseLanguage(
         requestInfo.language,
@@ -305,40 +209,27 @@ const deleted = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.deleteRoute
+    PermissionsNames.deleteCity
   );
 
   if (hasPermission) {
     try {
-      const selectedRouteToDelete = {
+      const selectedCityToDelete = {
         _id,
         deleted: false,
       };
-      const selectedRoute = await Route.findOne(selectedRouteToDelete);
+      const selectedCity = await City.findOne(selectedCityToDelete);
 
-      if (selectedRoute) {
-        const deletedRouteData = {
+      if (selectedCity) {
+        const deletedCityData = {
           active: false,
           deleted: true,
           delete_info: requestInfo,
         };
 
-        const doc = await Route.findOneAndUpdate({ _id }, deletedRouteData, {
+        const doc = await City.findOneAndUpdate({ _id }, deletedCityData, {
           new: true,
         });
-
-        const deletedPermissionsList = await Permission.find({
-          route_id: doc?._id,
-          deleted: false,
-        });
-
-        for await (const permission of deletedPermissionsList) {
-          await Permission.findOneAndUpdate(
-            { _id: permission._id },
-            { active: false, deleted: true, delete_info: requestInfo },
-            { new: true }
-          );
-        }
 
         const message = await responseLanguage(
           requestInfo.language,
@@ -367,7 +258,7 @@ const deleted = async (req: Request, res: Response) => {
           .status(500);
       }
     } catch (error) {
-      console.log(`Route => Delete Route ${error}`);
+      console.log(`City => Delete City ${error}`);
 
       const message = await responseLanguage(
         requestInfo.language,
@@ -397,7 +288,7 @@ const getAll = async (req: Request, res: Response) => {
       deleted: false,
     };
 
-    const result = await Route.paginate(where, query);
+    const result = await City.paginate(where, query);
 
     if (!result.docs.length) {
       const message = await responseLanguage(
@@ -416,38 +307,20 @@ const getAll = async (req: Request, res: Response) => {
     const data = [];
 
     for await (const doc of result.docs) {
-      const permissionsList = [];
-      const selectedPermissionsList = await Permission.find({
-        route_id: doc?._id,
-        deleted: false,
-      });
-
-      if (selectedPermissionsList) {
-        for await (const permission of selectedPermissionsList) {
-          permissionsList.push({
-            _id: permission._id,
-            name: permission.name,
-            ar: permission.ar,
-            en: permission.en,
-            active: permission.active,
-          });
-        }
-      }
-
       data.push({
         _id: doc._id,
+        gov: {
+          _id: Object(doc.gov_id)._id,
+          name: Object(doc.gov_id).name,
+        },
         name: doc.name,
-        ar: doc.ar,
-        en: doc.en,
         active: doc.active,
-        permissionsList,
         add_info: requestInfo.isAdmin ? doc.add_info : undefined,
         last_update_info: requestInfo.isAdmin
           ? doc.last_update_info
           : undefined,
       });
     }
-
     const paginationInfo = {
       totalDocs: result.totalDocs,
       limit: result.limit,
@@ -473,7 +346,7 @@ const getAll = async (req: Request, res: Response) => {
       })
       .status(200);
   } catch (error) {
-    console.log(`Route => Search Route ${error}`);
+    console.log(`City => Search City ${error}`);
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -499,21 +372,15 @@ const search = async (req: Request, res: Response) => {
     };
 
     const where = {
+      isDeveloper: false,
       deleted: false,
     };
 
     if (request.query.name) {
       Object(where)['name'] = new RegExp(request.query.name, 'i');
     }
-    if (request.query.ar) {
-      Object(where)['ar'] = new RegExp(request.query.ar, 'i');
-    }
 
-    if (request.query.en) {
-      Object(where)['en'] = new RegExp(request.query.en, 'i');
-    }
-
-    const result = await Route.paginate(where, query);
+    const result = await City.paginate(where, query);
 
     if (!result.docs.length) {
       const message = await responseLanguage(
@@ -531,30 +398,15 @@ const search = async (req: Request, res: Response) => {
 
     const data = [];
     for await (const doc of result.docs) {
-      const permissionsList = [];
-      const selectedPermissionsList = await Permission.find({
-        route_id: doc?._id,
-        deleted: false,
-      });
-      if (selectedPermissionsList) {
-        for await (const permission of selectedPermissionsList) {
-          permissionsList.push({
-            _id: permission._id,
-            name: permission.name,
-            ar: permission.ar,
-            en: permission.en,
-            active: permission.active,
-          });
-        }
-      }
       if (doc) {
         data.push({
           _id: doc._id,
+          gov: {
+            _id: Object(doc.gov_id)._id,
+            name: Object(doc.gov_id).name,
+          },
           name: doc.name,
-          ar: doc.ar,
-          en: doc.en,
           active: doc.active,
-          permissionsList,
           add_info: requestInfo.isAdmin ? doc.add_info : undefined,
           last_update_info: requestInfo.isAdmin
             ? doc.last_update_info
@@ -587,7 +439,7 @@ const search = async (req: Request, res: Response) => {
       })
       .status(200);
   } catch (error) {
-    console.log(`Route => Get All ${error}`);
+    console.log(`City => Get All ${error}`);
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -611,7 +463,7 @@ const getActive = async (req: Request, res: Response) => {
       deleted: false,
     };
 
-    const result = await Route.find(where);
+    const result = await City.find(where);
 
     if (!result.length) {
       const message = await responseLanguage(
@@ -628,38 +480,14 @@ const getActive = async (req: Request, res: Response) => {
     }
 
     const data = [];
-
     for await (const doc of result) {
-      const permissionsList = [];
-      const selectedPermissionsList = await Permission.find({
-        route_id: doc?._id,
-        deleted: false,
-      });
-
-      if (selectedPermissionsList) {
-        for await (const permission of selectedPermissionsList) {
-          permissionsList.push({
-            _id: permission._id,
-            name: permission.name,
-            ar: permission.ar,
-            en: permission.en,
-            active: permission.active,
-          });
-        }
+      if (doc) {
+        data.push({
+          _id: doc._id,
+          name: doc.name,
+          active: doc.active,
+        });
       }
-
-      data.push({
-        _id: doc._id,
-        name: doc.name,
-        ar: doc.ar,
-        en: doc.en,
-        active: doc.active,
-        permissionsList,
-        add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-        last_update_info: requestInfo.isAdmin
-          ? doc.last_update_info
-          : undefined,
-      });
     }
 
     const message = await responseLanguage(
@@ -675,7 +503,7 @@ const getActive = async (req: Request, res: Response) => {
       })
       .status(200);
   } catch (error) {
-    console.log(`Routes => Get Active routes ${error}`);
+    console.log(`City => Get Active City ${error}`);
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -691,27 +519,15 @@ const getActive = async (req: Request, res: Response) => {
 };
 async function validateData(req: Request) {
   const request = req.body;
-  const routeName = request.name;
-  const routeNameAr = request.ar;
-  const routeNameEn = request.en;
+  const cityName = request.name;
   const requestLanguage = request.requestInfo.language;
   let valid = false;
   let message;
 
-  if (!routeName || routeName.length < inputsLength.routeName) {
+  if (!cityName || cityName.length < inputsLength.cityName) {
     message = await responseLanguage(
       requestLanguage,
-      responseMessages.routeName
-    );
-  } else if (!routeNameAr || routeNameAr.length < inputsLength.routeName) {
-    message = await responseLanguage(
-      requestLanguage,
-      responseMessages.routeName
-    );
-  } else if (!routeNameEn || routeNameEn.length < inputsLength.routeName) {
-    message = await responseLanguage(
-      requestLanguage,
-      responseMessages.routeName
+      responseMessages.cityName
     );
   } else {
     valid = true;
@@ -723,21 +539,37 @@ async function validateData(req: Request) {
   };
 }
 
-const routessRouters = async (app: express.Application) => {
-  app.post(`${definitions.api}/security/routes/add`, verifyJwtToken, add);
-  app.put(`${definitions.api}/security/routes/update`, verifyJwtToken, update);
-  app.put(`${definitions.api}/security/routes/delete`, verifyJwtToken, deleted);
+const citiesRouters = async (app: express.Application) => {
   app.post(
-    `${definitions.api}/security/routes/get_all`,
+    `${definitions.api}/systemManagement/cities/add`,
+    verifyJwtToken,
+    add
+  );
+  app.put(
+    `${definitions.api}/systemManagement/cities/update`,
+    verifyJwtToken,
+    update
+  );
+  app.put(
+    `${definitions.api}/systemManagement/cities/delete`,
+    verifyJwtToken,
+    deleted
+  );
+  app.post(
+    `${definitions.api}/systemManagement/cities/get_all`,
     verifyJwtToken,
     getAll
   );
-  app.post(`${definitions.api}/security/routes/search`, verifyJwtToken, search);
   app.post(
-    `${definitions.api}/security/routes/get_active`,
+    `${definitions.api}/systemManagement/cities/search`,
+    verifyJwtToken,
+    search
+  );
+  app.post(
+    `${definitions.api}/systemManagement/cities/get_active`,
     verifyJwtToken,
     getActive
   );
 };
 
-export default routessRouters;
+export default citiesRouters;

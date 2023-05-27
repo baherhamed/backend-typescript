@@ -7,9 +7,11 @@ import { systemDefaults } from './shared/system-default';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import routesRouters from './routers/security/routes';
+import govsRouters from './routers/system-management/govs';
 import usersRouters from './routers/security/user';
 import loginRouters from './routers/security/login';
 import languageRouters from './routers/system-management/languages';
+import citiesRouters from './routers/system-management/cities';
 
 const app = express();
 
@@ -47,8 +49,10 @@ try {
 app.use(cors());
 loginRouters(app);
 routesRouters(app);
-usersRouters(app);
 languageRouters(app);
+govsRouters(app);
+usersRouters(app);
+citiesRouters(app);
 
 // let privateKey: Promise<string>;
 // let certificate: Promise<string>;
@@ -88,7 +92,7 @@ const appServer = app.listen(Number(process.env.PORT), () => {
   systemDefaults;
   console.log(`
   -------------------------
-   Server Run At Port:${process.env.PORT}
+   Server Run At Port: ${process.env.PORT}
   -------------------------`);
 });
 

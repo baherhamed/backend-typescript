@@ -35,7 +35,6 @@ const RoutesSchema = new Schema(
       required: [true, 'Please Enter Route Arabic Name'],
       minlength: inputsLength.routeName,
       trim: true,
-      lowercase: true,
     },
     en: {
       type: String,

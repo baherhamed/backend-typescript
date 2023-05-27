@@ -34,6 +34,9 @@ const login = async (req: Request, res: Response) => {
       {
         email: request.username,
       },
+      {
+        name: request.username,
+      },
     ],
     active: true,
     deleted: false,
@@ -105,13 +108,13 @@ const login = async (req: Request, res: Response) => {
 
 async function validateData(req: Request) {
   const request = req.body;
-  const userMobile = request.username;
+  const userName = request.username;
   const userPassword = request.password;
   const requestLanguage = request.language;
   let valid = false;
   let message;
 
-  if (!userMobile || userMobile.length < inputsLength.mobile) {
+  if (!userName) {
     message = await responseLanguage(
       requestLanguage,
       responseMessages.username

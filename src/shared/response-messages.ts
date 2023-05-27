@@ -103,4 +103,20 @@ export const responseMessages = {
     ar: 'يوجد خطأ ',
     en: 'There Is Error ',
   },
+  govName: {
+    ar: 'يرجي التأكد من إسم المحافظة',
+    en: 'Please Check Gov Name',
+  },
+  govExisit: {
+    ar: 'المحافظة مسجلة',
+    en: 'Gov Exisit',
+  },
+  cityName: {
+    ar: 'يرجي التأكد من إسم المدينة ',
+    en: 'Please Check City Name',
+  },
+  cityExisit: {
+    ar: 'المدينة مسجلة',
+    en: 'City Exisit',
+  },
 };

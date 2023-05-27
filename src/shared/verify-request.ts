@@ -21,6 +21,7 @@ interface RequestInfo {
   language: string;
   date: Date;
   isAdmin?: boolean;
+  isDeveloper?: boolean;
 }
 export const verifyJwtToken = async function (
   req: Request,
@@ -56,6 +57,8 @@ export const verifyJwtToken = async function (
     }
 
     try {
+      // console.log('req', req);
+
       const token = req.headers['authorization'];
       const jwtPayload = token.split('Bearer ')[1];
       const isExpired = isJwtTokenExpired(jwtPayload);

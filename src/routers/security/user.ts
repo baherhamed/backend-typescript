@@ -168,11 +168,15 @@ const update = async (req: Request, res: Response) => {
       const checkIfUserExisit = await User.findOne(findUser);
       const selectedUser = await User.findOne({ _id });
 
-      if (checkIfUserExisit) {
+      if (
+        checkIfUserExisit &&
+        String(checkIfUserExisit['_id']) !== String(_id)
+      ) {
         const message = await responseLanguage(
           requestInfo.language,
           responseMessages.userExisit
         );
+
         return res
           .send({
             success: false,
@@ -180,58 +184,63 @@ const update = async (req: Request, res: Response) => {
           })
           .status(400);
       }
-      if (selectedUser) {
-        let password = selectedUser.password;
-        if (
-          request.password &&
-          request.password.length >= inputsLength.password
-        ) {
-          const hashedPassword = await hashPassword(request);
-          password = String(hashedPassword.newHashedPassword);
-        }
-        const updatedUserData = {
-          name: request.name || selectedUser.name,
-          password,
-          mobile: request.mobile || selectedUser.mobile,
-          email: request.email || selectedUser.email,
-          language_id: request.language_id || selectedUser.language_id,
-          routesList: request.routesList || selectedUser.routesList,
-          permissionsList:
-            request.permissionsList || selectedUser.permissionsList,
-          active: request.active || selectedUser.active,
-          last_update_info: requestInfo,
-        };
+      if (
+        !checkIfUserExisit ||
+        (checkIfUserExisit && String(checkIfUserExisit['_id']) === String(_id))
+      ) {
+        if (selectedUser) {
+          let password = selectedUser.password;
+          if (
+            request.password &&
+            request.password.length >= inputsLength.password
+          ) {
+            const hashedPassword = await hashPassword(request);
+            password = String(hashedPassword.newHashedPassword);
+          }
+          const updatedUserData = {
+            name: request.name || selectedUser.name,
+            password,
+            mobile: request.mobile || selectedUser.mobile,
+            email: request.email || selectedUser.email,
+            language_id: request.language_id || selectedUser.language_id,
+            routesList: request.routesList || selectedUser.routesList,
+            permissionsList:
+              request.permissionsList || selectedUser.permissionsList,
+            active: request.active || selectedUser.active,
+            last_update_info: requestInfo,
+          };
 
-        const doc = await User.findOneAndUpdate({ _id }, updatedUserData, {
-          new: true,
-        });
+          const doc = await User.findOneAndUpdate({ _id }, updatedUserData, {
+            new: true,
+          });
 
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.updated
-        );
+          const message = await responseLanguage(
+            requestInfo.language,
+            responseMessages.updated
+          );
 
-        return res
-          .send({
-            success: true,
-            message,
-            data: {
-              _id: doc?._id,
-              name: doc?.name,
-              mobile: doc?.mobile,
-              email: doc?.email,
-              language: {
-                _id: Object(doc?.language_id)._id,
-                name: Object(doc?.language_id).name,
+          return res
+            .send({
+              success: true,
+              message,
+              data: {
+                _id: doc?._id,
+                name: doc?.name,
+                mobile: doc?.mobile,
+                email: doc?.email,
+                language: {
+                  _id: Object(doc?.language_id)._id,
+                  name: Object(doc?.language_id).name,
+                },
+                active: doc?.active,
+                add_info: requestInfo.isAdmin ? doc?.add_info : undefined,
+                last_update_info: requestInfo.isAdmin
+                  ? doc?.last_update_info
+                  : undefined,
               },
-              active: doc?.active,
-              add_info: requestInfo.isAdmin ? doc?.add_info : undefined,
-              last_update_info: requestInfo.isAdmin
-                ? doc?.last_update_info
-                : undefined,
-            },
-          })
-          .status(200);
+            })
+            .status(200);
+        }
       }
     } catch (error) {
       console.log(`User => Update User ${error}`);
@@ -428,15 +437,15 @@ const search = async (req: Request, res: Response) => {
       deleted: false,
     };
 
-    if (request.name) {
-      Object(where)['name'] = new RegExp(request.name);
+    if (request.query.name) {
+      Object(where)['name'] = new RegExp(request.query.name, 'i');
     }
-    if (request.mobile) {
-      Object(where)['mobile'] = new RegExp(request.mobile);
+    if (request.query.mobile) {
+      Object(where)['mobile'] = new RegExp(request.query.mobile, 'i');
     }
 
-    if (request.email) {
-      Object(where)['email'] = new RegExp(request.email);
+    if (request.query.email) {
+      Object(where)['email'] = new RegExp(request.query.email, 'i');
     }
 
     const result = await User.paginate(where, query);
@@ -546,11 +555,7 @@ async function validateData(req: Request) {
 const usersRouters = async (app: express.Application) => {
   app.post(`${definitions.api}/security/users/add`, verifyJwtToken, add);
   app.put(`${definitions.api}/security/users/update`, verifyJwtToken, update);
-  app.delete(
-    `${definitions.api}/security/users/delete`,
-    verifyJwtToken,
-    deleted
-  );
+  app.put(`${definitions.api}/security/users/delete`, verifyJwtToken, deleted);
   app.post(`${definitions.api}/security/users/get_all`, verifyJwtToken, getAll);
   app.post(`${definitions.api}/security/users/search`, verifyJwtToken, search);
 };

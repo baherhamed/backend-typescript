@@ -5,4 +5,10 @@ export const PermissionsNames = {
   addRoute: 'addRoute',
   updateRoute: 'updateRoute',
   deleteRoute: 'deleteRoute',
+  addGov: 'addGov',
+  updateGov: 'updateGov',
+  deleteGov: 'deleteGov',
+  addCity: 'addCity',
+  updateCity: 'updateCity',
+  deleteCity: 'deleteCity',
 };
