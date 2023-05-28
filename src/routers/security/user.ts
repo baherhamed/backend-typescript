@@ -331,96 +331,6 @@ const deleted = async (req: Request, res: Response) => {
   }
 };
 
-const getAll = async (req: Request, res: Response) => {
-  const request = req.body;
-  const requestInfo = req.body.requestInfo;
-
-  try {
-    const query = {
-      page: req.query?.page || request.query?.page || pagination.page,
-      limit: req.query?.limit || request.query?.limit || pagination.getAll,
-    };
-
-    const where = {
-      isDeveloper: false,
-      deleted: false,
-    };
-
-    const result = await User.paginate(where, query);
-
-    if (!result.docs.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
-    }
-
-    const data = [];
-    for await (const doc of result.docs) {
-      if (doc) {
-        data.push({
-          _id: doc._id,
-          name: doc.name,
-          mobile: doc.mobile,
-          email: doc.email,
-          language: {
-            _id: Object(doc.language_id)._id,
-            name: Object(doc.language_id).name,
-          },
-          active: doc.active,
-          add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-          last_update_info: requestInfo.isAdmin
-            ? doc.last_update_info
-            : undefined,
-        });
-      }
-    }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
-        data,
-        paginationInfo,
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`User => Search User ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
-  }
-};
 
 const search = async (req: Request, res: Response) => {
   const request = req.body;
@@ -523,6 +433,98 @@ const search = async (req: Request, res: Response) => {
       .status(500);
   }
 };
+
+const getAll = async (req: Request, res: Response) => {
+  const request = req.body;
+  const requestInfo = req.body.requestInfo;
+
+  try {
+    const query = {
+      page: req.query?.page || request.query?.page || pagination.page,
+      limit: req.query?.limit || request.query?.limit || pagination.getAll,
+    };
+
+    const where = {
+      isDeveloper: false,
+      deleted: false,
+    };
+
+    const result = await User.paginate(where, query);
+
+    if (!result.docs.length) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.noData
+      );
+
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(200);
+    }
+
+    const data = [];
+    for await (const doc of result.docs) {
+      if (doc) {
+        data.push({
+          _id: doc._id,
+          name: doc.name,
+          mobile: doc.mobile,
+          email: doc.email,
+          language: {
+            _id: Object(doc.language_id)._id,
+            name: Object(doc.language_id).name,
+          },
+          active: doc.active,
+          add_info: requestInfo.isAdmin ? doc.add_info : undefined,
+          last_update_info: requestInfo.isAdmin
+            ? doc.last_update_info
+            : undefined,
+        });
+      }
+    }
+    const paginationInfo = {
+      totalDocs: result.totalDocs,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      page: result.page,
+      hasPrevPage: result.hasPrevPage,
+      hasNextPage: result.hasNextPage,
+      prevPage: result.prevPage,
+      nextPage: result.nextPage,
+    };
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.done
+    );
+
+    return res
+      .send({
+        success: true,
+        message,
+        data,
+        paginationInfo,
+      })
+      .status(200);
+  } catch (error) {
+    console.log(`User => Search User ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
+  }
+};
+
 
 async function validateData(req: Request) {
   const request = req.body;
