@@ -12,9 +12,9 @@ interface ILanguage extends Document {
   name: string;
   active: boolean;
   deleted: boolean;
-  add_info: RequestInfo;
-  last_update_info: RequestInfo;
-  deleted_info: RequestInfo;
+  addInfo: RequestInfo;
+  lastUpdateInfo: RequestInfo;
+  deletedInfo: RequestInfo;
 }
 
 const LanguageSchema = new Schema(
@@ -38,9 +38,9 @@ const LanguageSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    add_info: RequestInfo,
-    last_update_info: RequestInfo,
-    delete_info: RequestInfo,
+    addInfo: RequestInfo,
+    lastUpdateInfo: RequestInfo,
+    deleteInfo: RequestInfo,
   },
   {
     versionKey: false,

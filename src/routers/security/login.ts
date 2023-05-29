@@ -63,7 +63,7 @@ const login = async (req: Request, res: Response) => {
     }
 
     const user = {
-      user_id: foundUser._id,
+      userId: foundUser._id,
       name: foundUser.name,
       isDeveloper: foundUser?.isDeveloper,
     };
@@ -88,7 +88,7 @@ const login = async (req: Request, res: Response) => {
           token,
           routesList,
           permissionsList,
-          language: Object(foundUser.language_id).name,
+          language: Object(foundUser.languageId).name,
         },
       })
       .status(200);

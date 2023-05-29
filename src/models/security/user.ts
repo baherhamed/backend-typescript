@@ -17,16 +17,16 @@ interface IUser extends Document {
   mobile: string;
   email: string;
   password: string;
-  language_id: Types.ObjectId;
+  languageId: Types.ObjectId;
   routesList: [string];
   permissionsList: [string];
   active: boolean;
   deleted: boolean;
   isAdmin: boolean;
   isDeveloper: boolean;
-  add_info: RequestInfo;
-  last_update_info: RequestInfo;
-  deleted_info: RequestInfo;
+  addInfo: RequestInfo;
+  lastUpdateInfo: RequestInfo;
+  deletedInfo: RequestInfo;
 }
 
 const UsersSchema = new Schema(
@@ -54,7 +54,7 @@ const UsersSchema = new Schema(
       required: [true, 'Please Enter Password'],
       trim: true,
     },
-    language_id: {
+    languageId: {
       type: Types.ObjectId,
       ref: 'languages',
       autopopulate: {
@@ -89,9 +89,9 @@ const UsersSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    add_info: RequestInfo,
-    last_update_info: RequestInfo,
-    delete_info: RequestInfo,
+    addInfo: RequestInfo,
+    lastUpdateInfo: RequestInfo,
+    deleteInfo: RequestInfo,
   },
 
   {

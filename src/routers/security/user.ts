@@ -69,13 +69,13 @@ const add = async (req: Request, res: Response) => {
           name: request.name,
           mobile: request.mobile,
           email: request.email || request.mobile,
-          language_id: request.language_id,
+          languageId: request.languageId,
           routesList: request.routesList,
           permissionsList: request.permissionsList,
           password: hashedPassword.newHashedPassword,
           active: true,
           deleted: false,
-          add_info: requestInfo,
+          addInfo: requestInfo,
         });
 
         doc.save(async (err) => {
@@ -202,12 +202,12 @@ const update = async (req: Request, res: Response) => {
             password,
             mobile: request.mobile || selectedUser.mobile,
             email: request.email || selectedUser.email,
-            language_id: request.language_id || selectedUser.language_id,
+            languageId: request.languageId || selectedUser.languageId,
             routesList: request.routesList || selectedUser.routesList,
             permissionsList:
               request.permissionsList || selectedUser.permissionsList,
             active: request.active || selectedUser.active,
-            last_update_info: requestInfo,
+            lastUpdateInfo: requestInfo,
           };
 
           const doc = await User.findOneAndUpdate({ _id }, updatedUserData, {
@@ -229,13 +229,13 @@ const update = async (req: Request, res: Response) => {
                 mobile: doc?.mobile,
                 email: doc?.email,
                 language: {
-                  _id: Object(doc?.language_id)._id,
-                  name: Object(doc?.language_id).name,
+                  _id: Object(doc?.languageId)._id,
+                  name: Object(doc?.languageId).name,
                 },
                 active: doc?.active,
-                add_info: requestInfo.isAdmin ? doc?.add_info : undefined,
-                last_update_info: requestInfo.isAdmin
-                  ? doc?.last_update_info
+                addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
+                lastUpdateInfo: requestInfo.isAdmin
+                  ? doc?.lastUpdateInfo
                   : undefined,
               },
             })
@@ -281,7 +281,7 @@ const deleted = async (req: Request, res: Response) => {
         const deletedUserData = {
           active: false,
           deleted: true,
-          delete_info: requestInfo,
+          deleteInfo: requestInfo,
         };
 
         const doc = await User.findOneAndUpdate({ _id }, deletedUserData, {
@@ -383,13 +383,13 @@ const search = async (req: Request, res: Response) => {
           mobile: doc.mobile,
           email: doc.email,
           language: {
-            _id: Object(doc.language_id)._id,
-            name: Object(doc.language_id).name,
+            _id: Object(doc.languageId)._id,
+            name: Object(doc.languageId).name,
           },
           active: doc.active,
-          add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-          last_update_info: requestInfo.isAdmin
-            ? doc.last_update_info
+          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+          lastUpdateInfo: requestInfo.isAdmin
+            ? doc.lastUpdateInfo
             : undefined,
         });
       }
@@ -419,7 +419,7 @@ const search = async (req: Request, res: Response) => {
       })
       .status(200);
   } catch (error) {
-    console.log(`User => Get All ${error}`);
+    console.log(`User => Search User ${error}`);
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -474,13 +474,13 @@ const getAll = async (req: Request, res: Response) => {
           mobile: doc.mobile,
           email: doc.email,
           language: {
-            _id: Object(doc.language_id)._id,
-            name: Object(doc.language_id).name,
+            _id: Object(doc.languageId)._id,
+            name: Object(doc.languageId).name,
           },
           active: doc.active,
-          add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-          last_update_info: requestInfo.isAdmin
-            ? doc.last_update_info
+          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+          lastUpdateInfo: requestInfo.isAdmin
+            ? doc.lastUpdateInfo
             : undefined,
         });
       }
@@ -510,7 +510,7 @@ const getAll = async (req: Request, res: Response) => {
       })
       .status(200);
   } catch (error) {
-    console.log(`User => Search User ${error}`);
+    console.log(`User => Get All User ${error}`);
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -558,7 +558,7 @@ const usersRouters = async (app: express.Application) => {
   app.post(`${definitions.api}/security/users/add`, verifyJwtToken, add);
   app.put(`${definitions.api}/security/users/update`, verifyJwtToken, update);
   app.put(`${definitions.api}/security/users/delete`, verifyJwtToken, deleted);
-  app.post(`${definitions.api}/security/users/get_all`, verifyJwtToken, getAll);
+  app.post(`${definitions.api}/security/users/getAll`, verifyJwtToken, getAll);
   app.post(`${definitions.api}/security/users/search`, verifyJwtToken, search);
 };
 

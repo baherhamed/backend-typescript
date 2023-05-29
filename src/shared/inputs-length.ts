@@ -9,5 +9,6 @@ export const inputsLength = {
   permissionName: 3,
   routeName: 3,
   govName: 3,
+  govCode: 2,
   cityName: 3,
 };

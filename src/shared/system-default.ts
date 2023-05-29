@@ -74,7 +74,7 @@ export const systemDefaults = (async () => {
 
     const newUser = new User({
       _id: new ObjectId('606b64ba679e4903d47ab001'),
-      language_id: new ObjectId('606b64ba679e4903d47fa001'),
+      languageId: new ObjectId('606b64ba679e4903d47fa001'),
       password: hashedPassword.newHashedPassword,
       name: 'developer',
       mobile: '21002627613',

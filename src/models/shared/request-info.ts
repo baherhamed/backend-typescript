@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 
 export const RequestInfo = {
-  user_id: ObjectId,
+  userId: ObjectId,
   browser: {
     name: '',
     version: '',

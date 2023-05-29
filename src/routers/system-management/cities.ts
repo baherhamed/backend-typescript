@@ -36,7 +36,7 @@ const add = async (req: Request, res: Response) => {
       }
 
       const findCity = {
-        gov_id: request.gov_id,
+        govId: request.govId,
         name: request.name,
         deleted: false,
       };
@@ -57,14 +57,14 @@ const add = async (req: Request, res: Response) => {
       }
 
       const doc = new City({
-        gov_id: request.gov_id,
+        govId: request.govId,
         name: request.name,
         active: request.active,
         deleted: false,
-        add_info: requestInfo,
+        addInfo: requestInfo,
       });
 
-      doc.save(async (err: any) => {
+      doc.save(async (err: unknown) => {
         if (err) {
           console.log(`City => Add City ${err}`);
           const message = await responseLanguage(
@@ -154,7 +154,7 @@ const update = async (req: Request, res: Response) => {
           name: request.name,
 
           active: request.active,
-          last_update_info: requestInfo,
+          lastUpdateInfo: requestInfo,
         };
 
         const doc = await City.findOneAndUpdate({ _id }, updatedCityData, {
@@ -172,14 +172,14 @@ const update = async (req: Request, res: Response) => {
             data: {
               _id: doc?._id,
               gov: {
-                _id: Object(doc?.gov_id)._id,
-                name: Object(doc?.gov_id).name,
+                _id: Object(doc?.govId)._id,
+                name: Object(doc?.govId).name,
               },
               name: doc?.name,
               active: doc?.active,
-              add_info: requestInfo.isAdmin ? doc?.add_info : undefined,
-              last_update_info: requestInfo.isAdmin
-                ? doc?.last_update_info
+              addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
+              lastUpdateInfo: requestInfo.isAdmin
+                ? doc?.lastUpdateInfo
                 : undefined,
             },
           })
@@ -224,7 +224,7 @@ const deleted = async (req: Request, res: Response) => {
         const deletedCityData = {
           active: false,
           deleted: true,
-          delete_info: requestInfo,
+          deleteInfo: requestInfo,
         };
 
         const doc = await City.findOneAndUpdate({ _id }, deletedCityData, {
@@ -310,14 +310,14 @@ const getAll = async (req: Request, res: Response) => {
       data.push({
         _id: doc._id,
         gov: {
-          _id: Object(doc.gov_id)._id,
-          name: Object(doc.gov_id).name,
+          _id: Object(doc.govId)._id,
+          name: Object(doc.govId).name,
         },
         name: doc.name,
         active: doc.active,
-        add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-        last_update_info: requestInfo.isAdmin
-          ? doc.last_update_info
+        addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+        lastUpdateInfo: requestInfo.isAdmin
+          ? doc.lastUpdateInfo
           : undefined,
       });
     }
@@ -346,7 +346,71 @@ const getAll = async (req: Request, res: Response) => {
       })
       .status(200);
   } catch (error) {
-    console.log(`City => Search City ${error}`);
+    console.log(`City => Get All City ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
+  }
+};
+
+const getCitiesByGov = async (req: Request, res: Response) => {
+  const request = req.body;
+  const requestInfo = req.body.requestInfo;
+
+  try {
+    const where = {
+      govId: request.govId,
+      active: true,
+      deleted: false,
+    };
+
+    const result = await City.find(where);
+
+    if (!result.length) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.noData
+      );
+
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(200);
+    }
+
+    const data = [];
+
+    for await (const doc of result) {
+      data.push({
+        _id: doc._id,
+        name: doc.name,
+      });
+    }
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.done
+    );
+
+    return res
+      .send({
+        success: true,
+        message,
+        data,
+      })
+      .status(200);
+  } catch (error) {
+    console.log(`City => Get Cities By Gov ${error}`);
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -402,14 +466,14 @@ const search = async (req: Request, res: Response) => {
         data.push({
           _id: doc._id,
           gov: {
-            _id: Object(doc.gov_id)._id,
-            name: Object(doc.gov_id).name,
+            _id: Object(doc.govId)._id,
+            name: Object(doc.govId).name,
           },
           name: doc.name,
           active: doc.active,
-          add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-          last_update_info: requestInfo.isAdmin
-            ? doc.last_update_info
+          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+          lastUpdateInfo: requestInfo.isAdmin
+            ? doc.lastUpdateInfo
             : undefined,
         });
       }
@@ -439,7 +503,7 @@ const search = async (req: Request, res: Response) => {
       })
       .status(200);
   } catch (error) {
-    console.log(`City => Get All ${error}`);
+    console.log(`City => Search All ${error}`);
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -517,6 +581,7 @@ const getActive = async (req: Request, res: Response) => {
       .status(500);
   }
 };
+
 async function validateData(req: Request) {
   const request = req.body;
   const cityName = request.name;
@@ -556,7 +621,7 @@ const citiesRouters = async (app: express.Application) => {
     deleted
   );
   app.post(
-    `${definitions.api}/systemManagement/cities/get_all`,
+    `${definitions.api}/systemManagement/cities/getAll`,
     verifyJwtToken,
     getAll
   );
@@ -566,9 +631,14 @@ const citiesRouters = async (app: express.Application) => {
     search
   );
   app.post(
-    `${definitions.api}/systemManagement/cities/get_active`,
+    `${definitions.api}/systemManagement/cities/getActive`,
     verifyJwtToken,
     getActive
+  );
+  app.post(
+    `${definitions.api}/systemManagement/cities/getCitiesByGov`,
+    verifyJwtToken,
+    getCitiesByGov
   );
 };
 

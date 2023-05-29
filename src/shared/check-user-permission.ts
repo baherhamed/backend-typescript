@@ -8,7 +8,7 @@ export const checkUserPermission = async (
 ) => {
   const request = req.body.requestInfo;
   const selectedUser = await User.findOne({
-    _id: request.user_id,
+    _id: request.userId,
     active: true,
     deleted: false,
   });

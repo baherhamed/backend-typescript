@@ -11,18 +11,18 @@ import { RequestInfo } from '..';
 import { inputsLength } from '../../shared/inputs-length';
 
 interface ICity extends Document {
-  gov_id: Types.ObjectId;
+  govId: Types.ObjectId;
   name: string;
   active: boolean;
   deleted: boolean;
-  add_info: RequestInfo;
-  last_update_info: RequestInfo;
-  deleted_info: RequestInfo;
+  addInfo: RequestInfo;
+  lastUpdateInfo: RequestInfo;
+  deletedInfo: RequestInfo;
 }
 
 const CitySchema = new Schema(
   {
-    gov_id: {
+    govId: {
       type: Types.ObjectId,
       ref: 'govs',
       autopopulate: {
@@ -45,9 +45,9 @@ const CitySchema = new Schema(
       type: Boolean,
       default: false,
     },
-    add_info: RequestInfo,
-    last_update_info: RequestInfo,
-    delete_info: RequestInfo,
+    addInfo: RequestInfo,
+    lastUpdateInfo: RequestInfo,
+    deleteInfo: RequestInfo,
   },
   {
     versionKey: false,

@@ -59,10 +59,10 @@ const add = async (req: Request, res: Response) => {
         name: request.name,
         active: request.active,
         deleted: false,
-        add_info: requestInfo,
+        addInfo: requestInfo,
       });
 
-      doc.save(async (err) => {
+      doc.save(async (err: unknown) => {
         if (err) {
           console.log(`Gov => Add Gov ${err}`);
           const message = await responseLanguage(
@@ -150,7 +150,7 @@ const update = async (req: Request, res: Response) => {
         const updatedGovData = {
           name: request.name,
           active: request.active,
-          last_update_info: requestInfo,
+          lastUpdateInfo: requestInfo,
         };
 
         const doc = await Gov.findOneAndUpdate({ _id }, updatedGovData, {
@@ -169,9 +169,9 @@ const update = async (req: Request, res: Response) => {
               _id: doc?._id,
               name: doc?.name,
               active: doc?.active,
-              add_info: requestInfo.isAdmin ? doc?.add_info : undefined,
-              last_update_info: requestInfo.isAdmin
-                ? doc?.last_update_info
+              addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
+              lastUpdateInfo: requestInfo.isAdmin
+                ? doc?.lastUpdateInfo
                 : undefined,
             },
           })
@@ -216,7 +216,7 @@ const deleted = async (req: Request, res: Response) => {
         const deletedGovData = {
           active: false,
           deleted: true,
-          delete_info: requestInfo,
+          deleteInfo: requestInfo,
         };
 
         const doc = await Gov.findOneAndUpdate({ _id }, deletedGovData, {
@@ -302,9 +302,9 @@ const getAll = async (req: Request, res: Response) => {
         _id: doc._id,
         name: doc.name,
         active: doc.active,
-        add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-        last_update_info: requestInfo.isAdmin
-          ? doc.last_update_info
+        addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+        lastUpdateInfo: requestInfo.isAdmin
+          ? doc.lastUpdateInfo
           : undefined,
       });
     }
@@ -333,7 +333,7 @@ const getAll = async (req: Request, res: Response) => {
       })
       .status(200);
   } catch (error) {
-    console.log(`Gov => Search Gov ${error}`);
+    console.log(`Gov => Get All Gov ${error}`);
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -390,9 +390,9 @@ const search = async (req: Request, res: Response) => {
           _id: doc._id,
           name: doc.name,
           active: doc.active,
-          add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-          last_update_info: requestInfo.isAdmin
-            ? doc.last_update_info
+          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+          lastUpdateInfo: requestInfo.isAdmin
+            ? doc.lastUpdateInfo
             : undefined,
         });
       }
@@ -422,7 +422,7 @@ const search = async (req: Request, res: Response) => {
       })
       .status(200);
   } catch (error) {
-    console.log(`Gov => Get All ${error}`);
+    console.log(`Gov => Search All ${error}`);
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -532,7 +532,7 @@ const govsRouters = async (app: express.Application) => {
     deleted
   );
   app.post(
-    `${definitions.api}/systemManagement/govs/get_all`,
+    `${definitions.api}/systemManagement/govs/getAll`,
     verifyJwtToken,
     getAll
   );
@@ -542,7 +542,7 @@ const govsRouters = async (app: express.Application) => {
     search
   );
   app.post(
-    `${definitions.api}/systemManagement/govs/get_active`,
+    `${definitions.api}/systemManagement/govs/getActive`,
     verifyJwtToken,
     getActive
   );

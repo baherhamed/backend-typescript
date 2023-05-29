@@ -37,9 +37,9 @@ const getActiveLanguages = async (req: Request, res: Response) => {
       data.push({
         _id: doc._id,
         name: doc.name,
-        add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-        last_update_info: requestInfo.isAdmin
-          ? doc.last_update_info
+        addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+        lastUpdateInfo: requestInfo.isAdmin
+          ? doc.lastUpdateInfo
           : undefined,
       });
     }

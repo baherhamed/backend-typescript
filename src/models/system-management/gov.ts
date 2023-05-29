@@ -11,11 +11,12 @@ import { inputsLength } from '../../shared/inputs-length';
 
 interface IGov extends Document {
   name: string;
+  code: string;
   active: boolean;
   deleted: boolean;
-  add_info: RequestInfo;
-  last_update_info: RequestInfo;
-  deleted_info: RequestInfo;
+  addInfo: RequestInfo;
+  lastUpdateInfo: RequestInfo;
+  deletedInfo: RequestInfo;
 }
 
 const GovSchema = new Schema(
@@ -27,6 +28,12 @@ const GovSchema = new Schema(
       trim: true,
       lowercase: true,
     },
+    code: {
+      type: String,
+      required: [true, 'Please Enter Gov Code'],
+      minlength: inputsLength.govCode,
+      trim: true,
+    },
     active: {
       type: Boolean,
       required: [true, 'Please Enter Gov State'],
@@ -35,9 +42,9 @@ const GovSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    add_info: RequestInfo,
-    last_update_info: RequestInfo,
-    delete_info: RequestInfo,
+    addInfo: RequestInfo,
+    lastUpdateInfo: RequestInfo,
+    deleteInfo: RequestInfo,
   },
   {
     versionKey: false,
@@ -47,8 +54,7 @@ const GovSchema = new Schema(
 GovSchema.plugin(paginate);
 GovSchema.plugin(autopopulate);
 
-export const Gov = mongoose.model<
-  IGov,
-  PaginateModel<IGov>,
-  PaginateOptions
->('govs', GovSchema);
+export const Gov = mongoose.model<IGov, PaginateModel<IGov>, PaginateOptions>(
+  'govs',
+  GovSchema
+);

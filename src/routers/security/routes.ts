@@ -70,7 +70,7 @@ const add = async (req: Request, res: Response) => {
         en: request.en,
         active: request.active,
         deleted: false,
-        add_info: requestInfo,
+        addInfo: requestInfo,
       });
 
       doc.save(async (err) => {
@@ -93,12 +93,12 @@ const add = async (req: Request, res: Response) => {
         if (request.permissionsList) {
           for await (const permission of request.permissionsList) {
             const newPermission = new Permission({
-              route_id: doc._id,
+              routeId: doc._id,
               name: permission.name,
               ar: permission.ar,
               en: permission.en,
               active: permission.active,
-              add_info: requestInfo,
+              addInfo: requestInfo,
             });
             await newPermission.save();
             permissionsList.push({
@@ -195,7 +195,7 @@ const update = async (req: Request, res: Response) => {
           ar: request.ar,
           en: request.en,
           active: request.active,
-          last_update_info: requestInfo,
+          lastUpdateInfo: requestInfo,
         };
 
         const doc = await Route.findOneAndUpdate({ _id }, updatedRouteData, {
@@ -221,23 +221,23 @@ const update = async (req: Request, res: Response) => {
                   ar: permission.ar,
                   en: permission.en,
                   active: permission.active,
-                  last_update_info: requestInfo,
+                  lastUpdateInfo: requestInfo,
                 }
               );
             } else {
               const newPermission = new Permission({
-                route_id: doc?._id,
+                routeId: doc?._id,
                 name: permission.name,
                 ar: permission.ar,
                 en: permission.en,
                 active: permission.active,
-                add_info: requestInfo,
+                addInfo: requestInfo,
               });
               await newPermission.save();
             }
           }
           const selectedPermissions = await Permission.find({
-            route_id: doc?._id,
+            routeId: doc?._id,
             deleted: false,
           });
 
@@ -249,9 +249,9 @@ const update = async (req: Request, res: Response) => {
                 ar: permission.ar,
                 en: permission.en,
                 active: permission.active,
-                add_info: requestInfo.isAdmin ? permission.add_info : undefined,
-                last_update_info: requestInfo.isAdmin
-                  ? permission.last_update_info
+                addInfo: requestInfo.isAdmin ? permission.addInfo : undefined,
+                lastUpdateInfo: requestInfo.isAdmin
+                  ? permission.lastUpdateInfo
                   : undefined,
               });
             }
@@ -273,9 +273,9 @@ const update = async (req: Request, res: Response) => {
               en: doc?.en,
               active: doc?.active,
               permissionsList,
-              add_info: requestInfo.isAdmin ? doc?.add_info : undefined,
-              last_update_info: requestInfo.isAdmin
-                ? doc?.last_update_info
+              addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
+              lastUpdateInfo: requestInfo.isAdmin
+                ? doc?.lastUpdateInfo
                 : undefined,
             },
           })
@@ -320,7 +320,7 @@ const deleted = async (req: Request, res: Response) => {
         const deletedRouteData = {
           active: false,
           deleted: true,
-          delete_info: requestInfo,
+          deleteInfo: requestInfo,
         };
 
         const doc = await Route.findOneAndUpdate({ _id }, deletedRouteData, {
@@ -328,14 +328,14 @@ const deleted = async (req: Request, res: Response) => {
         });
 
         const deletedPermissionsList = await Permission.find({
-          route_id: doc?._id,
+          routeId: doc?._id,
           deleted: false,
         });
 
         for await (const permission of deletedPermissionsList) {
           await Permission.findOneAndUpdate(
             { _id: permission._id },
-            { active: false, deleted: true, delete_info: requestInfo },
+            { active: false, deleted: true, deleteInfo: requestInfo },
             { new: true }
           );
         }
@@ -418,7 +418,7 @@ const getAll = async (req: Request, res: Response) => {
     for await (const doc of result.docs) {
       const permissionsList = [];
       const selectedPermissionsList = await Permission.find({
-        route_id: doc?._id,
+        routeId: doc?._id,
         deleted: false,
       });
 
@@ -441,9 +441,9 @@ const getAll = async (req: Request, res: Response) => {
         en: doc.en,
         active: doc.active,
         permissionsList,
-        add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-        last_update_info: requestInfo.isAdmin
-          ? doc.last_update_info
+        addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+        lastUpdateInfo: requestInfo.isAdmin
+          ? doc.lastUpdateInfo
           : undefined,
       });
     }
@@ -473,7 +473,7 @@ const getAll = async (req: Request, res: Response) => {
       })
       .status(200);
   } catch (error) {
-    console.log(`Route => Search Route ${error}`);
+    console.log(`Route => Get All Route ${error}`);
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -533,7 +533,7 @@ const search = async (req: Request, res: Response) => {
     for await (const doc of result.docs) {
       const permissionsList = [];
       const selectedPermissionsList = await Permission.find({
-        route_id: doc?._id,
+        routeId: doc?._id,
         deleted: false,
       });
       if (selectedPermissionsList) {
@@ -555,9 +555,9 @@ const search = async (req: Request, res: Response) => {
           en: doc.en,
           active: doc.active,
           permissionsList,
-          add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-          last_update_info: requestInfo.isAdmin
-            ? doc.last_update_info
+          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+          lastUpdateInfo: requestInfo.isAdmin
+            ? doc.lastUpdateInfo
             : undefined,
         });
       }
@@ -587,7 +587,7 @@ const search = async (req: Request, res: Response) => {
       })
       .status(200);
   } catch (error) {
-    console.log(`Route => Get All ${error}`);
+    console.log(`Route => Search Route ${error}`);
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -632,7 +632,7 @@ const getActive = async (req: Request, res: Response) => {
     for await (const doc of result) {
       const permissionsList = [];
       const selectedPermissionsList = await Permission.find({
-        route_id: doc?._id,
+        routeId: doc?._id,
         deleted: false,
       });
 
@@ -655,9 +655,9 @@ const getActive = async (req: Request, res: Response) => {
         en: doc.en,
         active: doc.active,
         permissionsList,
-        add_info: requestInfo.isAdmin ? doc.add_info : undefined,
-        last_update_info: requestInfo.isAdmin
-          ? doc.last_update_info
+        addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+        lastUpdateInfo: requestInfo.isAdmin
+          ? doc.lastUpdateInfo
           : undefined,
       });
     }
@@ -728,13 +728,13 @@ const routessRouters = async (app: express.Application) => {
   app.put(`${definitions.api}/security/routes/update`, verifyJwtToken, update);
   app.put(`${definitions.api}/security/routes/delete`, verifyJwtToken, deleted);
   app.post(
-    `${definitions.api}/security/routes/get_all`,
+    `${definitions.api}/security/routes/getAll`,
     verifyJwtToken,
     getAll
   );
   app.post(`${definitions.api}/security/routes/search`, verifyJwtToken, search);
   app.post(
-    `${definitions.api}/security/routes/get_active`,
+    `${definitions.api}/security/routes/getActive`,
     verifyJwtToken,
     getActive
   );

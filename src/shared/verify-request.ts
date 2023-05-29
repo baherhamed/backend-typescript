@@ -17,7 +17,7 @@ interface RequestInfo {
     name: string | undefined;
   };
   ip_address: string | undefined;
-  user_id: string | undefined;
+  userId: string | undefined;
   language: string;
   date: Date;
   isAdmin?: boolean;
@@ -85,7 +85,7 @@ export const verifyJwtToken = async function (
       if (!isExpired && decoded) {
         const request_browser = browser(req.headers['user-agent']);
         const selectedUser = await User.findOne({
-          _id: decoded.user_id,
+          _id: decoded.userId,
           active: true,
           deleted: false,
         });
@@ -105,7 +105,7 @@ export const verifyJwtToken = async function (
               name: request_browser.os,
             },
             ip_address,
-            user_id: String(selectedUser._id),
+            userId: String(selectedUser._id),
             language,
             date: new Date(),
             isAdmin,
