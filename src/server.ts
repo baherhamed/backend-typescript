@@ -3,14 +3,23 @@ dotenv.config({ path: __dirname + '/.env' });
 import bodyParser from 'body-parser';
 import express from 'express';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const sslConfig = require('ssl-config')('modern');
+import * as http from 'http';
+import * as https from 'https';
+
+import fs from 'fs';
+
 import { systemDefaults } from './shared/system-default';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import routesRouters from './routers/security/routes';
-import govsRouters from './routers/system-management/govs';
+
 import usersRouters from './routers/security/user';
 import loginRouters from './routers/security/login';
+
 import languageRouters from './routers/system-management/languages';
+import govsRouters from './routers/system-management/govs';
 import citiesRouters from './routers/system-management/cities';
 
 const app = express();
@@ -46,6 +55,14 @@ try {
   console.log(`Error While Connecting Database ${error}`);
 }
 
+app.post('/', (req, res) => {
+  res.send('Backend works post request');
+});
+
+app.get('/', (req, res) => {
+  res.send('Backend works get request');
+});
+
 app.use(cors());
 loginRouters(app);
 routesRouters(app);
@@ -54,61 +71,52 @@ govsRouters(app);
 usersRouters(app);
 citiesRouters(app);
 
-// let privateKey: Promise<string>;
-// let certificate: Promise<string>;
-// let fullchain: Promise<string>;
-// let dir = './cer';
+let privateKey;
+let certificate: string;
+let fullchain: string;
+let dir = './cer';
 
-// if (!fsPromises.access(dir)) {
-//   dir = '/etc/letsencrypt/live/tebah.site';
-// }
+if (!fs.existsSync(dir)) {
+  dir = '/etc/letsencrypt/live/resellers.tebah-soft.com';
+}
 
-// privateKey = fsPromises.readFile(`${dir}/privkey.pem`, 'utf8');
-// certificate = fsPromises.readFile(`${dir}/cert.pem`, 'utf8');
-// fullchain = fsPromises.readFile(`${dir}/fullchain.pem`, 'utf8');
+privateKey = fs.readFileSync(`${dir}/privkey.pem`, 'utf8');
+certificate = fs.readFileSync(`${dir}/cert.pem`, 'utf8');
+fullchain = fs.readFileSync(`${dir}/fullchain.pem`, 'utf8');
 
-// if (!privateKey || !certificate) {
-//   privateKey = fsPromises.readFile(`${dir}/privkey.pem`, 'utf8');
-//   certificate = fsPromises.readFile(`${dir}/cert.pem`, 'utf8');
-//   fullchain = fsPromises.readFile(`${dir}/fullchain.pem`, 'utf8');
-// }
+if (!privateKey || !certificate) {
+  privateKey = fs.readFileSync(`${dir}/privkey.pem`, 'utf8');
+  certificate = fs.readFileSync(`${dir}/cert.pem`, 'utf8');
+  fullchain = fs.readFileSync(`${dir}/fullchain.pem`, 'utf8');
+}
 
-// const credentials = {
-//   key: privateKey,
-//   cert: certificate,
-//   ca: fullchain,
-//   ciphers: sslConfig.ciphers,
-//   honorCipherOrder: true,
-//   secureOptions: sslConfig.minimumTLSVersion,
-// };
+const credentials = {
+  key: privateKey,
+  cert: String(certificate),
+  ca: String(fullchain),
+  ciphers: sslConfig.ciphers,
+  honorCipherOrder: true,
+  secureOptions: sslConfig.minimumTLSVersion,
+  passphrase: 'sample',
+  agent: false,
+};
 
-// const httpServer = http.createServer(app);
-// const httpsServer = https.createServer(credentials, app);
-// systemDefaults;
-// console.log('process.env.PORT', process.env.PORT);
-// console.log('systemDefaults', systemDefaults);
+const httpServer = http.createServer(app);
+const httpsServer = https.createServer(credentials, app);
 
-const appServer = app.listen(Number(process.env.PORT), () => {
+httpServer.listen(process.env.PORT, () => {
   systemDefaults;
   console.log(`
   -------------------------
-   Server Run At Port: ${process.env.PORT}
+   Server Run Http at PORT: ${process.env.PORT}
   -------------------------`);
 });
 
-// httpServer.listen(process.env.PORT, () => {
-//   systemDefaults;
-//   console.log(`
-//   -------------------------
-//    Server Run at port:${process.env.PORT}
-//   -------------------------`);
-// });
+httpsServer.listen(process.env.SSLPORT, () => {
+  console.log(`
+-------------------------
+ Server Run Https at PORT: ${process.env.SSLPORT}
+-------------------------`);
+});
 
-// httpsServer.listen(process.env.SSLPORT, () => {
-// console.log(`
-// -------------------------
-//  Server Run at port:${process.env.SSLPORT}
-// -------------------------`);
-// });
-
-export default appServer;
+export default { httpServer, httpsServer };

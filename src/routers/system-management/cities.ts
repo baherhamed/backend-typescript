@@ -126,8 +126,8 @@ const update = async (req: Request, res: Response) => {
   if (hasPermission) {
     try {
       const findCity = {
+        govId: request.govId,
         name: request.name,
-
         deleted: false,
       };
 
