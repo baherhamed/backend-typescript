@@ -10,19 +10,21 @@ import {
   pagination,
   definitions,
   PermissionsNames,
+  checkUserRoutes,
+  RoutesNames,
 } from '../../shared';
 
 const add = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
-
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.addGov
   );
 
-  if (hasPermission) {
+  if (hasRoute && hasPermission) {
     try {
       const checkData = await validateData(req);
 
@@ -114,14 +116,14 @@ const update = async (req: Request, res: Response) => {
   const request = req.body;
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.updateGov
   );
 
-  if (hasPermission) {
+  if (hasRoute && hasPermission) {
     try {
       const findGov = {
         name: request.name,
@@ -197,14 +199,14 @@ const update = async (req: Request, res: Response) => {
 const deleted = async (req: Request, res: Response) => {
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.deleteGov
   );
 
-  if (hasPermission) {
+  if (hasRoute && hasPermission) {
     try {
       const selectedGovToDelete = {
         _id,
@@ -269,171 +271,173 @@ const deleted = async (req: Request, res: Response) => {
 const getAll = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
+  if (hasRoute) {
+    try {
+      const query = {
+        page: req.query?.page || request.query?.page || pagination.page,
+        limit: req.query?.limit || request.query?.limit || pagination.getAll,
+      };
 
-  try {
-    const query = {
-      page: req.query?.page || request.query?.page || pagination.page,
-      limit: req.query?.limit || request.query?.limit || pagination.getAll,
-    };
+      const where = {
+        deleted: false,
+      };
 
-    const where = {
-      deleted: false,
-    };
+      const result = await Gov.paginate(where, query);
 
-    const result = await Gov.paginate(where, query);
+      if (!result.docs.length) {
+        const message = await responseLanguage(
+          requestInfo.language,
+          responseMessages.noData
+        );
 
-    if (!result.docs.length) {
+        return res
+          .send({
+            success: false,
+            message,
+          })
+          .status(200);
+      }
+
+      const data = [];
+      for await (const doc of result.docs) {
+        data.push({
+          _id: doc._id,
+          name: doc.name,
+          active: doc.active,
+          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+          lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
+        });
+      }
+      const paginationInfo = {
+        totalDocs: result.totalDocs,
+        limit: result.limit,
+        totalPages: result.totalPages,
+        page: result.page,
+        hasPrevPage: result.hasPrevPage,
+        hasNextPage: result.hasNextPage,
+        prevPage: result.prevPage,
+        nextPage: result.nextPage,
+      };
+
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.done
       );
 
+      return res
+        .send({
+          success: true,
+          message,
+          data,
+          paginationInfo,
+        })
+        .status(200);
+    } catch (error) {
+      console.log(`Gov => Get All Gov ${error}`);
+
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.invalidData
+      );
       return res
         .send({
           success: false,
           message,
         })
-        .status(200);
+        .status(500);
     }
-
-    const data = [];
-    for await (const doc of result.docs) {
-      data.push({
-        _id: doc._id,
-        name: doc.name,
-        active: doc.active,
-        addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-        lastUpdateInfo: requestInfo.isAdmin
-          ? doc.lastUpdateInfo
-          : undefined,
-      });
-    }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
-        data,
-        paginationInfo,
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`Gov => Get All Gov ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
   }
 };
 
 const search = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
+  if (hasRoute) {
+    try {
+      const query = {
+        page: req.query?.page || request.query?.page || pagination.page,
+        limit: req.query?.limit || request.query?.limit || pagination.search,
+      };
 
-  try {
-    const query = {
-      page: req.query?.page || request.query?.page || pagination.page,
-      limit: req.query?.limit || request.query?.limit || pagination.search,
-    };
+      const where = {
+        isDeveloper: false,
+        deleted: false,
+      };
 
-    const where = {
-      isDeveloper: false,
-      deleted: false,
-    };
+      if (request.query.name) {
+        Object(where)['name'] = new RegExp(request.query.name, 'i');
+      }
 
-    if (request.query.name) {
-      Object(where)['name'] = new RegExp(request.query.name, 'i');
-    }
+      const result = await Gov.paginate(where, query);
 
-    const result = await Gov.paginate(where, query);
+      if (!result.docs.length) {
+        const message = await responseLanguage(
+          requestInfo.language,
+          responseMessages.noData
+        );
 
-    if (!result.docs.length) {
+        return res
+          .send({
+            success: false,
+            message,
+          })
+          .status(200);
+      }
+
+      const data = [];
+      for await (const doc of result.docs) {
+        if (doc) {
+          data.push({
+            _id: doc._id,
+            name: doc.name,
+            active: doc.active,
+            addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+            lastUpdateInfo: requestInfo.isAdmin
+              ? doc.lastUpdateInfo
+              : undefined,
+          });
+        }
+      }
+      const paginationInfo = {
+        totalDocs: result.totalDocs,
+        limit: result.limit,
+        totalPages: result.totalPages,
+        page: result.page,
+        hasPrevPage: result.hasPrevPage,
+        hasNextPage: result.hasNextPage,
+        prevPage: result.prevPage,
+        nextPage: result.nextPage,
+      };
+
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.done
       );
 
+      return res
+        .send({
+          success: true,
+          message,
+          data,
+          paginationInfo,
+        })
+        .status(200);
+    } catch (error) {
+      console.log(`Gov => Search All ${error}`);
+
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.invalidData
+      );
       return res
         .send({
           success: false,
           message,
         })
-        .status(200);
+        .status(500);
     }
-
-    const data = [];
-    for await (const doc of result.docs) {
-      if (doc) {
-        data.push({
-          _id: doc._id,
-          name: doc.name,
-          active: doc.active,
-          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-          lastUpdateInfo: requestInfo.isAdmin
-            ? doc.lastUpdateInfo
-            : undefined,
-        });
-      }
-    }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
-        data,
-        paginationInfo,
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`Gov => Search All ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
   }
 };
 

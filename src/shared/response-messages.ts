@@ -95,6 +95,10 @@ export const responseMessages = {
     ar: 'عفوا ليس لدية صلاحية',
     en: "Sorry You Don't Have Permission",
   },
+  routeNotAllowed: {
+    ar: 'عفوا ليس لدية صلاحية الدخول لهذه الصفحة',
+    en: "Sorry You Don't Have Permission To Access This Page",
+  },
   invalidData: {
     ar: 'يرجي التأكد من البيانات',
     en: 'Invalid Data !! Please Check Data',

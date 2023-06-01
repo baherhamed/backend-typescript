@@ -10,19 +10,21 @@ import {
   pagination,
   definitions,
   PermissionsNames,
+  checkUserRoutes,
+  RoutesNames,
 } from '../../shared';
 
 const add = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
-
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.addUser
   );
 
-  if (hasPermission) {
+  if (hasRoute && hasPermission) {
     try {
       const checkData = await validateData(req);
 
@@ -142,14 +144,14 @@ const update = async (req: Request, res: Response) => {
   const request = req.body;
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.updateUser
   );
 
-  if (hasPermission) {
+  if (hasRoute && hasPermission) {
     try {
       const findUser = {
         $or: [
@@ -262,14 +264,14 @@ const update = async (req: Request, res: Response) => {
 const deleted = async (req: Request, res: Response) => {
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.deleteUser
   );
 
-  if (hasPermission) {
+  if (hasRoute && hasPermission) {
     try {
       const selectedUserToDelete = {
         _id,
@@ -331,200 +333,202 @@ const deleted = async (req: Request, res: Response) => {
   }
 };
 
-
 const search = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
+  if (hasRoute) {
+    try {
+      const query = {
+        page: req.query?.page || request.query?.page || pagination.page,
+        limit: req.query?.limit || request.query?.limit || pagination.search,
+      };
 
-  try {
-    const query = {
-      page: req.query?.page || request.query?.page || pagination.page,
-      limit: req.query?.limit || request.query?.limit || pagination.search,
-    };
+      const where = {
+        isDeveloper: false,
+        deleted: false,
+      };
 
-    const where = {
-      isDeveloper: false,
-      deleted: false,
-    };
+      if (request.query.name) {
+        Object(where)['name'] = new RegExp(request.query.name, 'i');
+      }
+      if (request.query.mobile) {
+        Object(where)['mobile'] = new RegExp(request.query.mobile, 'i');
+      }
 
-    if (request.query.name) {
-      Object(where)['name'] = new RegExp(request.query.name, 'i');
-    }
-    if (request.query.mobile) {
-      Object(where)['mobile'] = new RegExp(request.query.mobile, 'i');
-    }
+      if (request.query.email) {
+        Object(where)['email'] = new RegExp(request.query.email, 'i');
+      }
 
-    if (request.query.email) {
-      Object(where)['email'] = new RegExp(request.query.email, 'i');
-    }
+      const result = await User.paginate(where, query);
 
-    const result = await User.paginate(where, query);
+      if (!result.docs.length) {
+        const message = await responseLanguage(
+          requestInfo.language,
+          responseMessages.noData
+        );
 
-    if (!result.docs.length) {
+        return res
+          .send({
+            success: false,
+            message,
+          })
+          .status(200);
+      }
+
+      const data = [];
+      for await (const doc of result.docs) {
+        if (doc) {
+          data.push({
+            _id: doc._id,
+            name: doc.name,
+            mobile: doc.mobile,
+            email: doc.email,
+            language: {
+              _id: Object(doc.languageId)._id,
+              name: Object(doc.languageId).name,
+            },
+            active: doc.active,
+            addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+            lastUpdateInfo: requestInfo.isAdmin
+              ? doc.lastUpdateInfo
+              : undefined,
+          });
+        }
+      }
+      const paginationInfo = {
+        totalDocs: result.totalDocs,
+        limit: result.limit,
+        totalPages: result.totalPages,
+        page: result.page,
+        hasPrevPage: result.hasPrevPage,
+        hasNextPage: result.hasNextPage,
+        prevPage: result.prevPage,
+        nextPage: result.nextPage,
+      };
+
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.done
       );
 
+      return res
+        .send({
+          success: true,
+          message,
+          data,
+          paginationInfo,
+        })
+        .status(200);
+    } catch (error) {
+      console.log(`User => Search User ${error}`);
+
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.invalidData
+      );
       return res
         .send({
           success: false,
           message,
         })
-        .status(200);
+        .status(500);
     }
-
-    const data = [];
-    for await (const doc of result.docs) {
-      if (doc) {
-        data.push({
-          _id: doc._id,
-          name: doc.name,
-          mobile: doc.mobile,
-          email: doc.email,
-          language: {
-            _id: Object(doc.languageId)._id,
-            name: Object(doc.languageId).name,
-          },
-          active: doc.active,
-          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-          lastUpdateInfo: requestInfo.isAdmin
-            ? doc.lastUpdateInfo
-            : undefined,
-        });
-      }
-    }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
-        data,
-        paginationInfo,
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`User => Search User ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
   }
 };
 
 const getAll = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
+  if (hasRoute) {
+    try {
+      const query = {
+        page: req.query?.page || request.query?.page || pagination.page,
+        limit: req.query?.limit || request.query?.limit || pagination.getAll,
+      };
 
-  try {
-    const query = {
-      page: req.query?.page || request.query?.page || pagination.page,
-      limit: req.query?.limit || request.query?.limit || pagination.getAll,
-    };
+      const where = {
+        isDeveloper: false,
+        deleted: false,
+      };
 
-    const where = {
-      isDeveloper: false,
-      deleted: false,
-    };
+      const result = await User.paginate(where, query);
 
-    const result = await User.paginate(where, query);
+      if (!result.docs.length) {
+        const message = await responseLanguage(
+          requestInfo.language,
+          responseMessages.noData
+        );
 
-    if (!result.docs.length) {
+        return res
+          .send({
+            success: false,
+            message,
+          })
+          .status(200);
+      }
+
+      const data = [];
+      for await (const doc of result.docs) {
+        if (doc) {
+          data.push({
+            _id: doc._id,
+            name: doc.name,
+            mobile: doc.mobile,
+            email: doc.email,
+            language: {
+              _id: Object(doc.languageId)._id,
+              name: Object(doc.languageId).name,
+            },
+            active: doc.active,
+            addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+            lastUpdateInfo: requestInfo.isAdmin
+              ? doc.lastUpdateInfo
+              : undefined,
+          });
+        }
+      }
+      const paginationInfo = {
+        totalDocs: result.totalDocs,
+        limit: result.limit,
+        totalPages: result.totalPages,
+        page: result.page,
+        hasPrevPage: result.hasPrevPage,
+        hasNextPage: result.hasNextPage,
+        prevPage: result.prevPage,
+        nextPage: result.nextPage,
+      };
+
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.done
       );
 
+      return res
+        .send({
+          success: true,
+          message,
+          data,
+          paginationInfo,
+        })
+        .status(200);
+    } catch (error) {
+      console.log(`User => Get All User ${error}`);
+
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.invalidData
+      );
       return res
         .send({
           success: false,
           message,
         })
-        .status(200);
+        .status(500);
     }
-
-    const data = [];
-    for await (const doc of result.docs) {
-      if (doc) {
-        data.push({
-          _id: doc._id,
-          name: doc.name,
-          mobile: doc.mobile,
-          email: doc.email,
-          language: {
-            _id: Object(doc.languageId)._id,
-            name: Object(doc.languageId).name,
-          },
-          active: doc.active,
-          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-          lastUpdateInfo: requestInfo.isAdmin
-            ? doc.lastUpdateInfo
-            : undefined,
-        });
-      }
-    }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
-        data,
-        paginationInfo,
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`User => Get All User ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
   }
 };
-
 
 async function validateData(req: Request) {
   const request = req.body;

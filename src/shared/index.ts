@@ -9,3 +9,5 @@ export * from './set-response-message-language';
 export * from './verify-request';
 export * from './check-user-permission';
 export * from './permissions-names';
+export * from './routes-names';
+export * from './check-user-routes';
