@@ -286,8 +286,8 @@ const getAll = async (req: Request, res: Response) => {
   if (hasRoute) {
     try {
       const query = {
-        page: req.query?.page || request.query?.page || pagination.page,
-        limit: req.query?.limit || request.query?.limit || pagination.getAll,
+        page: req.query?.page || request.page || pagination.page,
+        limit: req.query?.limit || request.limit || pagination.getAll,
       };
 
       const where = {
@@ -368,7 +368,7 @@ const search = async (req: Request, res: Response) => {
   if (hasRoute) {
     try {
       const query = {
-        page: req.query?.page || request.query?.page || pagination.page,
+        page: req.query?.page || request.page || pagination.page,
         limit: req.query?.limit || request.query?.limit || pagination.search,
       };
 
