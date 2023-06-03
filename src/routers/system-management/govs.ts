@@ -125,6 +125,17 @@ const update = async (req: Request, res: Response) => {
 
   if (hasRoute && hasPermission) {
     try {
+      const checkData = await validateData(req);
+
+      if (!checkData.valid) {
+        return res
+          .send({
+            success: false,
+            message: checkData.message,
+          })
+          .status(400);
+      }
+      
       const findGov = {
         name: request.name,
         deleted: false,

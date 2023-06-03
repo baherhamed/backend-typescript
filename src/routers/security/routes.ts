@@ -156,6 +156,16 @@ const update = async (req: Request, res: Response) => {
 
   if (hasPermission) {
     try {
+      const checkData = await validateData(req);
+
+      if (!checkData.valid) {
+        return res
+          .send({
+            success: false,
+            message: checkData.message,
+          })
+          .status(400);
+      }
       const findRoute = {
         $or: [
           {
@@ -442,9 +452,7 @@ const getAll = async (req: Request, res: Response) => {
         active: doc.active,
         permissionsList,
         addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-        lastUpdateInfo: requestInfo.isAdmin
-          ? doc.lastUpdateInfo
-          : undefined,
+        lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
       });
     }
 
@@ -556,9 +564,7 @@ const search = async (req: Request, res: Response) => {
           active: doc.active,
           permissionsList,
           addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-          lastUpdateInfo: requestInfo.isAdmin
-            ? doc.lastUpdateInfo
-            : undefined,
+          lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
         });
       }
     }
@@ -656,9 +662,7 @@ const getActive = async (req: Request, res: Response) => {
         active: doc.active,
         permissionsList,
         addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-        lastUpdateInfo: requestInfo.isAdmin
-          ? doc.lastUpdateInfo
-          : undefined,
+        lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
       });
     }
 
@@ -727,11 +731,7 @@ const routessRouters = async (app: express.Application) => {
   app.post(`${definitions.api}/security/routes/add`, verifyJwtToken, add);
   app.put(`${definitions.api}/security/routes/update`, verifyJwtToken, update);
   app.put(`${definitions.api}/security/routes/delete`, verifyJwtToken, deleted);
-  app.post(
-    `${definitions.api}/security/routes/getAll`,
-    verifyJwtToken,
-    getAll
-  );
+  app.post(`${definitions.api}/security/routes/getAll`, verifyJwtToken, getAll);
   app.post(`${definitions.api}/security/routes/search`, verifyJwtToken, search);
   app.post(
     `${definitions.api}/security/routes/getActive`,
