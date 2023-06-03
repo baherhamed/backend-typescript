@@ -135,7 +135,7 @@ const update = async (req: Request, res: Response) => {
           })
           .status(400);
       }
-      
+
       const findGov = {
         name: request.name,
         deleted: false,
@@ -373,7 +373,6 @@ const search = async (req: Request, res: Response) => {
       };
 
       const where = {
-        isDeveloper: false,
         deleted: false,
       };
 

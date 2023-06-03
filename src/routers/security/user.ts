@@ -356,7 +356,6 @@ const search = async (req: Request, res: Response) => {
       };
 
       const where = {
-        isDeveloper: false,
         deleted: false,
       };
 
@@ -460,7 +459,6 @@ const getAll = async (req: Request, res: Response) => {
       };
 
       const where = {
-        isDeveloper: false,
         deleted: false,
       };
 

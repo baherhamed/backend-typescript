@@ -450,7 +450,6 @@ const search = async (req: Request, res: Response) => {
       };
 
       const where = {
-        isDeveloper: false,
         deleted: false,
       };
 
