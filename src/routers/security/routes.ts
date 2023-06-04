@@ -21,125 +21,124 @@ const add = async (req: Request, res: Response) => {
     PermissionsNames.addRoute
   );
 
-  if (hasPermission) {
-    try {
-      const checkData = await validateData(req);
+  if (!hasPermission) return;
+  try {
+    const checkData = await validateData(req);
 
-      if (!checkData.valid) {
-        return res
-          .send({
-            success: false,
-            message: checkData.message,
-          })
-          .status(400);
-      }
+    if (!checkData.valid) {
+      return res
+        .send({
+          success: false,
+          message: checkData.message,
+        })
+        .status(400);
+    }
 
-      const findRoute = {
-        $or: [
-          {
-            name: request.name,
-          },
-          {
-            ar: request.ar,
-          },
-          {
-            en: request.en,
-          },
-        ],
-        deleted: false,
-      };
+    const findRoute = {
+      $or: [
+        {
+          name: request.name,
+        },
+        {
+          ar: request.ar,
+        },
+        {
+          en: request.en,
+        },
+      ],
+      deleted: false,
+    };
 
-      const checkNewRoute = await Route.findOne(findRoute);
+    const checkNewRoute = await Route.findOne(findRoute);
 
-      if (checkNewRoute) {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.routeExisit
-        );
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(400);
-      }
-
-      const doc = new Route({
-        name: request.name,
-        ar: request.ar,
-        en: request.en,
-        active: request.active,
-        deleted: false,
-        addInfo: requestInfo,
-      });
-
-      doc.save(async (err) => {
-        if (err) {
-          console.log(`Route => Add Route ${err}`);
-          // const message = await responseLanguage(
-          //   requestInfo.language,
-          //   responseMessages.err,
-          //   String(err)
-          // );
-
-          // return res
-          //   .send({
-          //     success: true,
-          //     message,
-          //   })
-          //   .status(200);
-        }
-        const permissionsList = [];
-        if (request.permissionsList) {
-          for await (const permission of request.permissionsList) {
-            const newPermission = new Permission({
-              routeId: doc._id,
-              name: permission.name,
-              ar: permission.ar,
-              en: permission.en,
-              active: permission.active,
-              addInfo: requestInfo,
-            });
-            await newPermission.save();
-            permissionsList.push({
-              _id: newPermission._id,
-              name: permission.name,
-              ar: permission.ar,
-              en: permission.en,
-              active: permission.active,
-            });
-          }
-        }
-
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.saved
-        );
-
-        return res
-          .send({
-            success: true,
-            message,
-            data: {
-              _id: doc._id,
-              permissionsList,
-            },
-          })
-          .status(200);
-      });
-    } catch (error) {
-      console.log(`Route => Add Route ${error}`);
+    if (checkNewRoute) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.invalidData
+        responseMessages.routeExisit
       );
       return res
         .send({
           success: false,
           message,
         })
-        .status(500);
+        .status(400);
     }
+
+    const doc = new Route({
+      name: request.name,
+      ar: request.ar,
+      en: request.en,
+      active: request.active,
+      deleted: false,
+      addInfo: requestInfo,
+    });
+
+    doc.save(async (err) => {
+      if (err) {
+        console.log(`Route => Add Route ${err}`);
+        // const message = await responseLanguage(
+        //   requestInfo.language,
+        //   responseMessages.err,
+        //   String(err)
+        // );
+
+        // return res
+        //   .send({
+        //     success: true,
+        //     message,
+        //   })
+        //   .status(200);
+      }
+      const permissionsList = [];
+      if (request.permissionsList) {
+        for await (const permission of request.permissionsList) {
+          const newPermission = new Permission({
+            routeId: doc._id,
+            name: permission.name,
+            ar: permission.ar,
+            en: permission.en,
+            active: permission.active,
+            addInfo: requestInfo,
+          });
+          await newPermission.save();
+          permissionsList.push({
+            _id: newPermission._id,
+            name: permission.name,
+            ar: permission.ar,
+            en: permission.en,
+            active: permission.active,
+          });
+        }
+      }
+
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.saved
+      );
+
+      return res
+        .send({
+          success: true,
+          message,
+          data: {
+            _id: doc._id,
+            permissionsList,
+          },
+        })
+        .status(200);
+    });
+  } catch (error) {
+    console.log(`Route => Add Route ${error}`);
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 
@@ -154,157 +153,170 @@ const update = async (req: Request, res: Response) => {
     PermissionsNames.updateRoute
   );
 
-  if (hasPermission) {
-    try {
-      const checkData = await validateData(req);
-
-      if (!checkData.valid) {
-        return res
-          .send({
-            success: false,
-            message: checkData.message,
-          })
-          .status(400);
-      }
-      const findRoute = {
-        $or: [
-          {
-            name: request.name,
-          },
-          {
-            ar: request.ar,
-          },
-          {
-            en: request.en,
-          },
-        ],
-        deleted: false,
-      };
-
-      const selectedRoute = await Route.findOne(findRoute);
-
-      if (selectedRoute && String(selectedRoute['_id']) !== String(_id)) {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.routeExisit
-        );
-
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(400);
-      }
-      if (
-        !selectedRoute ||
-        (selectedRoute && String(selectedRoute['_id']) === String(_id))
-      ) {
-        const updatedRouteData = {
-          name: request.name,
-          ar: request.ar,
-          en: request.en,
-          active: request.active,
-          lastUpdateInfo: requestInfo,
-        };
-
-        const doc = await Route.findOneAndUpdate({ _id }, updatedRouteData, {
-          new: true,
-        });
-
-        const permissionsList = [];
-
-        if (request.permissionsList) {
-          for await (const permission of request.permissionsList) {
-            const exisitPermission = await Permission.findOne({
-              _id: permission?._id,
-              name: permission.name,
-            });
-
-            if (exisitPermission) {
-              await Permission.findOneAndUpdate(
-                {
-                  _id: permission?._id,
-                },
-                {
-                  name: permission.name,
-                  ar: permission.ar,
-                  en: permission.en,
-                  active: permission.active,
-                  lastUpdateInfo: requestInfo,
-                }
-              );
-            } else {
-              const newPermission = new Permission({
-                routeId: doc?._id,
-                name: permission.name,
-                ar: permission.ar,
-                en: permission.en,
-                active: permission.active,
-                addInfo: requestInfo,
-              });
-              await newPermission.save();
-            }
-          }
-          const selectedPermissions = await Permission.find({
-            routeId: doc?._id,
-            deleted: false,
-          });
-
-          if (selectedPermissions) {
-            for await (const permission of selectedPermissions) {
-              permissionsList.push({
-                _id: permission._id,
-                name: permission.name,
-                ar: permission.ar,
-                en: permission.en,
-                active: permission.active,
-                addInfo: requestInfo.isAdmin ? permission.addInfo : undefined,
-                lastUpdateInfo: requestInfo.isAdmin
-                  ? permission.lastUpdateInfo
-                  : undefined,
-              });
-            }
-          }
-        }
-
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.updated
-        );
-        return res
-          .send({
-            success: true,
-            message,
-            data: {
-              _id: doc?._id,
-              name: doc?.name,
-              ar: doc?.ar,
-              en: doc?.en,
-              active: doc?.active,
-              permissionsList,
-              addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
-              lastUpdateInfo: requestInfo.isAdmin
-                ? doc?.lastUpdateInfo
-                : undefined,
-            },
-          })
-          .status(200);
-      }
-    } catch (error) {
-      console.log(`Route => Update Route ${error}`);
-
+  if (!hasPermission) return;
+  try {
+    if (!_id) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.invalidData
+        responseMessages.missingId
       );
       return res
         .send({
           success: false,
           message,
         })
-        .status(500);
+        .status(400);
     }
+
+    const checkData = await validateData(req);
+
+    if (!checkData.valid) {
+      return res
+        .send({
+          success: false,
+          message: checkData.message,
+        })
+        .status(400);
+    }
+
+    const findRoute = {
+      $or: [
+        {
+          name: request.name,
+        },
+        {
+          ar: request.ar,
+        },
+        {
+          en: request.en,
+        },
+      ],
+      deleted: false,
+    };
+
+    const selectedRoute = await Route.findOne(findRoute);
+
+    if (selectedRoute && String(selectedRoute['_id']) !== String(_id)) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.routeExisit
+      );
+
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(400);
+    }
+    if (
+      !selectedRoute ||
+      (selectedRoute && String(selectedRoute['_id']) === String(_id))
+    ) {
+      const updatedRouteData = {
+        name: request.name,
+        ar: request.ar,
+        en: request.en,
+        active: request.active,
+        lastUpdateInfo: requestInfo,
+      };
+
+      const doc = await Route.findOneAndUpdate({ _id }, updatedRouteData, {
+        new: true,
+      });
+
+      const permissionsList = [];
+
+      if (request.permissionsList) {
+        for await (const permission of request.permissionsList) {
+          const exisitPermission = await Permission.findOne({
+            _id: permission?._id,
+            name: permission.name,
+          });
+
+          if (exisitPermission) {
+            await Permission.findOneAndUpdate(
+              {
+                _id: permission?._id,
+              },
+              {
+                name: permission.name,
+                ar: permission.ar,
+                en: permission.en,
+                active: permission.active,
+                lastUpdateInfo: requestInfo,
+              }
+            );
+          } else {
+            const newPermission = new Permission({
+              routeId: doc?._id,
+              name: permission.name,
+              ar: permission.ar,
+              en: permission.en,
+              active: permission.active,
+              addInfo: requestInfo,
+            });
+            await newPermission.save();
+          }
+        }
+        const selectedPermissions = await Permission.find({
+          routeId: doc?._id,
+          deleted: false,
+        });
+
+        if (selectedPermissions) {
+          for await (const permission of selectedPermissions) {
+            permissionsList.push({
+              _id: permission._id,
+              name: permission.name,
+              ar: permission.ar,
+              en: permission.en,
+              active: permission.active,
+              addInfo: requestInfo.isAdmin ? permission.addInfo : undefined,
+              lastUpdateInfo: requestInfo.isAdmin
+                ? permission.lastUpdateInfo
+                : undefined,
+            });
+          }
+        }
+      }
+
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.updated
+      );
+      return res
+        .send({
+          success: true,
+          message,
+          data: {
+            _id: doc?._id,
+            name: doc?.name,
+            ar: doc?.ar,
+            en: doc?.en,
+            active: doc?.active,
+            permissionsList,
+            addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
+            lastUpdateInfo: requestInfo.isAdmin
+              ? doc?.lastUpdateInfo
+              : undefined,
+          },
+        })
+        .status(200);
+    }
+  } catch (error) {
+    console.log(`Route => Update Route ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 
@@ -318,67 +330,66 @@ const deleted = async (req: Request, res: Response) => {
     PermissionsNames.deleteRoute
   );
 
-  if (hasPermission) {
-    try {
-      const selectedRouteToDelete = {
-        _id,
-        deleted: false,
+  if (!hasPermission) return;
+  try {
+    if (!_id) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.missingId
+      );
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(400);
+    }
+
+    const selectedRouteToDelete = {
+      _id,
+      deleted: false,
+    };
+    const selectedRoute = await Route.findOne(selectedRouteToDelete);
+
+    if (selectedRoute) {
+      const deletedRouteData = {
+        active: false,
+        deleted: true,
+        deleteInfo: requestInfo,
       };
-      const selectedRoute = await Route.findOne(selectedRouteToDelete);
 
-      if (selectedRoute) {
-        const deletedRouteData = {
-          active: false,
-          deleted: true,
-          deleteInfo: requestInfo,
-        };
+      const doc = await Route.findOneAndUpdate({ _id }, deletedRouteData, {
+        new: true,
+      });
 
-        const doc = await Route.findOneAndUpdate({ _id }, deletedRouteData, {
-          new: true,
-        });
+      const deletedPermissionsList = await Permission.find({
+        routeId: doc?._id,
+        deleted: false,
+      });
 
-        const deletedPermissionsList = await Permission.find({
-          routeId: doc?._id,
-          deleted: false,
-        });
-
-        for await (const permission of deletedPermissionsList) {
-          await Permission.findOneAndUpdate(
-            { _id: permission._id },
-            { active: false, deleted: true, deleteInfo: requestInfo },
-            { new: true }
-          );
-        }
-
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.deleted
+      for await (const permission of deletedPermissionsList) {
+        await Permission.findOneAndUpdate(
+          { _id: permission._id },
+          { active: false, deleted: true, deleteInfo: requestInfo },
+          { new: true }
         );
-
-        return res
-          .send({
-            success: true,
-            message,
-            data: {
-              _id: doc?._id,
-            },
-          })
-          .status(200);
-      } else {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.noData
-        );
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(500);
       }
-    } catch (error) {
-      console.log(`Route => Delete Route ${error}`);
 
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.deleted
+      );
+
+      return res
+        .send({
+          success: true,
+          message,
+          data: {
+            _id: doc?._id,
+          },
+        })
+        .status(200);
+    } else {
       const message = await responseLanguage(
         requestInfo.language,
         responseMessages.noData
@@ -390,6 +401,19 @@ const deleted = async (req: Request, res: Response) => {
         })
         .status(500);
     }
+  } catch (error) {
+    console.log(`Route => Delete Route ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.noData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 
@@ -693,6 +717,7 @@ const getActive = async (req: Request, res: Response) => {
       .status(500);
   }
 };
+
 async function validateData(req: Request) {
   const request = req.body;
   const routeName = request.name;

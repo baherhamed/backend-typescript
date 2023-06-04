@@ -24,93 +24,92 @@ const add = async (req: Request, res: Response) => {
     PermissionsNames.addCity
   );
 
-  if (hasRoute && hasPermission) {
-    try {
-      const checkData = await validateData(req);
+  if (!hasRoute || !hasPermission) return;
+  try {
+    const checkData = await validateData(req);
 
-      if (!checkData.valid) {
-        return res
-          .send({
-            success: false,
-            message: checkData.message,
-          })
-          .status(400);
-      }
+    if (!checkData.valid) {
+      return res
+        .send({
+          success: false,
+          message: checkData.message,
+        })
+        .status(400);
+    }
 
-      const findCity = {
-        govId: request.govId,
-        name: request.name,
-        deleted: false,
-      };
+    const findCity = {
+      govId: request.govId,
+      name: request.name,
+      deleted: false,
+    };
 
-      const checkNewCity = await City.findOne(findCity);
+    const checkNewCity = await City.findOne(findCity);
 
-      if (checkNewCity) {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.cityExisit
-        );
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(400);
-      }
-
-      const doc = new City({
-        govId: request.govId,
-        name: request.name,
-        active: request.active,
-        deleted: false,
-        addInfo: requestInfo,
-      });
-
-      doc.save(async (err: unknown) => {
-        if (err) {
-          console.log(`City => Add City ${err}`);
-          const message = await responseLanguage(
-            requestInfo.language,
-            responseMessages.err,
-            String(err)
-          );
-
-          return res
-            .send({
-              success: true,
-              message,
-            })
-            .status(200);
-        }
-
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.saved
-        );
-
-        return res
-          .send({
-            success: true,
-            message,
-            data: {
-              _id: doc._id,
-            },
-          })
-          .status(200);
-      });
-    } catch (error) {
-      console.log(`City => Add City ${error}`);
+    if (checkNewCity) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.invalidData
+        responseMessages.cityExisit
       );
       return res
         .send({
           success: false,
           message,
         })
-        .status(500);
+        .status(400);
     }
+
+    const doc = new City({
+      govId: request.govId,
+      name: request.name,
+      active: request.active,
+      deleted: false,
+      addInfo: requestInfo,
+    });
+
+    doc.save(async (err: unknown) => {
+      if (err) {
+        console.log(`City => Add City ${err}`);
+        const message = await responseLanguage(
+          requestInfo.language,
+          responseMessages.err,
+          String(err)
+        );
+
+        return res
+          .send({
+            success: true,
+            message,
+          })
+          .status(200);
+      }
+
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.saved
+      );
+
+      return res
+        .send({
+          success: true,
+          message,
+          data: {
+            _id: doc._id,
+          },
+        })
+        .status(200);
+    });
+  } catch (error) {
+    console.log(`City => Add City ${error}`);
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 
@@ -125,93 +124,105 @@ const update = async (req: Request, res: Response) => {
     PermissionsNames.updateCity
   );
 
-  if (hasRoute && hasPermission) {
-    try {
-      const checkData = await validateData(req);
-
-      if (!checkData.valid) {
-        return res
-          .send({
-            success: false,
-            message: checkData.message,
-          })
-          .status(400);
-      }
-
-      const findCity = {
-        govId: request.govId,
-        name: request.name,
-        deleted: false,
-      };
-
-      const selectedCity = await City.findOne(findCity);
-
-      if (selectedCity && String(selectedCity['_id']) !== String(_id)) {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.cityExisit
-        );
-
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(400);
-      }
-      if (
-        !selectedCity ||
-        (selectedCity && String(selectedCity['_id']) === String(_id))
-      ) {
-        const updatedCityData = {
-          name: request.name,
-
-          active: request.active,
-          lastUpdateInfo: requestInfo,
-        };
-
-        const doc = await City.findOneAndUpdate({ _id }, updatedCityData, {
-          new: true,
-        });
-
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.updated
-        );
-        return res
-          .send({
-            success: true,
-            message,
-            data: {
-              _id: doc?._id,
-              gov: {
-                _id: Object(doc?.govId)._id,
-                name: Object(doc?.govId).name,
-              },
-              name: doc?.name,
-              active: doc?.active,
-              addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
-              lastUpdateInfo: requestInfo.isAdmin
-                ? doc?.lastUpdateInfo
-                : undefined,
-            },
-          })
-          .status(200);
-      }
-    } catch (error) {
-      console.log(`City => Update City ${error}`);
-
+  if (!hasRoute || !hasPermission) return;
+  try {
+    if (!_id) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.invalidData
+        responseMessages.missingId
       );
       return res
         .send({
           success: false,
           message,
         })
-        .status(500);
+        .status(400);
     }
+
+    const checkData = await validateData(req);
+
+    if (!checkData.valid) {
+      return res
+        .send({
+          success: false,
+          message: checkData.message,
+        })
+        .status(400);
+    }
+
+    const findCity = {
+      govId: request.govId,
+      name: request.name,
+      deleted: false,
+    };
+
+    const selectedCity = await City.findOne(findCity);
+
+    if (selectedCity && String(selectedCity['_id']) !== String(_id)) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.cityExisit
+      );
+
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(400);
+    }
+    if (
+      !selectedCity ||
+      (selectedCity && String(selectedCity['_id']) === String(_id))
+    ) {
+      const updatedCityData = {
+        name: request.name,
+
+        active: request.active,
+        lastUpdateInfo: requestInfo,
+      };
+
+      const doc = await City.findOneAndUpdate({ _id }, updatedCityData, {
+        new: true,
+      });
+
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.updated
+      );
+      return res
+        .send({
+          success: true,
+          message,
+          data: {
+            _id: doc?._id,
+            gov: {
+              _id: Object(doc?.govId)._id,
+              name: Object(doc?.govId).name,
+            },
+            name: doc?.name,
+            active: doc?.active,
+            addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
+            lastUpdateInfo: requestInfo.isAdmin
+              ? doc?.lastUpdateInfo
+              : undefined,
+          },
+        })
+        .status(200);
+    }
+  } catch (error) {
+    console.log(`City => Update City ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 
@@ -225,54 +236,53 @@ const deleted = async (req: Request, res: Response) => {
     PermissionsNames.deleteCity
   );
 
-  if (hasRoute && hasPermission) {
-    try {
-      const selectedCityToDelete = {
-        _id,
-        deleted: false,
+  if (!hasRoute || !hasPermission) return;
+  try {
+    if (!_id) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.missingId
+      );
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(400);
+    }
+
+    const selectedCityToDelete = {
+      _id,
+      deleted: false,
+    };
+    const selectedCity = await City.findOne(selectedCityToDelete);
+
+    if (selectedCity) {
+      const deletedCityData = {
+        active: false,
+        deleted: true,
+        deleteInfo: requestInfo,
       };
-      const selectedCity = await City.findOne(selectedCityToDelete);
 
-      if (selectedCity) {
-        const deletedCityData = {
-          active: false,
-          deleted: true,
-          deleteInfo: requestInfo,
-        };
+      const doc = await City.findOneAndUpdate({ _id }, deletedCityData, {
+        new: true,
+      });
 
-        const doc = await City.findOneAndUpdate({ _id }, deletedCityData, {
-          new: true,
-        });
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.deleted
+      );
 
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.deleted
-        );
-
-        return res
-          .send({
-            success: true,
-            message,
-            data: {
-              _id: doc?._id,
-            },
-          })
-          .status(200);
-      } else {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.noData
-        );
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(500);
-      }
-    } catch (error) {
-      console.log(`City => Delete City ${error}`);
-
+      return res
+        .send({
+          success: true,
+          message,
+          data: {
+            _id: doc?._id,
+          },
+        })
+        .status(200);
+    } else {
       const message = await responseLanguage(
         requestInfo.language,
         responseMessages.noData
@@ -284,6 +294,19 @@ const deleted = async (req: Request, res: Response) => {
         })
         .status(500);
     }
+  } catch (error) {
+    console.log(`City => Delete City ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.noData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 
@@ -291,86 +314,85 @@ const getAll = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
-  if (hasRoute) {
-    try {
-      const query = {
-        page: req.query?.page || request.page || pagination.page,
-        limit: req.query?.limit || request.limit || pagination.getAll,
-      };
+  if (!hasRoute) return;
+  try {
+    const query = {
+      page: req.query?.page || request.page || pagination.page,
+      limit: req.query?.limit || request.limit || pagination.getAll,
+    };
 
-      const where = {
-        deleted: false,
-      };
+    const where = {
+      deleted: false,
+    };
 
-      const result = await City.paginate(where, query);
+    const result = await City.paginate(where, query);
 
-      if (!result.docs.length) {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.noData
-        );
-
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(200);
-      }
-
-      const data = [];
-
-      for await (const doc of result.docs) {
-        data.push({
-          _id: doc._id,
-          gov: {
-            _id: Object(doc.govId)._id,
-            name: Object(doc.govId).name,
-          },
-          name: doc.name,
-          active: doc.active,
-          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-          lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
-        });
-      }
-      const paginationInfo = {
-        totalDocs: result.totalDocs,
-        limit: result.limit,
-        totalPages: result.totalPages,
-        page: result.page,
-        hasPrevPage: result.hasPrevPage,
-        hasNextPage: result.hasNextPage,
-        prevPage: result.prevPage,
-        nextPage: result.nextPage,
-      };
-
+    if (!result.docs.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.done
+        responseMessages.noData
       );
 
-      return res
-        .send({
-          success: true,
-          message,
-          data,
-          paginationInfo,
-        })
-        .status(200);
-    } catch (error) {
-      console.log(`City => Get All City ${error}`);
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.invalidData
-      );
       return res
         .send({
           success: false,
           message,
         })
-        .status(500);
+        .status(200);
     }
+
+    const data = [];
+
+    for await (const doc of result.docs) {
+      data.push({
+        _id: doc._id,
+        gov: {
+          _id: Object(doc.govId)._id,
+          name: Object(doc.govId).name,
+        },
+        name: doc.name,
+        active: doc.active,
+        addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+        lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
+      });
+    }
+    const paginationInfo = {
+      totalDocs: result.totalDocs,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      page: result.page,
+      hasPrevPage: result.hasPrevPage,
+      hasNextPage: result.hasNextPage,
+      prevPage: result.prevPage,
+      nextPage: result.nextPage,
+    };
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.done
+    );
+
+    return res
+      .send({
+        success: true,
+        message,
+        data,
+        paginationInfo,
+      })
+      .status(200);
+  } catch (error) {
+    console.log(`City => Get All City ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 
@@ -442,93 +464,90 @@ const search = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
-  if (hasRoute) {
-    try {
-      const query = {
-        page: req.query?.page || request.page || pagination.page,
-        limit: req.query?.limit || request.query?.limit || pagination.search,
-      };
+  if (!hasRoute) return;
+  try {
+    const query = {
+      page: req.query?.page || request.page || pagination.page,
+      limit: req.query?.limit || request.query?.limit || pagination.search,
+    };
 
-      const where = {
-        deleted: false,
-      };
+    const where = {
+      deleted: false,
+    };
 
-      if (request.query.name) {
-        Object(where)['name'] = new RegExp(request.query.name, 'i');
-      }
+    if (request.query.name) {
+      Object(where)['name'] = new RegExp(request.query.name, 'i');
+    }
 
-      const result = await City.paginate(where, query);
+    const result = await City.paginate(where, query);
 
-      if (!result.docs.length) {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.noData
-        );
-
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(200);
-      }
-
-      const data = [];
-      for await (const doc of result.docs) {
-        if (doc) {
-          data.push({
-            _id: doc._id,
-            gov: {
-              _id: Object(doc.govId)._id,
-              name: Object(doc.govId).name,
-            },
-            name: doc.name,
-            active: doc.active,
-            addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-            lastUpdateInfo: requestInfo.isAdmin
-              ? doc.lastUpdateInfo
-              : undefined,
-          });
-        }
-      }
-      const paginationInfo = {
-        totalDocs: result.totalDocs,
-        limit: result.limit,
-        totalPages: result.totalPages,
-        page: result.page,
-        hasPrevPage: result.hasPrevPage,
-        hasNextPage: result.hasNextPage,
-        prevPage: result.prevPage,
-        nextPage: result.nextPage,
-      };
-
+    if (!result.docs.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.done
+        responseMessages.noData
       );
 
-      return res
-        .send({
-          success: true,
-          message,
-          data,
-          paginationInfo,
-        })
-        .status(200);
-    } catch (error) {
-      console.log(`City => Search All ${error}`);
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.invalidData
-      );
       return res
         .send({
           success: false,
           message,
         })
-        .status(500);
+        .status(200);
     }
+
+    const data = [];
+    for await (const doc of result.docs) {
+      if (doc) {
+        data.push({
+          _id: doc._id,
+          gov: {
+            _id: Object(doc.govId)._id,
+            name: Object(doc.govId).name,
+          },
+          name: doc.name,
+          active: doc.active,
+          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+          lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
+        });
+      }
+    }
+    const paginationInfo = {
+      totalDocs: result.totalDocs,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      page: result.page,
+      hasPrevPage: result.hasPrevPage,
+      hasNextPage: result.hasNextPage,
+      prevPage: result.prevPage,
+      nextPage: result.nextPage,
+    };
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.done
+    );
+
+    return res
+      .send({
+        success: true,
+        message,
+        data,
+        paginationInfo,
+      })
+      .status(200);
+  } catch (error) {
+    console.log(`City => Search All ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 

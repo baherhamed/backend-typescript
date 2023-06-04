@@ -3,6 +3,10 @@ export const responseMessages = {
     ar: 'تم',
     en: 'Valid',
   },
+  missingId: {
+    ar: 'بيانات ناقصة',
+    en: 'Missing Data',
+  },
   done: {
     ar: 'تم',
     en: 'Done',

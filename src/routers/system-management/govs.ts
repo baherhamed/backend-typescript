@@ -24,91 +24,90 @@ const add = async (req: Request, res: Response) => {
     PermissionsNames.addGov
   );
 
-  if (hasRoute && hasPermission) {
-    try {
-      const checkData = await validateData(req);
+  if (!hasRoute || !hasPermission) return;
+  try {
+    const checkData = await validateData(req);
 
-      if (!checkData.valid) {
-        return res
-          .send({
-            success: false,
-            message: checkData.message,
-          })
-          .status(400);
-      }
+    if (!checkData.valid) {
+      return res
+        .send({
+          success: false,
+          message: checkData.message,
+        })
+        .status(400);
+    }
 
-      const findGov = {
-        name: request.name,
-        deleted: false,
-      };
+    const findGov = {
+      name: request.name,
+      deleted: false,
+    };
 
-      const checkNewGov = await Gov.findOne(findGov);
+    const checkNewGov = await Gov.findOne(findGov);
 
-      if (checkNewGov) {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.govExisit
-        );
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(400);
-      }
-
-      const doc = new Gov({
-        name: request.name,
-        active: request.active,
-        deleted: false,
-        addInfo: requestInfo,
-      });
-
-      doc.save(async (err: unknown) => {
-        if (err) {
-          console.log(`Gov => Add Gov ${err}`);
-          const message = await responseLanguage(
-            requestInfo.language,
-            responseMessages.err,
-            String(err)
-          );
-
-          return res
-            .send({
-              success: true,
-              message,
-            })
-            .status(200);
-        }
-
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.saved
-        );
-
-        return res
-          .send({
-            success: true,
-            message,
-            data: {
-              _id: doc._id,
-            },
-          })
-          .status(200);
-      });
-    } catch (error) {
-      console.log(`Gov => Add Gov ${error}`);
+    if (checkNewGov) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.invalidData
+        responseMessages.govExisit
       );
       return res
         .send({
           success: false,
           message,
         })
-        .status(500);
+        .status(400);
     }
+
+    const doc = new Gov({
+      name: request.name,
+      active: request.active,
+      deleted: false,
+      addInfo: requestInfo,
+    });
+
+    doc.save(async (err: unknown) => {
+      if (err) {
+        console.log(`Gov => Add Gov ${err}`);
+        const message = await responseLanguage(
+          requestInfo.language,
+          responseMessages.err,
+          String(err)
+        );
+
+        return res
+          .send({
+            success: true,
+            message,
+          })
+          .status(200);
+      }
+
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.saved
+      );
+
+      return res
+        .send({
+          success: true,
+          message,
+          data: {
+            _id: doc._id,
+          },
+        })
+        .status(200);
+    });
+  } catch (error) {
+    console.log(`Gov => Add Gov ${error}`);
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 
@@ -123,87 +122,98 @@ const update = async (req: Request, res: Response) => {
     PermissionsNames.updateGov
   );
 
-  if (hasRoute && hasPermission) {
-    try {
-      const checkData = await validateData(req);
-
-      if (!checkData.valid) {
-        return res
-          .send({
-            success: false,
-            message: checkData.message,
-          })
-          .status(400);
-      }
-
-      const findGov = {
-        name: request.name,
-        deleted: false,
-      };
-
-      const selectedGov = await Gov.findOne(findGov);
-
-      if (selectedGov && String(selectedGov['_id']) !== String(_id)) {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.govExisit
-        );
-
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(400);
-      }
-      if (
-        !selectedGov ||
-        (selectedGov && String(selectedGov['_id']) === String(_id))
-      ) {
-        const updatedGovData = {
-          name: request.name,
-          active: request.active,
-          lastUpdateInfo: requestInfo,
-        };
-
-        const doc = await Gov.findOneAndUpdate({ _id }, updatedGovData, {
-          new: true,
-        });
-
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.updated
-        );
-        return res
-          .send({
-            success: true,
-            message,
-            data: {
-              _id: doc?._id,
-              name: doc?.name,
-              active: doc?.active,
-              addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
-              lastUpdateInfo: requestInfo.isAdmin
-                ? doc?.lastUpdateInfo
-                : undefined,
-            },
-          })
-          .status(200);
-      }
-    } catch (error) {
-      console.log(`Gov => Update Gov ${error}`);
-
+  if (!hasRoute || !hasPermission) return;
+  try {
+    if (!_id) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.invalidData
+        responseMessages.missingId
       );
       return res
         .send({
           success: false,
           message,
         })
-        .status(500);
+        .status(400);
     }
+    const checkData = await validateData(req);
+
+    if (!checkData.valid) {
+      return res
+        .send({
+          success: false,
+          message: checkData.message,
+        })
+        .status(400);
+    }
+
+    const findGov = {
+      name: request.name,
+      deleted: false,
+    };
+
+    const selectedGov = await Gov.findOne(findGov);
+
+    if (selectedGov && String(selectedGov['_id']) !== String(_id)) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.govExisit
+      );
+
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(400);
+    }
+    if (
+      !selectedGov ||
+      (selectedGov && String(selectedGov['_id']) === String(_id))
+    ) {
+      const updatedGovData = {
+        name: request.name,
+        active: request.active,
+        lastUpdateInfo: requestInfo,
+      };
+
+      const doc = await Gov.findOneAndUpdate({ _id }, updatedGovData, {
+        new: true,
+      });
+
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.updated
+      );
+      return res
+        .send({
+          success: true,
+          message,
+          data: {
+            _id: doc?._id,
+            name: doc?.name,
+            active: doc?.active,
+            addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
+            lastUpdateInfo: requestInfo.isAdmin
+              ? doc?.lastUpdateInfo
+              : undefined,
+          },
+        })
+        .status(200);
+    }
+  } catch (error) {
+    console.log(`Gov => Update Gov ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 
@@ -217,54 +227,52 @@ const deleted = async (req: Request, res: Response) => {
     PermissionsNames.deleteGov
   );
 
-  if (hasRoute && hasPermission) {
-    try {
-      const selectedGovToDelete = {
-        _id,
-        deleted: false,
+  if (!hasRoute || !hasPermission) return;
+  try {
+    if (!_id) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.missingId
+      );
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(400);
+    }
+    const selectedGovToDelete = {
+      _id,
+      deleted: false,
+    };
+    const selectedGov = await Gov.findOne(selectedGovToDelete);
+
+    if (selectedGov) {
+      const deletedGovData = {
+        active: false,
+        deleted: true,
+        deleteInfo: requestInfo,
       };
-      const selectedGov = await Gov.findOne(selectedGovToDelete);
 
-      if (selectedGov) {
-        const deletedGovData = {
-          active: false,
-          deleted: true,
-          deleteInfo: requestInfo,
-        };
+      const doc = await Gov.findOneAndUpdate({ _id }, deletedGovData, {
+        new: true,
+      });
 
-        const doc = await Gov.findOneAndUpdate({ _id }, deletedGovData, {
-          new: true,
-        });
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.deleted
+      );
 
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.deleted
-        );
-
-        return res
-          .send({
-            success: true,
-            message,
-            data: {
-              _id: doc?._id,
-            },
-          })
-          .status(200);
-      } else {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.noData
-        );
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(500);
-      }
-    } catch (error) {
-      console.log(`Gov => Delete Gov ${error}`);
-
+      return res
+        .send({
+          success: true,
+          message,
+          data: {
+            _id: doc?._id,
+          },
+        })
+        .status(200);
+    } else {
       const message = await responseLanguage(
         requestInfo.language,
         responseMessages.noData
@@ -276,6 +284,19 @@ const deleted = async (req: Request, res: Response) => {
         })
         .status(500);
     }
+  } catch (error) {
+    console.log(`Gov => Delete Gov ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.noData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 
@@ -283,35 +304,122 @@ const getAll = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
-  if (hasRoute) {
-    try {
-      const query = {
-        page: req.query?.page || request.page || pagination.page,
-        limit: req.query?.limit || request.limit || pagination.getAll,
-      };
+  if (!hasRoute) return;
 
-      const where = {
-        deleted: false,
-      };
+  try {
+    const query = {
+      page: req.query?.page || request.page || pagination.page,
+      limit: req.query?.limit || request.limit || pagination.getAll,
+    };
 
-      const result = await Gov.paginate(where, query);
+    const where = {
+      deleted: false,
+    };
 
-      if (!result.docs.length) {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.noData
-        );
+    const result = await Gov.paginate(where, query);
 
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(200);
-      }
+    if (!result.docs.length) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.noData
+      );
 
-      const data = [];
-      for await (const doc of result.docs) {
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(200);
+    }
+
+    const data = [];
+    for await (const doc of result.docs) {
+      data.push({
+        _id: doc._id,
+        name: doc.name,
+        active: doc.active,
+        addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
+        lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
+      });
+    }
+    const paginationInfo = {
+      totalDocs: result.totalDocs,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      page: result.page,
+      hasPrevPage: result.hasPrevPage,
+      hasNextPage: result.hasNextPage,
+      prevPage: result.prevPage,
+      nextPage: result.nextPage,
+    };
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.done
+    );
+
+    return res
+      .send({
+        success: true,
+        message,
+        data,
+        paginationInfo,
+      })
+      .status(200);
+  } catch (error) {
+    console.log(`Gov => Get All Gov ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
+  }
+};
+
+const search = async (req: Request, res: Response) => {
+  const request = req.body;
+  const requestInfo = req.body.requestInfo;
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
+  if (!hasRoute) return;
+  try {
+    const query = {
+      page: req.query?.page || request.page || pagination.page,
+      limit: req.query?.limit || request.query?.limit || pagination.search,
+    };
+
+    const where = {
+      deleted: false,
+    };
+
+    if (request.query.name) {
+      Object(where)['name'] = new RegExp(request.query.name, 'i');
+    }
+
+    const result = await Gov.paginate(where, query);
+
+    if (!result.docs.length) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.noData
+      );
+
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(200);
+    }
+
+    const data = [];
+    for await (const doc of result.docs) {
+      if (doc) {
         data.push({
           _id: doc._id,
           name: doc.name,
@@ -320,134 +428,44 @@ const getAll = async (req: Request, res: Response) => {
           lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
         });
       }
-      const paginationInfo = {
-        totalDocs: result.totalDocs,
-        limit: result.limit,
-        totalPages: result.totalPages,
-        page: result.page,
-        hasPrevPage: result.hasPrevPage,
-        hasNextPage: result.hasNextPage,
-        prevPage: result.prevPage,
-        nextPage: result.nextPage,
-      };
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.done
-      );
-
-      return res
-        .send({
-          success: true,
-          message,
-          data,
-          paginationInfo,
-        })
-        .status(200);
-    } catch (error) {
-      console.log(`Gov => Get All Gov ${error}`);
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.invalidData
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(500);
     }
-  }
-};
+    const paginationInfo = {
+      totalDocs: result.totalDocs,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      page: result.page,
+      hasPrevPage: result.hasPrevPage,
+      hasNextPage: result.hasNextPage,
+      prevPage: result.prevPage,
+      nextPage: result.nextPage,
+    };
 
-const search = async (req: Request, res: Response) => {
-  const request = req.body;
-  const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
-  if (hasRoute) {
-    try {
-      const query = {
-        page: req.query?.page || request.page || pagination.page,
-        limit: req.query?.limit || request.query?.limit || pagination.search,
-      };
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.done
+    );
 
-      const where = {
-        deleted: false,
-      };
+    return res
+      .send({
+        success: true,
+        message,
+        data,
+        paginationInfo,
+      })
+      .status(200);
+  } catch (error) {
+    console.log(`Gov => Search All ${error}`);
 
-      if (request.query.name) {
-        Object(where)['name'] = new RegExp(request.query.name, 'i');
-      }
-
-      const result = await Gov.paginate(where, query);
-
-      if (!result.docs.length) {
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.noData
-        );
-
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(200);
-      }
-
-      const data = [];
-      for await (const doc of result.docs) {
-        if (doc) {
-          data.push({
-            _id: doc._id,
-            name: doc.name,
-            active: doc.active,
-            addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-            lastUpdateInfo: requestInfo.isAdmin
-              ? doc.lastUpdateInfo
-              : undefined,
-          });
-        }
-      }
-      const paginationInfo = {
-        totalDocs: result.totalDocs,
-        limit: result.limit,
-        totalPages: result.totalPages,
-        page: result.page,
-        hasPrevPage: result.hasPrevPage,
-        hasNextPage: result.hasNextPage,
-        prevPage: result.prevPage,
-        nextPage: result.nextPage,
-      };
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.done
-      );
-
-      return res
-        .send({
-          success: true,
-          message,
-          data,
-          paginationInfo,
-        })
-        .status(200);
-    } catch (error) {
-      console.log(`Gov => Search All ${error}`);
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.invalidData
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(500);
-    }
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
   }
 };
 
@@ -514,6 +532,7 @@ const getActive = async (req: Request, res: Response) => {
       .status(500);
   }
 };
+
 async function validateData(req: Request) {
   const request = req.body;
   const govName = request.name;
