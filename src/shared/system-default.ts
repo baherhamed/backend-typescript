@@ -5,8 +5,8 @@ import { User } from '../models';
 
 import { Language } from '../models';
 
-// import { Route } from '../models';
-// import { Permission } from '../models';
+import { Route } from '../models';
+import { Permission } from '../models';
 
 export const systemDefaults = (async () => {
   const defaultLangAr = await Language.findOne({
@@ -33,6 +33,7 @@ export const systemDefaults = (async () => {
       }
     });
   }
+  
   if (!defaultLangEn) {
     const newLang = new Language({
       _id: new ObjectId('606b64ba679e4903d47fa002'),
@@ -87,7 +88,7 @@ export const systemDefaults = (async () => {
     });
 
     newUser.save(async (err) => {
-      console.log('err');
+      console.log('err while create new user', err);
 
       if (err) {
         console.log(
@@ -96,4 +97,111 @@ export const systemDefaults = (async () => {
       }
     });
   }
+
+  const usersRoute = await Route.findOne({
+    name: 'users',
+  });
+
+  if (!usersRoute) {
+    // const routesList = ['users', 'routes', 'permissions'];
+    // const permissionsList = [
+    //   'addUser',
+    //   'updateUser',
+    //   'deleteUser',
+    //   'addRoute',
+    //   'updateRoute',
+    //   'deleteRoute',
+    //   'addPermission',
+    //   'updatePermission',
+    //   'deletePermission',
+    // ];
+
+    const newRoute = new Route({
+      _id: new ObjectId('606b64ba679e4903d47ab001'),
+      name: 'users',
+      en: 'Users',
+      ar: 'المستخدمين',
+      active: true,
+      deleted: false,
+    });
+
+    await newRoute.save(async (err) => {
+      console.log('err while create users Route', err);
+
+      if (err) {
+        console.log(
+          `Error In System Default While Creating Users Route ${err}`
+        );
+      }
+
+      const addUserPermission = new Permission({
+        routeId: newRoute._id,
+        name: 'addUser',
+        en: 'Add User',
+        ar: 'إضافة مستخدم',
+        active: true,
+        deleted: false,
+      });
+
+      await addUserPermission.save();
+
+      const updateUserPermission = new Permission({
+        routeId: newRoute._id,
+        name: 'updateUser',
+        en: 'Update User',
+        ar: 'تعديل مستخدم',
+        active: true,
+        deleted: false,
+      });
+
+      await updateUserPermission.save();
+
+      const deleteUserPermission = new Permission({
+        routeId: newRoute._id,
+        name: 'deleteUser',
+        en: 'Delete User',
+        ar: 'حذف مستخدم',
+        active: true,
+        deleted: false,
+      });
+
+      await deleteUserPermission.save();
+
+      const exportUsersPermission = new Permission({
+        routeId: newRoute._id,
+        name: 'exportUsers',
+        en: 'Export Users',
+        ar: 'تصدير المستخدمين للأكسل',
+        active: true,
+        deleted: false,
+      });
+
+      await exportUsersPermission.save();
+    });
+  }
+
+  // const routesRoute = await Route.findOne({
+  //   name: 'routes',
+  // });
+
+  // if (!routesRoute) {
+  //   const newRoute = new Route({
+  //     _id: new ObjectId('606b64ba679e4903d47ab002'),
+  //     name: 'routes',
+  //     en: 'Routes',
+  //     ar: 'العناوين',
+  //     active: true,
+  //     deleted: false,
+  //   });
+
+  //   newRoute.save(async (err) => {
+  //     console.log('err while create routes Route', err);
+
+  //     if (err) {
+  //       console.log(
+  //         `Error In System Default While Creating routes Route ${err}`
+  //       );
+  //     }
+  //   });
+  // }
 })();

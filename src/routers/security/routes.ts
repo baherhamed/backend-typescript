@@ -673,7 +673,7 @@ const getActive = async (req: Request, res: Response) => {
             name: permission.name,
             ar: permission.ar,
             en: permission.en,
-            active: permission.active,
+            // active: permission.active,
           });
         }
       }

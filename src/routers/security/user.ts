@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { User } from '../../models';
+import { Permission, Route, User } from '../../models';
 import {
   inputsLength,
   responseMessages,
@@ -234,6 +234,54 @@ const update = async (req: Request, res: Response) => {
         const doc = await User.findOneAndUpdate({ _id }, updatedUserData, {
           new: true,
         });
+        const routesList = [];
+
+        const allRoutesList = await Route.find({ deleted: false });
+        const allPermissionsList = await Permission.find({
+          deleted: false,
+        });
+
+        for await (const activeRoute of allRoutesList) {
+          const permissionsList = [];
+          for await (const perm of allPermissionsList) {
+            if (String(perm.routeId._id) === String(activeRoute?._id)) {
+              if (doc?.permissionsList.includes(perm.name)) {
+                permissionsList.push({
+                  _id: perm._id,
+                  routeId: perm.routeId._id,
+                  name: perm.name,
+                  ar: perm.ar,
+                  en: perm.en,
+                  active: true,
+                });
+              } else {
+                permissionsList.push({
+                  _id: perm._id,
+                  routeId: perm.routeId._id,
+                  name: perm.name,
+                  ar: perm.ar,
+                  en: perm.en,
+                  active: false,
+                });
+              }
+            }
+          }
+
+          const selectedRoute = {
+            _id: activeRoute._id,
+            name: activeRoute.name,
+            ar: activeRoute.ar,
+            en: activeRoute.en,
+            active: activeRoute.active,
+            permissionsList,
+          };
+          if (doc?.routesList.includes(activeRoute.name)) {
+            routesList.push(selectedRoute);
+          } else {
+            selectedRoute.active = false;
+            routesList.push(selectedRoute);
+          }
+        }
 
         const message = await responseLanguage(
           requestInfo.language,
@@ -253,6 +301,7 @@ const update = async (req: Request, res: Response) => {
                 _id: Object(doc?.languageId)._id,
                 name: Object(doc?.languageId).name,
               },
+              routesList,
               active: doc?.active,
               addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
               lastUpdateInfo: requestInfo.isAdmin
@@ -408,6 +457,55 @@ const search = async (req: Request, res: Response) => {
     const data = [];
     for await (const doc of result.docs) {
       if (doc) {
+        const routesList = [];
+
+        const allRoutesList = await Route.find({ deleted: false });
+        const allPermissionsList = await Permission.find({
+          deleted: false,
+        });
+
+        for await (const activeRoute of allRoutesList) {
+          const permissionsList = [];
+          for await (const perm of allPermissionsList) {
+            if (String(perm.routeId._id) === String(activeRoute?._id)) {
+              if (doc.permissionsList.includes(perm.name)) {
+                permissionsList.push({
+                  _id: perm._id,
+                  routeId: perm.routeId._id,
+                  name: perm.name,
+                  ar: perm.ar,
+                  en: perm.en,
+                  active: true,
+                });
+              } else {
+                permissionsList.push({
+                  _id: perm._id,
+                  routeId: perm.routeId._id,
+                  name: perm.name,
+                  ar: perm.ar,
+                  en: perm.en,
+                  active: false,
+                });
+              }
+            }
+          }
+
+          const selectedRoute = {
+            _id: activeRoute._id,
+            name: activeRoute.name,
+            ar: activeRoute.ar,
+            en: activeRoute.en,
+            active: activeRoute.active,
+            permissionsList,
+          };
+          if (doc.routesList.includes(activeRoute.name)) {
+            routesList.push(selectedRoute);
+          } else {
+            selectedRoute.active = false;
+            routesList.push(selectedRoute);
+          }
+        }
+
         data.push({
           _id: doc._id,
           name: doc.name,
@@ -417,6 +515,7 @@ const search = async (req: Request, res: Response) => {
             _id: Object(doc.languageId)._id,
             name: Object(doc.languageId).name,
           },
+          routesList,
           active: doc.active,
           addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
           lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
@@ -498,6 +597,55 @@ const getAll = async (req: Request, res: Response) => {
     const data = [];
     for await (const doc of result.docs) {
       if (doc) {
+        const routesList = [];
+
+        const allRoutesList = await Route.find({ deleted: false });
+        const allPermissionsList = await Permission.find({
+          deleted: false,
+        });
+
+        for await (const activeRoute of allRoutesList) {
+          const permissionsList = [];
+          for await (const perm of allPermissionsList) {
+            if (String(perm.routeId._id) === String(activeRoute?._id)) {
+              if (doc.permissionsList.includes(perm.name)) {
+                permissionsList.push({
+                  _id: perm._id,
+                  routeId: perm.routeId._id,
+                  name: perm.name,
+                  ar: perm.ar,
+                  en: perm.en,
+                  active: true,
+                });
+              } else {
+                permissionsList.push({
+                  _id: perm._id,
+                  routeId: perm.routeId._id,
+                  name: perm.name,
+                  ar: perm.ar,
+                  en: perm.en,
+                  active: false,
+                });
+              }
+            }
+          }
+
+          const selectedRoute = {
+            _id: activeRoute._id,
+            name: activeRoute.name,
+            ar: activeRoute.ar,
+            en: activeRoute.en,
+            active: activeRoute.active,
+            permissionsList,
+          };
+          if (doc.routesList.includes(activeRoute.name)) {
+            routesList.push(selectedRoute);
+          } else {
+            selectedRoute.active = false;
+            routesList.push(selectedRoute);
+          }
+        }
+
         data.push({
           _id: doc._id,
           name: doc.name,
@@ -507,6 +655,7 @@ const getAll = async (req: Request, res: Response) => {
             _id: Object(doc.languageId)._id,
             name: Object(doc.languageId).name,
           },
+          routesList,
           active: doc.active,
           addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
           lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
