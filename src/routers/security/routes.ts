@@ -7,7 +7,7 @@ import {
   verifyJwtToken,
   checkUserPermission,
   pagination,
-  definitions,
+  site,
   PermissionsNames,
 } from '../../shared';
 
@@ -753,13 +753,13 @@ async function validateData(req: Request) {
 }
 
 const routessRouters = async (app: express.Application) => {
-  app.post(`${definitions.api}/security/routes/add`, verifyJwtToken, add);
-  app.put(`${definitions.api}/security/routes/update`, verifyJwtToken, update);
-  app.put(`${definitions.api}/security/routes/delete`, verifyJwtToken, deleted);
-  app.post(`${definitions.api}/security/routes/getAll`, verifyJwtToken, getAll);
-  app.post(`${definitions.api}/security/routes/search`, verifyJwtToken, search);
+  app.post(`${site.api}/security/routes/add`, verifyJwtToken, add);
+  app.put(`${site.api}/security/routes/update`, verifyJwtToken, update);
+  app.put(`${site.api}/security/routes/delete`, verifyJwtToken, deleted);
+  app.post(`${site.api}/security/routes/getAll`, verifyJwtToken, getAll);
+  app.post(`${site.api}/security/routes/search`, verifyJwtToken, search);
   app.post(
-    `${definitions.api}/security/routes/getActive`,
+    `${site.api}/security/routes/getActive`,
     verifyJwtToken,
     getActive
   );

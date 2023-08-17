@@ -8,7 +8,7 @@ import {
   verifyJwtToken,
   checkUserPermission,
   pagination,
-  definitions,
+  site,
   PermissionsNames,
   checkUserRoutes,
   RoutesNames,
@@ -639,37 +639,37 @@ async function validateData(req: Request) {
 
 const citiesRouters = async (app: express.Application) => {
   app.post(
-    `${definitions.api}/systemManagement/cities/add`,
+    `${site.api}/systemManagement/cities/add`,
     verifyJwtToken,
     add
   );
   app.put(
-    `${definitions.api}/systemManagement/cities/update`,
+    `${site.api}/systemManagement/cities/update`,
     verifyJwtToken,
     update
   );
   app.put(
-    `${definitions.api}/systemManagement/cities/delete`,
+    `${site.api}/systemManagement/cities/delete`,
     verifyJwtToken,
     deleted
   );
   app.post(
-    `${definitions.api}/systemManagement/cities/getAll`,
+    `${site.api}/systemManagement/cities/getAll`,
     verifyJwtToken,
     getAll
   );
   app.post(
-    `${definitions.api}/systemManagement/cities/search`,
+    `${site.api}/systemManagement/cities/search`,
     verifyJwtToken,
     search
   );
   app.post(
-    `${definitions.api}/systemManagement/cities/getActive`,
+    `${site.api}/systemManagement/cities/getActive`,
     verifyJwtToken,
     getActive
   );
   app.post(
-    `${definitions.api}/systemManagement/cities/getCitiesByGov`,
+    `${site.api}/systemManagement/cities/getCitiesByGov`,
     verifyJwtToken,
     getCitiesByGov
   );

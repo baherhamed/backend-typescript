@@ -1,4 +1,4 @@
-import { definitions } from '.';
+import { site } from '.';
 
 interface Message {
   ar: string;
@@ -14,9 +14,9 @@ export const responseLanguage = async (
   if (err) {
     errorMessage = err;
   }
-  if (requestLanguage === definitions.language.ar) {
+  if (requestLanguage === site.language.ar) {
     responseMessage = `${message.ar}${errorMessage}`;
-  } else if (requestLanguage === definitions.language.en) {
+  } else if (requestLanguage === site.language.en) {
     responseMessage = `${message.en}${errorMessage}`;
   }
   return responseMessage;

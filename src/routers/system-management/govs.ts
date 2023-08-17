@@ -8,7 +8,7 @@ import {
   verifyJwtToken,
   checkUserPermission,
   pagination,
-  definitions,
+  site,
   PermissionsNames,
   checkUserRoutes,
   RoutesNames,
@@ -559,29 +559,29 @@ async function validateData(req: Request) {
 }
 
 const govsRouters = async (app: express.Application) => {
-  app.post(`${definitions.api}/systemManagement/govs/add`, verifyJwtToken, add);
+  app.post(`${site.api}/systemManagement/govs/add`, verifyJwtToken, add);
   app.put(
-    `${definitions.api}/systemManagement/govs/update`,
+    `${site.api}/systemManagement/govs/update`,
     verifyJwtToken,
     update
   );
   app.put(
-    `${definitions.api}/systemManagement/govs/delete`,
+    `${site.api}/systemManagement/govs/delete`,
     verifyJwtToken,
     deleted
   );
   app.post(
-    `${definitions.api}/systemManagement/govs/getAll`,
+    `${site.api}/systemManagement/govs/getAll`,
     verifyJwtToken,
     getAll
   );
   app.post(
-    `${definitions.api}/systemManagement/govs/search`,
+    `${site.api}/systemManagement/govs/search`,
     verifyJwtToken,
     search
   );
   app.post(
-    `${definitions.api}/systemManagement/govs/getActive`,
+    `${site.api}/systemManagement/govs/getActive`,
     verifyJwtToken,
     getActive
   );

@@ -8,7 +8,7 @@ import {
   verifyJwtToken,
   checkUserPermission,
   pagination,
-  definitions,
+  site,
   PermissionsNames,
   checkUserRoutes,
   RoutesNames,
@@ -731,11 +731,11 @@ async function validateData(req: Request) {
 }
 
 const usersRouters = async (app: express.Application) => {
-  app.post(`${definitions.api}/security/users/add`, verifyJwtToken, add);
-  app.put(`${definitions.api}/security/users/update`, verifyJwtToken, update);
-  app.put(`${definitions.api}/security/users/delete`, verifyJwtToken, deleted);
-  app.post(`${definitions.api}/security/users/getAll`, verifyJwtToken, getAll);
-  app.post(`${definitions.api}/security/users/search`, verifyJwtToken, search);
+  app.post(`${site.api}/security/users/add`, verifyJwtToken, add);
+  app.put(`${site.api}/security/users/update`, verifyJwtToken, update);
+  app.put(`${site.api}/security/users/delete`, verifyJwtToken, deleted);
+  app.post(`${site.api}/security/users/getAll`, verifyJwtToken, getAll);
+  app.post(`${site.api}/security/users/search`, verifyJwtToken, search);
 };
 
 export default usersRouters;

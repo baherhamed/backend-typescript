@@ -4,7 +4,7 @@ import path from 'path';
 import util from 'util';
 import fs from 'fs';
 
-import { definitions } from '.';
+import { site } from '.';
 import formidable from 'formidable';
 
 const fileFilter = async (
@@ -61,7 +61,7 @@ const checkUploadsDir = async (
 
 const uploadsRouters = async (app: express.Application) => {
   app.post(
-    `${definitions.api}/uploadCustomerDoc`,
+    `${site.api}/uploadCustomerDoc`,
     checkUploadsDir,
     uploadFile.single('customerDoc'),
     async (req: Request, res: Response) => {

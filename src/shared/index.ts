@@ -1,6 +1,6 @@
 export * from './inputs-length';
 export * from './response-messages';
-export * from './definitions';
+export * from './site';
 export * from './pagination';
 export * from './system-default';
 export * from './set-request-language';

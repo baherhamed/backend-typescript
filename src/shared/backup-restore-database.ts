@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import fs from 'fs';
-import { definitions, verifyJwtToken } from '.';
+import { site, verifyJwtToken } from '.';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: __dirname + '/.env' });
 
@@ -24,11 +24,11 @@ export const backupDatabase = async (req: Request, res: Response) => {
   const newBackup = await new Backup(db, auth, backupPath).backup();
   //   console.log('newBackup', newBackup);
 
-  return;
+//   return;
 };
 const backupRouters = async (app: express.Application) => {
   app.post(
-    `${definitions.api}/backup`,
+    `${site.api}/backup`,
     // verifyJwtToken,
     backupDatabase
   );

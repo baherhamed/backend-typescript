@@ -1,4 +1,4 @@
-export const definitions = {
+export const site = {
   language: {
     ar: 'ar',
     en: 'en',

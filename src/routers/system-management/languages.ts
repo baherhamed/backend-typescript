@@ -1,6 +1,6 @@
 import { Language } from '../../interfaces';
 import {
-  definitions,
+  site,
   responseLanguage,
   responseMessages,
   verifyJwtToken,
@@ -74,7 +74,7 @@ const getActiveLanguages = async (req: Request, res: Response) => {
 
 const languageRouters = (app: express.Application) => {
   app.post(
-    `${definitions.api}/system_management/languages/get_active_languages`,
+    `${site.api}/system_management/languages/get_active_languages`,
     verifyJwtToken,
     getActiveLanguages
   );

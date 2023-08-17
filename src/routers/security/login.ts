@@ -8,7 +8,7 @@ import {
   responseMessages,
   setRequestLanguage,
   responseLanguage,
-  definitions,
+  site,
   hashString,
 } from '../../shared';
 
@@ -140,7 +140,7 @@ async function validateData(req: Request) {
 }
 
 const loginRouters = (app: express.Application) => {
-  app.post(`${definitions.api}/security/login`, login);
+  app.post(`${site.api}/security/login`, login);
 };
 
 export default loginRouters;
