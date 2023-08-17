@@ -85,6 +85,10 @@ const login = async (req: Request, res: Response) => {
       responseMessages.authorized
     );
 
+    // console.log('1111111111', hasedRoutesList);
+    // console.log('22222222', hasedRoutesList.toString());
+    // console.log('3333', Array(hasedRoutesList));
+
     return res
       .send({
         success: true,

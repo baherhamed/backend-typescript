@@ -5,7 +5,7 @@ export const hashString = async (text: string) => {
   const replacementList = [
     {
       key: 'a',
-      with: 1,
+      with: '1',
     },
     {
       key: 'A',
@@ -13,7 +13,7 @@ export const hashString = async (text: string) => {
     },
     {
       key: 'b',
-      with: 2,
+      with: '2',
     },
     {
       key: 'B',
@@ -21,7 +21,7 @@ export const hashString = async (text: string) => {
     },
     {
       key: 'c',
-      with: 3,
+      with: '3',
     },
     {
       key: 'C',
@@ -29,7 +29,7 @@ export const hashString = async (text: string) => {
     },
     {
       key: 'd',
-      with: 4,
+      with: '4',
     },
     {
       key: 'D',
@@ -37,7 +37,7 @@ export const hashString = async (text: string) => {
     },
     {
       key: 'e',
-      with: 5,
+      with: '5',
     },
     {
       key: 'E',
@@ -45,12 +45,12 @@ export const hashString = async (text: string) => {
     },
     {
       key: 'f',
-      with: 6,
+      with: '6',
     },
     { key: 'F', with: 'f' },
     {
       key: 'g',
-      with: 7,
+      with: '7',
     },
     {
       key: 'G',
@@ -58,63 +58,68 @@ export const hashString = async (text: string) => {
     },
     {
       key: 'h',
-      with: 8,
+      with: '8',
     },
     { key: 'H', with: 'h' },
-    { key: 'i', with: 9 },
+    { key: 'i', with: '9' },
     { key: 'I', with: 'i' },
-    { key: 'j', with: 10 },
+    { key: 'j', with: '+' },
     { key: 'J', with: 'j' },
-    { key: 'k', with: 11 },
+    { key: 'k', with: '=' },
     { key: 'K', with: 'k' },
-    { key: 'l', with: 12 },
+    { key: 'l', with: '0' },
     { key: 'L', with: 'l' },
-    { key: 'm', with: 13 },
+    { key: 'm', with: '>' },
     { key: 'M', with: 'm' },
-    { key: 'n', with: 14 },
+    { key: 'n', with: '<' },
     { key: 'N', with: 'n' },
-    { key: 'o', with: 15 },
+    { key: 'o', with: '|' },
     { key: 'O', with: 'o' },
-    { key: 'p', with: 16 },
+    { key: 'p', with: ':' },
     { key: 'P', with: 'p' },
-    { key: 'q', with: 17 },
+    { key: 'q', with: ';' },
     { key: 'Q', with: 'q' },
-    { key: 'r', with: 18 },
+    { key: 'r', with: '،' },
     { key: 'R', with: 'r' },
-    { key: 's', with: 19 },
+    { key: 's', with: '☻' },
     { key: 'S', with: 's' },
-    { key: 't', with: 20 },
+    { key: 't', with: '├' },
     { key: 'T', with: 't' },
-    { key: 'u', with: 21 },
+    { key: 'u', with: 'Ö' },
     { key: 'U', with: 'u' },
-    { key: 'v', with: 22 },
+    { key: 'v', with: 'Ü' },
     { key: 'V', with: 'v' },
-    { key: 'w', with: 23 },
+    { key: 'w', with: 'Æ' },
     { key: 'W', with: 'w' },
-    { key: 'x', with: 24 },
+    { key: 'x', with: '"' },
     { key: 'X', with: 'x' },
-    { key: 'y', with: 25 },
+    { key: 'y', with: '~' },
     { key: 'Y', with: 'y' },
-    { key: 'z', with: 26 },
+    { key: 'z', with: '╚' },
     { key: 'Z', with: 'z' },
-    { key: ',', with: '%' },
+    { key: ',', with: '.' },
     { key: '[', with: '#' },
     { key: ']', with: '#' },
   ];
 
-  const newText = text.split('');
+  const newText = text.split(',');
+  let hashedText = '';
 
-  const hashedText = [];
-  for await (let elm of newText) {
-    const selectedIndex = replacementList.find((el) => el.key == elm);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  for await (const elm of newText) {
+    const newWord = text.split('');
+    for await (const nw of newWord) {
+      const selectedIndex = replacementList.find((el) => el.key == nw);
 
-    if (selectedIndex) {
-      elm = selectedIndex.with.toString();
-      hashedText.push(elm);
+      if (selectedIndex) {
+        if (nw !== ',') {
+          hashedText = hashedText + selectedIndex.with;
+        } else {
+          hashedText = hashedText + '.';
+        }
+      }
     }
   }
-
-  console.log('hashedText', hashedText);
 
   success = true;
   return {
