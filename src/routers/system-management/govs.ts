@@ -59,6 +59,7 @@ const add = async (req: Request, res: Response) => {
 
     const doc = new Gov({
       name: request.name,
+      code: request.code,
       active: request.active,
       deleted: false,
       addInfo: requestInfo,
@@ -173,6 +174,7 @@ const update = async (req: Request, res: Response) => {
     ) {
       const updatedGovData = {
         name: request.name,
+        code: request.code,
         active: request.active,
         lastUpdateInfo: requestInfo,
       };
@@ -192,6 +194,7 @@ const update = async (req: Request, res: Response) => {
           data: {
             _id: doc?._id,
             name: doc?.name,
+            code: doc?.code,
             active: doc?.active,
             addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
             lastUpdateInfo: requestInfo.isAdmin
@@ -337,6 +340,7 @@ const getAll = async (req: Request, res: Response) => {
       data.push({
         _id: doc._id,
         name: doc.name,
+        code: doc.code,
         active: doc.active,
         addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
         lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
@@ -423,6 +427,7 @@ const search = async (req: Request, res: Response) => {
         data.push({
           _id: doc._id,
           name: doc.name,
+          code: doc.code,
           active: doc.active,
           addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
           lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
@@ -500,6 +505,7 @@ const getActive = async (req: Request, res: Response) => {
         data.push({
           _id: doc._id,
           name: doc.name,
+          code: doc.code,
           active: doc.active,
         });
       }

@@ -9,6 +9,7 @@ import {
   setRequestLanguage,
   responseLanguage,
   definitions,
+  hashString,
 } from '../../shared';
 
 const login = async (req: Request, res: Response) => {
@@ -74,6 +75,10 @@ const login = async (req: Request, res: Response) => {
 
     const routesList = foundUser.routesList;
     const permissionsList = foundUser.permissionsList;
+    const hasedRoutesList = (await hashString(routesList.toString()))
+      .hashedText;
+    const hasedPermissionsList = (await hashString(permissionsList.toString()))
+      .hashedText;
 
     const message = await responseLanguage(
       requestLanguage,
@@ -86,8 +91,8 @@ const login = async (req: Request, res: Response) => {
         message,
         data: {
           token,
-          routesList,
-          permissionsList,
+          routesList: hasedRoutesList,
+          permissionsList: hasedPermissionsList,
           language: Object(foundUser.languageId).name,
         },
       })

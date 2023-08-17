@@ -3,5 +3,6 @@ export const definitions = {
     ar: 'ar',
     en: 'en',
   },
+  route: 'localhost',
   api: '/api',
 };

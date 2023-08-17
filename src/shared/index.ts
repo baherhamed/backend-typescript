@@ -12,3 +12,4 @@ export * from './permissions-names';
 export * from './routes-names';
 export * from './check-user-routes';
 export * from './upload-files';
+export * from './hash-string';
