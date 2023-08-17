@@ -1,4 +1,4 @@
-import { Language } from '../../models';
+import { Language } from '../../interfaces';
 import {
   definitions,
   responseLanguage,

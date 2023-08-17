@@ -1,4 +1,4 @@
-import { User } from '../models';
+import { User } from '../interfaces';
 import { Request, Response } from 'express';
 import { responseLanguage, responseMessages } from '.';
 export const checkUserPermission = async (

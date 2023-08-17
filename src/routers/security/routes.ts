@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { Route, Permission } from '../../models';
+import { Route, Permission } from '../../interfaces';
 import {
   inputsLength,
   responseMessages,

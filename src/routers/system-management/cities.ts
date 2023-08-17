@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { City } from '../../models';
+import { City } from '../../interfaces';
 
 import {
   inputsLength,

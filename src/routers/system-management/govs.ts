@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { Gov } from '../../models';
+import { Gov } from '../../interfaces';
 
 import {
   inputsLength,

@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 
-import { User } from '../../models';
+import { User } from '../../interfaces';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import {

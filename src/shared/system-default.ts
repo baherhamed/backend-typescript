@@ -1,12 +1,8 @@
 import { hashPassword } from './hash-password';
 import mongoose from 'mongoose';
 const ObjectId = mongoose.Types.ObjectId;
-import { User } from '../models';
+import { User, Language, Route, Permission } from '../interfaces';
 
-import { Language } from '../models';
-
-import { Route } from '../models';
-import { Permission } from '../models';
 
 export const systemDefaults = (async () => {
   const defaultLangAr = await Language.findOne({
@@ -33,7 +29,7 @@ export const systemDefaults = (async () => {
       }
     });
   }
-  
+
   if (!defaultLangEn) {
     const newLang = new Language({
       _id: new ObjectId('606b64ba679e4903d47fa002'),
