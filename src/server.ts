@@ -21,6 +21,7 @@ import loginRouters from './routers/security/login';
 import languageRouters from './routers/system-management/languages';
 import govsRouters from './routers/system-management/govs';
 import citiesRouters from './routers/system-management/cities';
+import backupRouters from './shared/backup-restore-database';
 
 const app = express();
 
@@ -70,6 +71,7 @@ languageRouters(app);
 govsRouters(app);
 usersRouters(app);
 citiesRouters(app);
+backupRouters(app);
 
 let privateKey;
 let certificate: string;
