@@ -5,7 +5,7 @@
   "main": "src/server.ts",
   "scripts": {
     "start": "nodemon dist/server.js --trace-deprecation",
-    "dev": "nodemon src/server.ts --trace-deprecation",
+    "dev": "nodemon src/server.ts --trace-deprecation --trace-warnings",
     "prettier": "prettier --config .prettierrc \"src/**/*.ts\" --write",
     "lint": "eslint **/*.ts",
     "build": "rm -rf dist && npm run lint && npm run prettier && npx tsc && cp src/.env dist/.env"
