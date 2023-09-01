@@ -18,7 +18,7 @@ const add = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.addRoute
+    PermissionsNames.addRoute,
   );
 
   if (!hasPermission) return;
@@ -54,7 +54,7 @@ const add = async (req: Request, res: Response) => {
     if (checkNewRoute) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.routeExisit
+        responseMessages.routeExisit,
       );
       return res
         .send({
@@ -73,9 +73,12 @@ const add = async (req: Request, res: Response) => {
       addInfo: requestInfo,
     });
 
-    doc.save(async (err) => {
-      if (err) {
-        console.log(`Route => Add Route ${err}`);
+    try {
+      await doc.save();
+    } catch (error) { console.log(`Route => Add Route ${error}`)}
+    // doc.save(async (err) => {
+      // if (err) {
+        // console.log(`Route => Add Route ${err}`);
         // const message = await responseLanguage(
         //   requestInfo.language,
         //   responseMessages.err,
@@ -88,7 +91,7 @@ const add = async (req: Request, res: Response) => {
         //     message,
         //   })
         //   .status(200);
-      }
+      // }
       const permissionsList = [];
       if (request.permissionsList) {
         for await (const permission of request.permissionsList) {
@@ -113,7 +116,7 @@ const add = async (req: Request, res: Response) => {
 
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.saved
+        responseMessages.saved,
       );
 
       return res
@@ -126,12 +129,12 @@ const add = async (req: Request, res: Response) => {
           },
         })
         .status(200);
-    });
+    // });
   } catch (error) {
     console.log(`Route => Add Route ${error}`);
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -150,7 +153,7 @@ const update = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.updateRoute
+    PermissionsNames.updateRoute,
   );
 
   if (!hasPermission) return;
@@ -158,7 +161,7 @@ const update = async (req: Request, res: Response) => {
     if (!_id) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.missingId
+        responseMessages.missingId,
       );
       return res
         .send({
@@ -199,7 +202,7 @@ const update = async (req: Request, res: Response) => {
     if (selectedRoute && String(selectedRoute['_id']) !== String(_id)) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.routeExisit
+        responseMessages.routeExisit,
       );
 
       return res
@@ -245,7 +248,7 @@ const update = async (req: Request, res: Response) => {
                 en: permission.en,
                 active: permission.active,
                 lastUpdateInfo: requestInfo,
-              }
+              },
             );
           } else {
             const newPermission = new Permission({
@@ -283,7 +286,7 @@ const update = async (req: Request, res: Response) => {
 
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.updated
+        responseMessages.updated,
       );
       return res
         .send({
@@ -309,7 +312,7 @@ const update = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -327,7 +330,7 @@ const deleted = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.deleteRoute
+    PermissionsNames.deleteRoute,
   );
 
   if (!hasPermission) return;
@@ -335,7 +338,7 @@ const deleted = async (req: Request, res: Response) => {
     if (!_id) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.missingId
+        responseMessages.missingId,
       );
       return res
         .send({
@@ -371,13 +374,13 @@ const deleted = async (req: Request, res: Response) => {
         await Permission.findOneAndUpdate(
           { _id: permission._id },
           { active: false, deleted: true, deleteInfo: requestInfo },
-          { new: true }
+          { new: true },
         );
       }
 
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.deleted
+        responseMessages.deleted,
       );
 
       return res
@@ -392,7 +395,7 @@ const deleted = async (req: Request, res: Response) => {
     } else {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
       return res
         .send({
@@ -406,7 +409,7 @@ const deleted = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.noData
+      responseMessages.noData,
     );
     return res
       .send({
@@ -436,7 +439,7 @@ const getAll = async (req: Request, res: Response) => {
     if (!result.docs.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -493,7 +496,7 @@ const getAll = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -509,7 +512,7 @@ const getAll = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -550,7 +553,7 @@ const search = async (req: Request, res: Response) => {
     if (!result.docs.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -605,7 +608,7 @@ const search = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -621,7 +624,7 @@ const search = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -646,7 +649,7 @@ const getActive = async (req: Request, res: Response) => {
     if (!result.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -692,7 +695,7 @@ const getActive = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -707,7 +710,7 @@ const getActive = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -730,17 +733,17 @@ async function validateData(req: Request) {
   if (!routeName || routeName.length < inputsLength.routeName) {
     message = await responseLanguage(
       requestLanguage,
-      responseMessages.routeName
+      responseMessages.routeName,
     );
   } else if (!routeNameAr || routeNameAr.length < inputsLength.routeName) {
     message = await responseLanguage(
       requestLanguage,
-      responseMessages.routeName
+      responseMessages.routeName,
     );
   } else if (!routeNameEn || routeNameEn.length < inputsLength.routeName) {
     message = await responseLanguage(
       requestLanguage,
-      responseMessages.routeName
+      responseMessages.routeName,
     );
   } else {
     valid = true;
@@ -758,11 +761,7 @@ const routessRouters = async (app: express.Application) => {
   app.put(`${site.api}/security/routes/delete`, verifyJwtToken, deleted);
   app.post(`${site.api}/security/routes/getAll`, verifyJwtToken, getAll);
   app.post(`${site.api}/security/routes/search`, verifyJwtToken, search);
-  app.post(
-    `${site.api}/security/routes/getActive`,
-    verifyJwtToken,
-    getActive
-  );
+  app.post(`${site.api}/security/routes/getActive`, verifyJwtToken, getActive);
 };
 
 export default routessRouters;

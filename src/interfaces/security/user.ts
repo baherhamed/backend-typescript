@@ -17,7 +17,7 @@ interface IUser extends Document {
   mobile: string;
   email: string;
   password: string;
-  languageId: Types.ObjectId;
+  languageId: mongoose.Types.ObjectId;
   routesList: [string];
   permissionsList: [string];
   active: boolean;
