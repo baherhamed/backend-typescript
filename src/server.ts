@@ -34,7 +34,7 @@ app.use(
 
   bodyParser.json({
     limit: '5mb',
-  })
+  }),
 );
 
 mongoose.set('strictQuery', true);
@@ -107,7 +107,7 @@ const httpServer = http.createServer(app);
 const httpsServer = https.createServer(credentials, app);
 
 httpServer.listen(process.env.PORT, () => {
-  // systemDefaults;
+  systemDefaults;
   console.log(`
   -------------------------
    Server Run Http at PORT: ${process.env.PORT}

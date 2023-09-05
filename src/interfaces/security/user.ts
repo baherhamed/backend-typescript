@@ -96,7 +96,7 @@ const UsersSchema = new Schema(
 
   {
     versionKey: false,
-  }
+  },
 );
 
 UsersSchema.plugin(paginate);

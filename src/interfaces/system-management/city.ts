@@ -51,7 +51,7 @@ const CitySchema = new Schema(
   },
   {
     versionKey: false,
-  }
+  },
 );
 
 CitySchema.plugin(paginate);

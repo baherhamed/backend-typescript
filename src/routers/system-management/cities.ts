@@ -21,7 +21,7 @@ const add = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.addCity
+    PermissionsNames.addCity,
   );
 
   if (!hasRoute || !hasPermission) return;
@@ -48,7 +48,7 @@ const add = async (req: Request, res: Response) => {
     if (checkNewCity) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.cityExisit
+        responseMessages.cityExisit,
       );
       return res
         .send({
@@ -72,7 +72,7 @@ const add = async (req: Request, res: Response) => {
         const message = await responseLanguage(
           requestInfo.language,
           responseMessages.err,
-          String(err)
+          String(err),
         );
 
         return res
@@ -85,7 +85,7 @@ const add = async (req: Request, res: Response) => {
 
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.saved
+        responseMessages.saved,
       );
 
       return res
@@ -102,7 +102,7 @@ const add = async (req: Request, res: Response) => {
     console.log(`City => Add City ${error}`);
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -121,7 +121,7 @@ const update = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.updateCity
+    PermissionsNames.updateCity,
   );
 
   if (!hasRoute || !hasPermission) return;
@@ -129,7 +129,7 @@ const update = async (req: Request, res: Response) => {
     if (!_id) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.missingId
+        responseMessages.missingId,
       );
       return res
         .send({
@@ -161,7 +161,7 @@ const update = async (req: Request, res: Response) => {
     if (selectedCity && String(selectedCity['_id']) !== String(_id)) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.cityExisit
+        responseMessages.cityExisit,
       );
 
       return res
@@ -188,7 +188,7 @@ const update = async (req: Request, res: Response) => {
 
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.updated
+        responseMessages.updated,
       );
       return res
         .send({
@@ -215,7 +215,7 @@ const update = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -233,7 +233,7 @@ const deleted = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.deleteCity
+    PermissionsNames.deleteCity,
   );
 
   if (!hasRoute || !hasPermission) return;
@@ -241,7 +241,7 @@ const deleted = async (req: Request, res: Response) => {
     if (!_id) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.missingId
+        responseMessages.missingId,
       );
       return res
         .send({
@@ -270,7 +270,7 @@ const deleted = async (req: Request, res: Response) => {
 
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.deleted
+        responseMessages.deleted,
       );
 
       return res
@@ -285,7 +285,7 @@ const deleted = async (req: Request, res: Response) => {
     } else {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
       return res
         .send({
@@ -299,7 +299,7 @@ const deleted = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.noData
+      responseMessages.noData,
     );
     return res
       .send({
@@ -330,7 +330,7 @@ const getAll = async (req: Request, res: Response) => {
     if (!result.docs.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -356,20 +356,10 @@ const getAll = async (req: Request, res: Response) => {
         lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
       });
     }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -377,7 +367,7 @@ const getAll = async (req: Request, res: Response) => {
         success: true,
         message,
         data,
-        paginationInfo,
+        paginationInfo: site.pagination(result),
       })
       .status(200);
   } catch (error) {
@@ -385,7 +375,7 @@ const getAll = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -412,7 +402,7 @@ const getCitiesByGov = async (req: Request, res: Response) => {
     if (!result.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -434,7 +424,7 @@ const getCitiesByGov = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -449,7 +439,7 @@ const getCitiesByGov = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -484,7 +474,7 @@ const search = async (req: Request, res: Response) => {
     if (!result.docs.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -511,20 +501,9 @@ const search = async (req: Request, res: Response) => {
         });
       }
     }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
-
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -532,7 +511,7 @@ const search = async (req: Request, res: Response) => {
         success: true,
         message,
         data,
-        paginationInfo,
+        paginationInfo: site.pagination(result),
       })
       .status(200);
   } catch (error) {
@@ -540,7 +519,7 @@ const search = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -565,7 +544,7 @@ const getActive = async (req: Request, res: Response) => {
     if (!result.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -589,7 +568,7 @@ const getActive = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -604,7 +583,7 @@ const getActive = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -625,7 +604,7 @@ async function validateData(req: Request) {
   if (!cityName || cityName.length < inputsLength.cityName) {
     message = await responseLanguage(
       requestLanguage,
-      responseMessages.cityName
+      responseMessages.cityName,
     );
   } else {
     valid = true;
@@ -638,40 +617,32 @@ async function validateData(req: Request) {
 }
 
 const citiesRouters = async (app: express.Application) => {
-  app.post(
-    `${site.api}/systemManagement/cities/add`,
-    verifyJwtToken,
-    add
-  );
-  app.put(
-    `${site.api}/systemManagement/cities/update`,
-    verifyJwtToken,
-    update
-  );
+  app.post(`${site.api}/systemManagement/cities/add`, verifyJwtToken, add);
+  app.put(`${site.api}/systemManagement/cities/update`, verifyJwtToken, update);
   app.put(
     `${site.api}/systemManagement/cities/delete`,
     verifyJwtToken,
-    deleted
+    deleted,
   );
   app.post(
     `${site.api}/systemManagement/cities/getAll`,
     verifyJwtToken,
-    getAll
+    getAll,
   );
   app.post(
     `${site.api}/systemManagement/cities/search`,
     verifyJwtToken,
-    search
+    search,
   );
   app.post(
     `${site.api}/systemManagement/cities/getActive`,
     verifyJwtToken,
-    getActive
+    getActive,
   );
   app.post(
     `${site.api}/systemManagement/cities/getCitiesByGov`,
     verifyJwtToken,
-    getCitiesByGov
+    getCitiesByGov,
   );
 };
 

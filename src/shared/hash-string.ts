@@ -124,6 +124,6 @@ export const hashString = async (text: string) => {
   success = true;
   return {
     success,
-    hashedText:String(hashedText),
+    hashedText: String(hashedText),
   };
 };

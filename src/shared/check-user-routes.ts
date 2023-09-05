@@ -4,7 +4,7 @@ import { responseLanguage, responseMessages } from '.';
 export const checkUserRoutes = async (
   req: Request,
   res: Response,
-  route: string
+  route: string,
 ) => {
   const request = req.body.requestInfo;
   const selectedUser = await User.findOne({
@@ -17,7 +17,7 @@ export const checkUserRoutes = async (
   } else {
     const message = await responseLanguage(
       request.language,
-      responseMessages.routeNotAllowed
+      responseMessages.routeNotAllowed,
     );
     res
       .send({

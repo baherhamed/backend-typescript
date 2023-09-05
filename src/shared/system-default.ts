@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const ObjectId = mongoose.Types.ObjectId;
 import { User, Language, Route, Permission } from '../interfaces';
 
-export const systemDefaults = async () => {
+export const systemDefaults = (async () => {
   const defaultLangAr = await Language.findOne({
     code: 1,
   });
@@ -24,7 +24,7 @@ export const systemDefaults = async () => {
       await newLang.save();
     } catch (error) {
       console.log(
-        `Error In System Default While Creating Default Arabic Language ${error}`
+        `Error In System Default While Creating Default Arabic Language ${error}`,
       );
     }
   }
@@ -42,7 +42,7 @@ export const systemDefaults = async () => {
       await newLang.save();
     } catch (error) {
       console.log(
-        `Error In System Default While Creating Default English Language ${error}`
+        `Error In System Default While Creating Default English Language ${error}`,
       );
     }
   }
@@ -75,7 +75,7 @@ export const systemDefaults = async () => {
       password: hashedPassword.newHashedPassword,
       name: 'developer',
       mobile: '21002627613',
-      email: 'baherhamed@gmail.com',
+      email: 'admin@tebahdsl.com',
       routesList,
       permissionsList,
       active: true,
@@ -84,10 +84,11 @@ export const systemDefaults = async () => {
     });
 
     try {
-      await newUser.save();
+      const newUserr = await newUser.save();
+      console.log('newUserr', newUserr._id);
     } catch (error) {
       console.log(
-        `Error In System Default While Creating Default Developer User ${error}`
+        `Error In System Default While Creating Default Developer User ${error}`,
       );
     }
   }
@@ -123,7 +124,7 @@ export const systemDefaults = async () => {
       await newRoute.save();
     } catch (error) {
       console.log(
-        `Error In System Default While Creating Users Route ${error}`
+        `Error In System Default While Creating Users Route ${error}`,
       );
     }
 
@@ -171,4 +172,4 @@ export const systemDefaults = async () => {
 
     await exportUsersPermission.save();
   }
-};
+})();

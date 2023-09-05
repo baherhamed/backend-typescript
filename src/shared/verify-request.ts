@@ -26,7 +26,7 @@ interface RequestInfo {
 export const verifyJwtToken = async function (
   req: Request,
   res: Response,
-  next: () => void
+  next: () => void,
 ) {
   const language = await setRequestLanguage(req);
 
@@ -37,7 +37,7 @@ export const verifyJwtToken = async function (
     if (!req.headers.authorization) {
       const message = await responseLanguage(
         language,
-        responseMessages.authorizationData
+        responseMessages.authorizationData,
       );
       return res.send({
         success: false,
@@ -48,7 +48,7 @@ export const verifyJwtToken = async function (
     if (!ua) {
       const message = await responseLanguage(
         language,
-        responseMessages.userAgentData
+        responseMessages.userAgentData,
       );
       return res.send({
         success: false,
@@ -65,14 +65,14 @@ export const verifyJwtToken = async function (
 
       const decoded = jwt.verify(
         jwtPayload,
-        String(process.env.ACCESS_TOKEN_SECRET)
+        String(process.env.ACCESS_TOKEN_SECRET),
       ) as JwtPayload;
       //  what happed when token not expired
 
       if (isExpired) {
         const message = await responseLanguage(
           language,
-          responseMessages.authorizationData
+          responseMessages.authorizationData,
         );
         return res
           .send({
@@ -116,7 +116,7 @@ export const verifyJwtToken = async function (
         } else {
           const message = await responseLanguage(
             language,
-            responseMessages.authorizationData
+            responseMessages.authorizationData,
           );
           return res
             .send({
@@ -130,7 +130,7 @@ export const verifyJwtToken = async function (
       console.log(`Verify Request => No Authorization ${error}`);
       const message = await responseLanguage(
         language,
-        responseMessages.authorizationData
+        responseMessages.authorizationData,
       );
       return res
         .send({

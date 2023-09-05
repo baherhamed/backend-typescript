@@ -10,7 +10,7 @@ import formidable from 'formidable';
 const fileFilter = async (
   req: Request,
   file: { mimetype: string },
-  cb: (arg0: null, arg1: boolean) => void
+  cb: (arg0: null, arg1: boolean) => void,
 ) => {
   if (
     file.mimetype === 'image/png' ||
@@ -33,7 +33,7 @@ const storage = multer.diskStorage({
     cb(
       null,
 
-      new Date().getTime() + path.extname(file.originalname)
+      new Date().getTime() + path.extname(file.originalname),
     );
   },
 });
@@ -49,7 +49,7 @@ const uploadFile = multer({
 const checkUploadsDir = async (
   req: Request,
   res: Response,
-  cb: (arg0: null, arg1: boolean) => void
+  cb: (arg0: null, arg1: boolean) => void,
 ) => {
   const dirExisit = fs.existsSync('../uploads');
   if (!dirExisit) {
@@ -77,10 +77,10 @@ const uploadsRouters = async (app: express.Application) => {
           util.inspect({
             fields: fields,
             files: files,
-          })
+          }),
         );
       });
-    }
+    },
   );
 };
 

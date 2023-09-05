@@ -57,7 +57,7 @@ const RoutesSchema = new Schema(
   },
   {
     versionKey: false,
-  }
+  },
 );
 
 RoutesSchema.plugin(paginate);

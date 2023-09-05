@@ -47,13 +47,13 @@ const login = async (req: Request, res: Response) => {
   if (foundUser) {
     const checkPassword = await bcrypt.compare(
       request.password,
-      foundUser.password
+      foundUser.password,
     );
 
     if (!checkPassword) {
       const message = await responseLanguage(
         requestLanguage,
-        responseMessages.password
+        responseMessages.password,
       );
       return res
         .send({
@@ -82,7 +82,7 @@ const login = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestLanguage,
-      responseMessages.authorized
+      responseMessages.authorized,
     );
 
     return res
@@ -100,7 +100,7 @@ const login = async (req: Request, res: Response) => {
   } else {
     const message = await responseLanguage(
       requestLanguage,
-      responseMessages.userNotFound
+      responseMessages.userNotFound,
     );
     return res
       .send({
@@ -122,12 +122,12 @@ async function validateData(req: Request) {
   if (!userName) {
     message = await responseLanguage(
       requestLanguage,
-      responseMessages.username
+      responseMessages.username,
     );
   } else if (!userPassword || userPassword.length < inputsLength.password) {
     message = await responseLanguage(
       requestLanguage,
-      responseMessages.password
+      responseMessages.password,
     );
   } else {
     valid = true;

@@ -7,7 +7,7 @@ interface Message {
 export const responseLanguage = async (
   requestLanguage: string,
   message: Message,
-  err?: string
+  err?: string,
 ) => {
   let responseMessage;
   let errorMessage = '';

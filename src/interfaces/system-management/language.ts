@@ -44,7 +44,7 @@ const LanguageSchema = new Schema(
   },
   {
     versionKey: false,
-  }
+  },
 );
 
 LanguageSchema.plugin(paginate);

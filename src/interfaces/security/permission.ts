@@ -66,7 +66,7 @@ const PermissionSchema = new Schema(
   },
   {
     versionKey: false,
-  }
+  },
 );
 PermissionSchema.plugin(paginate);
 PermissionSchema.plugin(autopopulate);

@@ -75,60 +75,62 @@ const add = async (req: Request, res: Response) => {
 
     try {
       await doc.save();
-    } catch (error) { console.log(`Route => Add Route ${error}`)}
+    } catch (error) {
+      console.log(`Route => Add Route ${error}`);
+    }
     // doc.save(async (err) => {
-      // if (err) {
-        // console.log(`Route => Add Route ${err}`);
-        // const message = await responseLanguage(
-        //   requestInfo.language,
-        //   responseMessages.err,
-        //   String(err)
-        // );
+    // if (err) {
+    // console.log(`Route => Add Route ${err}`);
+    // const message = await responseLanguage(
+    //   requestInfo.language,
+    //   responseMessages.err,
+    //   String(err)
+    // );
 
-        // return res
-        //   .send({
-        //     success: true,
-        //     message,
-        //   })
-        //   .status(200);
-      // }
-      const permissionsList = [];
-      if (request.permissionsList) {
-        for await (const permission of request.permissionsList) {
-          const newPermission = new Permission({
-            routeId: doc._id,
-            name: permission.name,
-            ar: permission.ar,
-            en: permission.en,
-            active: permission.active,
-            addInfo: requestInfo,
-          });
-          await newPermission.save();
-          permissionsList.push({
-            _id: newPermission._id,
-            name: permission.name,
-            ar: permission.ar,
-            en: permission.en,
-            active: permission.active,
-          });
-        }
+    // return res
+    //   .send({
+    //     success: true,
+    //     message,
+    //   })
+    //   .status(200);
+    // }
+    const permissionsList = [];
+    if (request.permissionsList) {
+      for await (const permission of request.permissionsList) {
+        const newPermission = new Permission({
+          routeId: doc._id,
+          name: permission.name,
+          ar: permission.ar,
+          en: permission.en,
+          active: permission.active,
+          addInfo: requestInfo,
+        });
+        await newPermission.save();
+        permissionsList.push({
+          _id: newPermission._id,
+          name: permission.name,
+          ar: permission.ar,
+          en: permission.en,
+          active: permission.active,
+        });
       }
+    }
 
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.saved,
-      );
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.saved,
+    );
 
-      return res
-        .send({
-          success: true,
-          message,
-          data: {
-            _id: doc._id,
-            permissionsList,
-          },
-        })
-        .status(200);
+    return res
+      .send({
+        success: true,
+        message,
+        data: {
+          _id: doc._id,
+          permissionsList,
+        },
+      })
+      .status(200);
     // });
   } catch (error) {
     console.log(`Route => Add Route ${error}`);
@@ -483,17 +485,6 @@ const getAll = async (req: Request, res: Response) => {
       });
     }
 
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
-
     const message = await responseLanguage(
       requestInfo.language,
       responseMessages.done,
@@ -504,7 +495,7 @@ const getAll = async (req: Request, res: Response) => {
         success: true,
         message,
         data,
-        paginationInfo,
+        paginationInfo: site.pagination(result),
       })
       .status(200);
   } catch (error) {
@@ -595,16 +586,6 @@ const search = async (req: Request, res: Response) => {
         });
       }
     }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -616,7 +597,7 @@ const search = async (req: Request, res: Response) => {
         success: true,
         message,
         data,
-        paginationInfo,
+        paginationInfo: site.pagination(result),
       })
       .status(200);
   } catch (error) {

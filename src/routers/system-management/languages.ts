@@ -21,7 +21,7 @@ const getActiveLanguages = async (req: Request, res: Response) => {
     if (!result.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -38,15 +38,13 @@ const getActiveLanguages = async (req: Request, res: Response) => {
         _id: doc._id,
         name: doc.name,
         addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-        lastUpdateInfo: requestInfo.isAdmin
-          ? doc.lastUpdateInfo
-          : undefined,
+        lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
       });
     }
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -61,7 +59,7 @@ const getActiveLanguages = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -76,7 +74,7 @@ const languageRouters = (app: express.Application) => {
   app.post(
     `${site.api}/system_management/languages/get_active_languages`,
     verifyJwtToken,
-    getActiveLanguages
+    getActiveLanguages,
   );
 };
 

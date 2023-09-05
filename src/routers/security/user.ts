@@ -21,7 +21,7 @@ const add = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.addUser
+    PermissionsNames.addUser,
   );
 
   if (!hasRoute || !hasPermission) return;
@@ -56,7 +56,7 @@ const add = async (req: Request, res: Response) => {
     if (checkNewUser) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.userExisit
+        responseMessages.userExisit,
       );
       return res
         .send({
@@ -85,7 +85,7 @@ const add = async (req: Request, res: Response) => {
           const message = await responseLanguage(
             requestInfo.language,
             responseMessages.err,
-            String(err)
+            String(err),
           );
 
           return res
@@ -98,7 +98,7 @@ const add = async (req: Request, res: Response) => {
 
         const message = await responseLanguage(
           requestInfo.language,
-          responseMessages.saved
+          responseMessages.saved,
         );
 
         return res
@@ -114,7 +114,7 @@ const add = async (req: Request, res: Response) => {
     } else {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.password
+        responseMessages.password,
       );
 
       return res
@@ -128,7 +128,7 @@ const add = async (req: Request, res: Response) => {
     console.log(`User => Add User ${error}`);
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -147,7 +147,7 @@ const update = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.updateUser
+    PermissionsNames.updateUser,
   );
 
   if (!hasRoute || !hasPermission) return;
@@ -155,7 +155,7 @@ const update = async (req: Request, res: Response) => {
     if (!_id) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.missingId
+        responseMessages.missingId,
       );
       return res
         .send({
@@ -195,7 +195,7 @@ const update = async (req: Request, res: Response) => {
     if (checkIfUserExisit && String(checkIfUserExisit['_id']) !== String(_id)) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.userExisit
+        responseMessages.userExisit,
       );
 
       return res
@@ -285,7 +285,7 @@ const update = async (req: Request, res: Response) => {
 
         const message = await responseLanguage(
           requestInfo.language,
-          responseMessages.updated
+          responseMessages.updated,
         );
 
         return res
@@ -317,7 +317,7 @@ const update = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -335,7 +335,7 @@ const deleted = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.deleteUser
+    PermissionsNames.deleteUser,
   );
 
   if (!hasRoute || !hasPermission) return;
@@ -343,7 +343,7 @@ const deleted = async (req: Request, res: Response) => {
     if (!_id) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.missingId
+        responseMessages.missingId,
       );
       return res
         .send({
@@ -372,7 +372,7 @@ const deleted = async (req: Request, res: Response) => {
 
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.deleted
+        responseMessages.deleted,
       );
 
       return res
@@ -387,7 +387,7 @@ const deleted = async (req: Request, res: Response) => {
     } else {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
       return res
         .send({
@@ -401,7 +401,7 @@ const deleted = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.noData
+      responseMessages.noData,
     );
     return res
       .send({
@@ -443,7 +443,7 @@ const search = async (req: Request, res: Response) => {
     if (!result.docs.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -522,20 +522,10 @@ const search = async (req: Request, res: Response) => {
         });
       }
     }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -543,7 +533,7 @@ const search = async (req: Request, res: Response) => {
         success: true,
         message,
         data,
-        paginationInfo,
+        paginationInfo: site.pagination(result),
       })
       .status(200);
   } catch (error) {
@@ -551,7 +541,7 @@ const search = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -583,7 +573,7 @@ const getAll = async (req: Request, res: Response) => {
     if (!result.docs.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -662,20 +652,10 @@ const getAll = async (req: Request, res: Response) => {
         });
       }
     }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -683,7 +663,7 @@ const getAll = async (req: Request, res: Response) => {
         success: true,
         message,
         data,
-        paginationInfo,
+        paginationInfo: site.pagination(result),
       })
       .status(200);
   } catch (error) {
@@ -691,7 +671,7 @@ const getAll = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -718,7 +698,7 @@ async function validateData(req: Request) {
   } else if (!userPassword || userPassword.length < inputsLength.password) {
     message = await responseLanguage(
       requestLanguage,
-      responseMessages.password
+      responseMessages.password,
     );
   } else {
     valid = true;

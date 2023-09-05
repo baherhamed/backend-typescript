@@ -4,7 +4,7 @@ import { responseLanguage, responseMessages } from '.';
 export const checkUserPermission = async (
   req: Request,
   res: Response,
-  permission: string
+  permission: string,
 ) => {
   const request = req.body.requestInfo;
   const selectedUser = await User.findOne({
@@ -17,7 +17,7 @@ export const checkUserPermission = async (
   } else {
     const message = await responseLanguage(
       request.language,
-      responseMessages.pemissionNotAllowed
+      responseMessages.pemissionNotAllowed,
     );
     res
       .send({

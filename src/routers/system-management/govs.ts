@@ -21,7 +21,7 @@ const add = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.addGov
+    PermissionsNames.addGov,
   );
 
   if (!hasRoute || !hasPermission) return;
@@ -47,7 +47,7 @@ const add = async (req: Request, res: Response) => {
     if (checkNewGov) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.govExisit
+        responseMessages.govExisit,
       );
       return res
         .send({
@@ -71,7 +71,7 @@ const add = async (req: Request, res: Response) => {
         const message = await responseLanguage(
           requestInfo.language,
           responseMessages.err,
-          String(err)
+          String(err),
         );
 
         return res
@@ -84,7 +84,7 @@ const add = async (req: Request, res: Response) => {
 
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.saved
+        responseMessages.saved,
       );
 
       return res
@@ -101,7 +101,7 @@ const add = async (req: Request, res: Response) => {
     console.log(`Gov => Add Gov ${error}`);
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -120,7 +120,7 @@ const update = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.updateGov
+    PermissionsNames.updateGov,
   );
 
   if (!hasRoute || !hasPermission) return;
@@ -128,7 +128,7 @@ const update = async (req: Request, res: Response) => {
     if (!_id) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.missingId
+        responseMessages.missingId,
       );
       return res
         .send({
@@ -158,7 +158,7 @@ const update = async (req: Request, res: Response) => {
     if (selectedGov && String(selectedGov['_id']) !== String(_id)) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.govExisit
+        responseMessages.govExisit,
       );
 
       return res
@@ -185,7 +185,7 @@ const update = async (req: Request, res: Response) => {
 
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.updated
+        responseMessages.updated,
       );
       return res
         .send({
@@ -209,7 +209,7 @@ const update = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -227,7 +227,7 @@ const deleted = async (req: Request, res: Response) => {
   const hasPermission = await checkUserPermission(
     req,
     res,
-    PermissionsNames.deleteGov
+    PermissionsNames.deleteGov,
   );
 
   if (!hasRoute || !hasPermission) return;
@@ -235,7 +235,7 @@ const deleted = async (req: Request, res: Response) => {
     if (!_id) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.missingId
+        responseMessages.missingId,
       );
       return res
         .send({
@@ -263,7 +263,7 @@ const deleted = async (req: Request, res: Response) => {
 
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.deleted
+        responseMessages.deleted,
       );
 
       return res
@@ -278,7 +278,7 @@ const deleted = async (req: Request, res: Response) => {
     } else {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
       return res
         .send({
@@ -292,7 +292,7 @@ const deleted = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.noData
+      responseMessages.noData,
     );
     return res
       .send({
@@ -324,7 +324,7 @@ const getAll = async (req: Request, res: Response) => {
     if (!result.docs.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -346,20 +346,10 @@ const getAll = async (req: Request, res: Response) => {
         lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
       });
     }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -367,7 +357,7 @@ const getAll = async (req: Request, res: Response) => {
         success: true,
         message,
         data,
-        paginationInfo,
+        paginationInfo: site.pagination(result),
       })
       .status(200);
   } catch (error) {
@@ -375,7 +365,7 @@ const getAll = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -410,7 +400,7 @@ const search = async (req: Request, res: Response) => {
     if (!result.docs.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -434,20 +424,10 @@ const search = async (req: Request, res: Response) => {
         });
       }
     }
-    const paginationInfo = {
-      totalDocs: result.totalDocs,
-      limit: result.limit,
-      totalPages: result.totalPages,
-      page: result.page,
-      hasPrevPage: result.hasPrevPage,
-      hasNextPage: result.hasNextPage,
-      prevPage: result.prevPage,
-      nextPage: result.nextPage,
-    };
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -455,7 +435,7 @@ const search = async (req: Request, res: Response) => {
         success: true,
         message,
         data,
-        paginationInfo,
+        paginationInfo: site.pagination(result),
       })
       .status(200);
   } catch (error) {
@@ -463,7 +443,7 @@ const search = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -488,7 +468,7 @@ const getActive = async (req: Request, res: Response) => {
     if (!result.length) {
       const message = await responseLanguage(
         requestInfo.language,
-        responseMessages.noData
+        responseMessages.noData,
       );
 
       return res
@@ -513,7 +493,7 @@ const getActive = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.done
+      responseMessages.done,
     );
 
     return res
@@ -528,7 +508,7 @@ const getActive = async (req: Request, res: Response) => {
 
     const message = await responseLanguage(
       requestInfo.language,
-      responseMessages.invalidData
+      responseMessages.invalidData,
     );
     return res
       .send({
@@ -560,30 +540,14 @@ async function validateData(req: Request) {
 
 const govsRouters = async (app: express.Application) => {
   app.post(`${site.api}/systemManagement/govs/add`, verifyJwtToken, add);
-  app.put(
-    `${site.api}/systemManagement/govs/update`,
-    verifyJwtToken,
-    update
-  );
-  app.put(
-    `${site.api}/systemManagement/govs/delete`,
-    verifyJwtToken,
-    deleted
-  );
-  app.post(
-    `${site.api}/systemManagement/govs/getAll`,
-    verifyJwtToken,
-    getAll
-  );
-  app.post(
-    `${site.api}/systemManagement/govs/search`,
-    verifyJwtToken,
-    search
-  );
+  app.put(`${site.api}/systemManagement/govs/update`, verifyJwtToken, update);
+  app.put(`${site.api}/systemManagement/govs/delete`, verifyJwtToken, deleted);
+  app.post(`${site.api}/systemManagement/govs/getAll`, verifyJwtToken, getAll);
+  app.post(`${site.api}/systemManagement/govs/search`, verifyJwtToken, search);
   app.post(
     `${site.api}/systemManagement/govs/getActive`,
     verifyJwtToken,
-    getActive
+    getActive,
   );
 };
 
