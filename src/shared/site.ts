@@ -4,7 +4,31 @@ export const site = {
     en: 'en',
   },
   route: 'localhost',
-  api: '/api',
+  api: '/api/',
+  modules: {
+    security: 'security/',
+    systemManagement: 'systemManagement/',
+  },
+  appsRoutes: {
+    login: 'login',
+    add: 'add',
+    update: 'update',
+    search: 'search',
+    delete: 'delete',
+    getAll: 'getAll',
+    getActive: 'getActive',
+    getCitiesByGov: 'getCitiesByGov',
+    changePassword: 'changePassword',
+  },
+  apps: {
+    home: 'home',
+    login: 'login',
+    languages: 'languages/',
+    routes: 'routes/',
+    users: 'users/',
+    govs: 'govs/',
+    cities: 'cities/',
+  },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pagination: (result: any) => {
     return {

@@ -737,12 +737,36 @@ async function validateData(req: Request) {
 }
 
 const routessRouters = async (app: express.Application) => {
-  app.post(`${site.api}/security/routes/add`, verifyJwtToken, add);
-  app.put(`${site.api}/security/routes/update`, verifyJwtToken, update);
-  app.put(`${site.api}/security/routes/delete`, verifyJwtToken, deleted);
-  app.post(`${site.api}/security/routes/getAll`, verifyJwtToken, getAll);
-  app.post(`${site.api}/security/routes/search`, verifyJwtToken, search);
-  app.post(`${site.api}/security/routes/getActive`, verifyJwtToken, getActive);
+  app.post(
+    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.add}`,
+    verifyJwtToken,
+    add,
+  );
+  app.put(
+    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.update}`,
+    verifyJwtToken,
+    update,
+  );
+  app.put(
+    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.delete}`,
+    verifyJwtToken,
+    deleted,
+  );
+  app.post(
+    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.getAll}`,
+    verifyJwtToken,
+    getAll,
+  );
+  app.post(
+    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.search}`,
+    verifyJwtToken,
+    search,
+  );
+  app.post(
+    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.getActive}`,
+    verifyJwtToken,
+    getActive,
+  );
 };
 
 export default routessRouters;

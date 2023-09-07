@@ -140,7 +140,7 @@ async function validateData(req: Request) {
 }
 
 const loginRouters = (app: express.Application) => {
-  app.post(`${site.api}/security/login`, login);
+  app.post(`${site.api}${site.modules.security}${site.apps.login}`, login);
 };
 
 export default loginRouters;

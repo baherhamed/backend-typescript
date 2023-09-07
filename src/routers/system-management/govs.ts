@@ -539,13 +539,33 @@ async function validateData(req: Request) {
 }
 
 const govsRouters = async (app: express.Application) => {
-  app.post(`${site.api}/systemManagement/govs/add`, verifyJwtToken, add);
-  app.put(`${site.api}/systemManagement/govs/update`, verifyJwtToken, update);
-  app.put(`${site.api}/systemManagement/govs/delete`, verifyJwtToken, deleted);
-  app.post(`${site.api}/systemManagement/govs/getAll`, verifyJwtToken, getAll);
-  app.post(`${site.api}/systemManagement/govs/search`, verifyJwtToken, search);
   app.post(
-    `${site.api}/systemManagement/govs/getActive`,
+    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.add}`,
+    verifyJwtToken,
+    add,
+  );
+  app.put(
+    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.update}`,
+    verifyJwtToken,
+    update,
+  );
+  app.put(
+    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.delete}`,
+    verifyJwtToken,
+    deleted,
+  );
+  app.post(
+    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.getAll}`,
+    verifyJwtToken,
+    getAll,
+  );
+  app.post(
+    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.search}`,
+    verifyJwtToken,
+    search,
+  );
+  app.post(
+    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.getActive}`,
     verifyJwtToken,
     getActive,
   );

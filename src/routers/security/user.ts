@@ -711,11 +711,31 @@ async function validateData(req: Request) {
 }
 
 const usersRouters = async (app: express.Application) => {
-  app.post(`${site.api}/security/users/add`, verifyJwtToken, add);
-  app.put(`${site.api}/security/users/update`, verifyJwtToken, update);
-  app.put(`${site.api}/security/users/delete`, verifyJwtToken, deleted);
-  app.post(`${site.api}/security/users/getAll`, verifyJwtToken, getAll);
-  app.post(`${site.api}/security/users/search`, verifyJwtToken, search);
+  app.post(
+    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.add}`,
+    verifyJwtToken,
+    add,
+  );
+  app.put(
+    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.update}`,
+    verifyJwtToken,
+    update,
+  );
+  app.put(
+    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.delete}`,
+    verifyJwtToken,
+    deleted,
+  );
+  app.post(
+    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.getAll}`,
+    verifyJwtToken,
+    getAll,
+  );
+  app.post(
+    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.search}`,
+    verifyJwtToken,
+    search,
+  );
 };
 
 export default usersRouters;

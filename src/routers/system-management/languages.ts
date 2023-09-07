@@ -72,7 +72,7 @@ const getActiveLanguages = async (req: Request, res: Response) => {
 
 const languageRouters = (app: express.Application) => {
   app.post(
-    `${site.api}/system_management/languages/get_active_languages`,
+    `${site.api}${site.modules.systemManagement}${site.apps.languages}${site.appsRoutes.getActive}`,
     verifyJwtToken,
     getActiveLanguages,
   );

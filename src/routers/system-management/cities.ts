@@ -617,30 +617,38 @@ async function validateData(req: Request) {
 }
 
 const citiesRouters = async (app: express.Application) => {
-  app.post(`${site.api}/systemManagement/cities/add`, verifyJwtToken, add);
-  app.put(`${site.api}/systemManagement/cities/update`, verifyJwtToken, update);
+  app.post(
+    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.add}`,
+    verifyJwtToken,
+    add,
+  );
   app.put(
-    `${site.api}/systemManagement/cities/delete`,
+    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.update}`,
+    verifyJwtToken,
+    update,
+  );
+  app.put(
+    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.delete}`,
     verifyJwtToken,
     deleted,
   );
   app.post(
-    `${site.api}/systemManagement/cities/getAll`,
+    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.getAll}`,
     verifyJwtToken,
     getAll,
   );
   app.post(
-    `${site.api}/systemManagement/cities/search`,
+    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.search}`,
     verifyJwtToken,
     search,
   );
   app.post(
-    `${site.api}/systemManagement/cities/getActive`,
+    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.getActive}`,
     verifyJwtToken,
     getActive,
   );
   app.post(
-    `${site.api}/systemManagement/cities/getCitiesByGov`,
+    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.getCitiesByGov}`,
     verifyJwtToken,
     getCitiesByGov,
   );
