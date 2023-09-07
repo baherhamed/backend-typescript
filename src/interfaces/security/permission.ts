@@ -29,9 +29,9 @@ const PermissionSchema = new Schema(
     routeId: {
       type: Types.ObjectId,
       ref: 'routes',
-      // autopopulate: {
-      //   select: 'name ar en active deleted',
-      // },
+      autopopulate: {
+        select: 'name ar en active deleted',
+      },
     },
     name: {
       type: String,

@@ -39,23 +39,24 @@ app.use(
 
 mongoose.set('strictQuery', true);
 mongoose.set('strictPopulate', true);
-try {
-  mongoose.connect(String(process.env.DB_HOST), {
-    serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-    auth: {
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-    },
-    // ssl: false,
-    // sslValidate: false,
-  });
+(async () => {
+  try {
+    await mongoose.connect(String(process.env.DB_HOST), {
+      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      auth: {
+        username: process.env.DB_USER,
+        password: process.env.DB_PASS,
+      },
+      ssl: false,
+      sslValidate: false,
+    });
 
-  console.log('Successfully Connected To Database');
-} catch (error) {
-  console.log(`Error While Connecting Database ${error}`);
-}
-
+    console.log('Successfully Connected To Database');
+  } catch (error) {
+    console.log(`Error While Connecting Database ${error}`);
+  }
+})()
 app.post('/', (req, res) => {
   res.send('Backend works post request');
 });
