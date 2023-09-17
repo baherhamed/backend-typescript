@@ -1,5 +1,8 @@
-import * as dotenv from 'dotenv';
+import 'dotenv/config';
+import * as dotenv from "dotenv";
+
 dotenv.config({ path: __dirname + '/.env' });
+
 import bodyParser from 'body-parser';
 import express from 'express';
 
@@ -21,7 +24,6 @@ import loginRouters from './routers/security/login';
 import languageRouters from './routers/system-management/languages';
 import govsRouters from './routers/system-management/govs';
 import citiesRouters from './routers/system-management/cities';
-// import backupRouters from './shared/backup-restore-database';
 
 const app = express();
 
@@ -38,6 +40,7 @@ app.use(
 
 mongoose.set('strictQuery', true);
 mongoose.set('strictPopulate', true);
+
 (async () => {
   try {
     await mongoose.connect(String(process.env.DB_HOST), {
@@ -55,7 +58,8 @@ mongoose.set('strictPopulate', true);
   } catch (error) {
     console.log(`Error While Connecting Database ${error}`);
   }
-})()
+})();
+
 app.post('/', (req, res) => {
   res.send('Backend works post request');
 });
@@ -71,7 +75,7 @@ languageRouters(app);
 govsRouters(app);
 usersRouters(app);
 citiesRouters(app);
-// backupRouters(app);
+
 
 let privateKey;
 let certificate: string;
@@ -106,7 +110,7 @@ const credentials = {
 const httpServer = http.createServer(app);
 const httpsServer = https.createServer(credentials, app);
 
-httpServer.listen(process.env.PORT, () => {
+httpServer.listen(process.env.PORT, async () => {
   systemDefaults;
   console.log(`
   -------------------------
@@ -114,7 +118,7 @@ httpServer.listen(process.env.PORT, () => {
   -------------------------`);
 });
 
-httpsServer.listen(process.env.SSLPORT, () => {
+httpsServer.listen(process.env.SSLPORT, async() => {
   console.log(`
 -------------------------
  Server Run Https at PORT: ${process.env.SSLPORT}

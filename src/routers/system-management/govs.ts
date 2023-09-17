@@ -64,39 +64,55 @@ const add = async (req: Request, res: Response) => {
       deleted: false,
       addInfo: requestInfo,
     });
+    const gov = await doc.save();
+    console.log('errors', doc?.errors);
+    console.log('doc', doc);
 
-    doc.save(async (err: unknown) => {
-      if (err) {
-        console.log(`Gov => Add Gov ${err}`);
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.err,
-          String(err),
-        );
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.saved,
+    );
+    return res
+      .send({
+        success: true,
+        message,
+        data: {
+          _id: gov._id,
+        },
+      })
+      .status(200);
+    // doc.save(async (err: unknown) => {
+    //   if (err) {
+    //     console.log(`Gov => Add Gov ${err}`);
+    //     const message = await responseLanguage(
+    //       requestInfo.language,
+    //       responseMessages.err,
+    //       String(err),
+    //     );
 
-        return res
-          .send({
-            success: true,
-            message,
-          })
-          .status(200);
-      }
+    //     return res
+    //       .send({
+    //         success: true,
+    //         message,
+    //       })
+    //       .status(200);
+    //   }
 
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.saved,
-      );
+    //   const message = await responseLanguage(
+    //     requestInfo.language,
+    //     responseMessages.saved,
+    //   );
 
-      return res
-        .send({
-          success: true,
-          message,
-          data: {
-            _id: doc._id,
-          },
-        })
-        .status(200);
-    });
+    //   return res
+    //     .send({
+    //       success: true,
+    //       message,
+    //       data: {
+    //         _id: doc._id,
+    //       },
+    //     })
+    //     .status(200);
+    // });
   } catch (error) {
     console.log(`Gov => Add Gov ${error}`);
     const message = await responseLanguage(

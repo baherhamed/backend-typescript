@@ -5,7 +5,7 @@
   "main": "src/server.ts",
   "scripts": {
     "start": "nodemon dist/server.js --trace-deprecation",
-    "dev": "nodemon src/server.ts --trace-deprecation --trace-warnings",
+    "dev": "nodemon src/server.ts --trace-deprecation",
     "prettier": "prettier --config .prettierrc \"src/**/*.ts\" --write",
     "lint": "eslint **/*.ts",
     "build": "rm -rf dist && npm run lint && npm run prettier && npx tsc && cp src/.env dist/.env"
@@ -13,7 +13,7 @@
   "author": "Baher Hamed",
   "license": "MIT",
   "dependencies": {
-    "@types/cors": "^2.8.13",
+    "@types/cors": "^2.8.14",
     "@types/mongoose": "^5.11.97",
     "@types/mongoose-autopopulate": "^0.10.3",
     "@types/mongoose-paginate-v2": "^1.6.5",
@@ -26,7 +26,7 @@
     "formidable": "^3.5.1",
     "jsonwebtoken": "^9.0.2",
     "jwt-check-expiry": "^1.0.10",
-    "mongoose": "^6.12.0",
+    "mongoose": "^7.5.2",
     "mongoose-autopopulate": "^1.0.1",
     "mongoose-paginate-v2": "^1.7.31",
     "multer": "^1.4.5-lts.1",
@@ -35,13 +35,13 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
     "@types/express": "^4.17.17",
-    "@types/formidable": "^3.4.2",
-    "@types/jsonwebtoken": "^9.0.2",
+    "@types/formidable": "^3.4.3",
+    "@types/jsonwebtoken": "^9.0.3",
     "@types/multer": "^1.4.7",
-    "@types/node": "^20.5.7",
-    "@typescript-eslint/eslint-plugin": "^6.5.0",
-    "@typescript-eslint/parser": "^6.5.0",
-    "eslint": "^8.48.0",
+    "@types/node": "^20.6.2",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "eslint": "^8.49.0",
     "prettier": "^3.0.3",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"

@@ -1,15 +1,14 @@
 import mongoose, {
-  Schema,
   Types,
   Document,
   PaginateModel,
   PaginateOptions,
+  Schema,
 } from 'mongoose';
 
 import paginate from 'mongoose-paginate-v2';
 import autopopulate from 'mongoose-autopopulate';
 
-import { RequestInfo } from '../shared';
 import { inputsLength } from '../../shared';
 
 interface IPermission extends Document {
@@ -19,9 +18,9 @@ interface IPermission extends Document {
   en: string;
   active: boolean;
   deleted: boolean;
-  addInfo: RequestInfo;
-  lastUpdateInfo: RequestInfo;
-  deletedInfo: RequestInfo;
+  addInfo: unknown;
+  lastUpdateInfo: unknown;
+  deletedInfo: unknown;
 }
 
 const PermissionSchema = new Schema(
@@ -60,9 +59,9 @@ const PermissionSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    addInfo: RequestInfo,
-    lastUpdateInfo: RequestInfo,
-    deleteInfo: RequestInfo,
+    addInfo: {},
+    lastUpdateInfo: {},
+    deleteInfo: {},
   },
   {
     versionKey: false,

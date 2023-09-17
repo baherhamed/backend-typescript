@@ -8,8 +8,8 @@ import mongoose, {
 import paginate from 'mongoose-paginate-v2';
 import autopopulate from 'mongoose-autopopulate';
 
-import { RequestInfo } from '../shared';
 import { inputsLength } from '../../shared';
+
 
 interface IRoute extends Document {
   name: string;
@@ -17,9 +17,9 @@ interface IRoute extends Document {
   en: string;
   active: boolean;
   deleted: boolean;
-  addInfo: RequestInfo;
-  lastUpdateInfo: RequestInfo;
-  deletedInfo: RequestInfo;
+  addInfo: unknown;
+  lastUpdateInfo: unknown;
+  deletedInfo: unknown;
 }
 
 const RoutesSchema = new Schema(
@@ -45,15 +45,15 @@ const RoutesSchema = new Schema(
     active: {
       type: Boolean,
       required: [true, 'Please Enter Route Status'],
-      // default: true,
+      default: true,
     },
     deleted: {
       type: Boolean,
       default: false,
     },
-    addInfo: RequestInfo,
-    lastUpdateInfo: RequestInfo,
-    deleteInfo: RequestInfo,
+    addInfo: {},
+    lastUpdateInfo: {},
+    deleteInfo: {},
   },
   {
     versionKey: false,

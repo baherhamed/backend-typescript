@@ -6,7 +6,7 @@ import mongoose, {
 } from 'mongoose';
 import paginate from 'mongoose-paginate-v2';
 import autopopulate from 'mongoose-autopopulate';
-import { RequestInfo } from '..';
+
 import { inputsLength } from '../../shared/inputs-length';
 
 interface IGov extends Document {
@@ -14,9 +14,9 @@ interface IGov extends Document {
   code: string;
   active: boolean;
   deleted: boolean;
-  addInfo: RequestInfo;
-  lastUpdateInfo: RequestInfo;
-  deletedInfo: RequestInfo;
+  addInfo: unknown;
+  lastUpdateInfo: unknown;
+  deletedInfo: unknown;
 }
 
 const GovSchema = new Schema(
@@ -42,9 +42,9 @@ const GovSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    addInfo: RequestInfo,
-    lastUpdateInfo: RequestInfo,
-    deleteInfo: RequestInfo,
+    addInfo: {},
+    lastUpdateInfo: {},
+    deleteInfo: {},
   },
   {
     versionKey: false,

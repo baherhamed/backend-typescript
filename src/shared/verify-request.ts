@@ -6,6 +6,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import browser from 'browser-detect';
 import { responseLanguage, responseMessages, setRequestLanguage } from '.';
 import isJwtTokenExpired from 'jwt-check-expiry';
+import { Types } from 'mongoose';
 
 interface RequestInfo {
   browser: {
@@ -17,7 +18,7 @@ interface RequestInfo {
     name: string | undefined;
   };
   ip_address: string | undefined;
-  userId: string | undefined;
+  userId: Types.ObjectId;
   language: string;
   date: Date;
   isAdmin?: boolean;
@@ -105,7 +106,7 @@ export const verifyJwtToken = async function (
               name: request_browser.os,
             },
             ip_address,
-            userId: String(selectedUser._id),
+            userId: selectedUser._id,
             language,
             date: new Date(),
             isAdmin,

@@ -63,6 +63,7 @@ const add = async (req: Request, res: Response) => {
         })
         .status(400);
     }
+    // console.log('requestInfo', requestInfo);
 
     const doc = new Route({
       name: request.name,
@@ -70,30 +71,11 @@ const add = async (req: Request, res: Response) => {
       en: request.en,
       active: request.active,
       deleted: false,
-      addInfo: requestInfo,
+      addInfo: requestInfo ,
     });
 
-    try {
-      await doc.save();
-    } catch (error) {
-      console.log(`Route => Add Route ${error}`);
-    }
-    // doc.save(async (err) => {
-    // if (err) {
-    // console.log(`Route => Add Route ${err}`);
-    // const message = await responseLanguage(
-    //   requestInfo.language,
-    //   responseMessages.err,
-    //   String(err)
-    // );
+    await doc.save();
 
-    // return res
-    //   .send({
-    //     success: true,
-    //     message,
-    //   })
-    //   .status(200);
-    // }
     const permissionsList = [];
     if (request.permissionsList) {
       for await (const permission of request.permissionsList) {
@@ -103,7 +85,7 @@ const add = async (req: Request, res: Response) => {
           ar: permission.ar,
           en: permission.en,
           active: permission.active,
-          addInfo: requestInfo,
+          addInfo: { ...requestInfo },
         });
         await newPermission.save();
         permissionsList.push({
@@ -131,6 +113,27 @@ const add = async (req: Request, res: Response) => {
         },
       })
       .status(200);
+    // }
+    // } catch (error) {
+    //   console.log(`Route => Add Route ${error}`);
+    // }
+    // doc.save(async (err) => {
+    // if (err) {
+    // console.log(`Route => Add Route ${err}`);
+    // const message = await responseLanguage(
+    //   requestInfo.language,
+    //   responseMessages.err,
+    //   String(err)
+    // );
+
+    // return res
+    //   .send({
+    //     success: true,
+    //     message,
+    //   })
+    //   .status(200);
+    // }
+
     // });
   } catch (error) {
     console.log(`Route => Add Route ${error}`);

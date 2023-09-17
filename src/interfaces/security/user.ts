@@ -9,7 +9,6 @@ import mongoose, {
 import paginate from 'mongoose-paginate-v2';
 import autopopulate from 'mongoose-autopopulate';
 
-import { RequestInfo } from '../shared';
 import { inputsLength } from '../../shared';
 
 interface IUser extends Document {
@@ -24,9 +23,9 @@ interface IUser extends Document {
   deleted: boolean;
   isAdmin: boolean;
   isDeveloper: boolean;
-  addInfo: RequestInfo;
-  lastUpdateInfo: RequestInfo;
-  deletedInfo: RequestInfo;
+  addInfo: unknown;
+  lastUpdateInfo: unknown;
+  deletedInfo: unknown;
 }
 
 const UsersSchema = new Schema(
@@ -89,9 +88,9 @@ const UsersSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    addInfo: RequestInfo,
-    lastUpdateInfo: RequestInfo,
-    deleteInfo: RequestInfo,
+    addInfo: {},
+    lastUpdateInfo: {},
+    deleteInfo: {},
   },
 
   {
