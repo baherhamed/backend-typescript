@@ -66,69 +66,7 @@ const add = async (req: Request, res: Response) => {
         .status(400);
     }
     const hashedPassword = await hashPassword(request);
-    if (hashedPassword.success) {
-      const doc = new User({
-        name: request.name,
-        mobile: request.mobile,
-        email: request.email || request.mobile,
-        languageId: request.languageId,
-        routesList: request.routesList,
-        permissionsList: request.permissionsList,
-        password: hashedPassword.newHashedPassword,
-        active: true,
-        deleted: false,
-        addInfo: requestInfo,
-      });
-      const user = await doc.save();
-      console.log('errors', doc?.errors);
-      console.log('doc', doc);
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.saved,
-      );
-      return res
-        .send({
-          success: true,
-          message,
-          data: {
-            _id: user._id,
-          },
-        })
-        .status(200);
-      // }      );
-      // doc.save(async (err) => {
-      //   if (err) {
-      //     const message = await responseLanguage(
-      //       requestInfo.language,
-      //       responseMessages.err,
-      //       String(err),
-      //     );
-
-      //     return res
-      //       .send({
-      //         success: true,
-      //         message,
-      //       })
-      //       .status(200);
-      //   }
-
-      // const message = await responseLanguage(
-      //   requestInfo.language,
-      //   responseMessages.saved,
-      // );
-
-      //   return res
-      //     .send({
-      //       success: true,
-      //       message,
-      //       data: {
-      //         _id: doc._id,
-      //       },
-      //     })
-      //     .status(200);
-      // });
-    } else {
+    if (!hashedPassword.success) {
       const message = await responseLanguage(
         requestInfo.language,
         responseMessages.password,
@@ -141,6 +79,34 @@ const add = async (req: Request, res: Response) => {
         })
         .status(400);
     }
+
+    const doc = new User({
+      name: request.name,
+      mobile: request.mobile,
+      email: request.email || request.mobile,
+      languageId: request.languageId,
+      routesList: request.routesList,
+      permissionsList: request.permissionsList,
+      password: hashedPassword.newHashedPassword,
+      active: true,
+      deleted: false,
+      addInfo: requestInfo,
+    });
+    await doc.save();
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.saved,
+    );
+    return res
+      .send({
+        success: true,
+        message,
+        data: {
+          _id: doc._id,
+        },
+      })
+      .status(200);
   } catch (error) {
     console.log(`User => Add User ${error}`);
     const message = await responseLanguage(

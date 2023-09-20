@@ -71,7 +71,7 @@ const add = async (req: Request, res: Response) => {
       en: request.en,
       active: request.active,
       deleted: false,
-      addInfo: requestInfo ,
+      addInfo: requestInfo,
     });
 
     await doc.save();
@@ -102,6 +102,7 @@ const add = async (req: Request, res: Response) => {
       requestInfo.language,
       responseMessages.saved,
     );
+    await doc.save();
 
     return res
       .send({
@@ -113,28 +114,6 @@ const add = async (req: Request, res: Response) => {
         },
       })
       .status(200);
-    // }
-    // } catch (error) {
-    //   console.log(`Route => Add Route ${error}`);
-    // }
-    // doc.save(async (err) => {
-    // if (err) {
-    // console.log(`Route => Add Route ${err}`);
-    // const message = await responseLanguage(
-    //   requestInfo.language,
-    //   responseMessages.err,
-    //   String(err)
-    // );
-
-    // return res
-    //   .send({
-    //     success: true,
-    //     message,
-    //   })
-    //   .status(200);
-    // }
-
-    // });
   } catch (error) {
     console.log(`Route => Add Route ${error}`);
     const message = await responseLanguage(

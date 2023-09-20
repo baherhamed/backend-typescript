@@ -65,9 +65,7 @@ const add = async (req: Request, res: Response) => {
       deleted: false,
       addInfo: requestInfo,
     });
-    const city = await doc.save();
-    console.log('errors', doc?.errors);
-    console.log('doc', doc);
+    await doc.save();
 
     const message = await responseLanguage(
       requestInfo.language,
@@ -78,42 +76,11 @@ const add = async (req: Request, res: Response) => {
         success: true,
         message,
         data: {
-          _id: city._id,
+          _id: doc._id,
         },
       })
       .status(200);
-    // doc.save(async (err: unknown) => {
-    //   if (err) {
-    //     console.log(`City => Add City ${err}`);
-    //     const message = await responseLanguage(
-    //       requestInfo.language,
-    //       responseMessages.err,
-    //       String(err),
-    //     );
 
-    //     return res
-    //       .send({
-    //         success: true,
-    //         message,
-    //       })
-    //       .status(200);
-    //   }
-
-    //   const message = await responseLanguage(
-    //     requestInfo.language,
-    //     responseMessages.saved,
-    //   );
-
-    //   return res
-    //     .send({
-    //       success: true,
-    //       message,
-    //       data: {
-    //         _id: doc._id,
-    //       },
-    //     })
-    //     .status(200);
-    // });
   } catch (error) {
     console.log(`City => Add City ${error}`);
     const message = await responseLanguage(
