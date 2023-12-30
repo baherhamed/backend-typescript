@@ -501,7 +501,7 @@ const getActive = async (req: Request, res: Response) => {
   }
 };
 
-async function validateData(req: Request) {
+const validateData = async (req: Request) => {
   const request = req.body;
   const govName = request.name;
   const requestLanguage = request.requestInfo.language;

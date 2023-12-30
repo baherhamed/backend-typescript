@@ -172,4 +172,6 @@ export const systemDefaults = (async () => {
 
     await exportUsersPermission.save();
   }
+  console.log('system default completed');
+  
 })();

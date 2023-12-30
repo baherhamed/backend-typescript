@@ -684,7 +684,7 @@ const getActive = async (req: Request, res: Response) => {
   }
 };
 
-async function validateData(req: Request) {
+const validateData = async (req: Request) => {
   const request = req.body;
   const routeName = request.name;
   const routeNameAr = request.ar;

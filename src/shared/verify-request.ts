@@ -24,11 +24,11 @@ interface RequestInfo {
   isAdmin?: boolean;
   isDeveloper?: boolean;
 }
-export const verifyJwtToken = async function (
+export const verifyJwtToken = async (
   req: Request,
   res: Response,
   next: () => void,
-) {
+) => {
   const language = await setRequestLanguage(req);
 
   try {

@@ -16,6 +16,7 @@ const login = async (req: Request, res: Response) => {
   const requestLanguage = await setRequestLanguage(req);
   const request = req.body;
   request['language'] = requestLanguage;
+
   const checkData = await validateData(req);
 
   if (!checkData.valid) {
@@ -111,7 +112,7 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
-async function validateData(req: Request) {
+const validateData = async (req: Request) => {
   const request = req.body;
   const userName = request.username;
   const userPassword = request.password;
@@ -137,7 +138,7 @@ async function validateData(req: Request) {
     valid,
     message,
   };
-}
+};
 
 const loginRouters = (app: express.Application) => {
   app.post(`${site.api}${site.modules.security}${site.apps.login}`, login);

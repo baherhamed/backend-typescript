@@ -665,7 +665,7 @@ const getAll = async (req: Request, res: Response) => {
   }
 };
 
-async function validateData(req: Request) {
+const validateData = async (req: Request) => {
   const request = req.body;
   const userName = request.name;
   const userMobile = request.mobile;

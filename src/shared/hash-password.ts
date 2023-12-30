@@ -14,7 +14,7 @@ export const hashPassword = async (user: SelectedUser) => {
   const saltRounds = 10;
 
   const hashedPassword = await new Promise((resolve, reject) => {
-    bcrypt.hash(password, saltRounds, function (err, hash) {
+    bcrypt.hash(password, saltRounds, (err, hash) => {
       if (err) reject(err);
       resolve(hash);
     });
