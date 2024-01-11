@@ -67,6 +67,7 @@ const login = async (req: Request, res: Response) => {
     const user = {
       userId: foundUser._id,
       name: foundUser.name,
+      isAdmin: foundUser.isAdmin,
       isDeveloper: foundUser?.isDeveloper,
     };
 

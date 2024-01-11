@@ -92,8 +92,12 @@ export const verifyJwtToken = async (
         });
 
         let isAdmin = false;
+        let isDeveloper = false;
         if (selectedUser?.isAdmin) {
           isAdmin = true;
+        }
+        if (selectedUser?.isDeveloper) {
+          isDeveloper = true;
         }
         if (selectedUser) {
           const requestInfo: RequestInfo = {
@@ -110,6 +114,7 @@ export const verifyJwtToken = async (
             language,
             date: new Date(),
             isAdmin,
+            isDeveloper,
           };
 
           req.body['requestInfo'] = requestInfo;
@@ -141,6 +146,6 @@ export const verifyJwtToken = async (
         .status(401);
     }
   } catch (error) {
-    console.log(`Verify Request ${error}`);
+    return console.log(`Verify Request ${error}`);
   }
 };

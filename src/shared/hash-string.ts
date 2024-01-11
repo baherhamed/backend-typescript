@@ -106,7 +106,7 @@ export const hashString = async (text: string) => {
   let hashedText = '';
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  for await (const elm of newText) {
+  for await (const _elm of newText) {
     const newWord = text.split('');
     for await (const nw of newWord) {
       const selectedIndex = replacementList.find((el) => el.key == nw);

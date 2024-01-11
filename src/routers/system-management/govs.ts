@@ -518,7 +518,7 @@ const validateData = async (req: Request) => {
     valid,
     message,
   };
-}
+};
 
 const govsRouters = async (app: express.Application) => {
   app.post(

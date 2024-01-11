@@ -88,6 +88,10 @@ const add = async (req: Request, res: Response) => {
       routesList: request.routesList,
       permissionsList: request.permissionsList,
       password: hashedPassword.newHashedPassword,
+      isAdmin:
+        requestInfo.isDeveloper || requestInfo.isAdmin
+          ? request.isAdmin
+          : false,
       active: true,
       deleted: false,
       addInfo: requestInfo,
@@ -210,6 +214,10 @@ const update = async (req: Request, res: Response) => {
           routesList: request.routesList || selectedUser.routesList,
           permissionsList:
             request.permissionsList || selectedUser.permissionsList,
+          isAdmin:
+            requestInfo.isDeveloper || requestInfo.isAdmin
+              ? request.isAdmin
+              : false,
           active: request.active || selectedUser.active,
           lastUpdateInfo: requestInfo,
         };
@@ -546,11 +554,27 @@ const getAll = async (req: Request, res: Response) => {
       limit: req.query?.limit || request.limit || pagination.getAll,
     };
 
-    const where = {
-      isDeveloper: false,
-      deleted: false,
-    };
+    let where;
 
+    if (requestInfo.isDeveloper) {
+      where = {
+        $or: [{ isDeveloper: true }, { isAdmin: true }],
+        $in: [
+          { isDeveloper: true, isAdmin: false },
+          { isDeveloper: false, isAdmin: true },
+        ],
+        deleted: false,
+      };
+    } else if (requestInfo.isAdmin) {
+      where = {
+        isDeveloper: false,
+        $in: [
+          { isDeveloper: false, isAdmin: true },
+          { isDeveloper: false, isAdmin: false },
+        ],
+        deleted: false,
+      };
+    }
     const result = await User.paginate(where, query);
 
     if (!result.docs.length) {
@@ -619,6 +643,11 @@ const getAll = async (req: Request, res: Response) => {
           }
         }
 
+        let isAdmin;
+        if (requestInfo.isDeveloper || requestInfo.isAdmin) {
+          isAdmin = doc.isAdmin;
+        }
+
         data.push({
           _id: doc._id,
           name: doc.name,
@@ -629,6 +658,7 @@ const getAll = async (req: Request, res: Response) => {
             name: Object(doc.languageId).name,
           },
           routesList,
+          isAdmin,
           active: doc.active,
           addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
           lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
@@ -691,7 +721,7 @@ const validateData = async (req: Request) => {
     valid,
     message,
   };
-}
+};
 
 const usersRouters = async (app: express.Application) => {
   app.post(

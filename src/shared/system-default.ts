@@ -79,13 +79,13 @@ export const systemDefaults = (async () => {
       routesList,
       permissionsList,
       active: true,
+      isAdmin: false,
       isDeveloper: true,
       deleted: false,
     });
 
     try {
-      const newUserr = await newUser.save();
-      console.log('newUserr', newUserr._id);
+      await newUser.save();
     } catch (error) {
       console.log(
         `Error In System Default While Creating Default Developer User ${error}`,
@@ -173,5 +173,4 @@ export const systemDefaults = (async () => {
     await exportUsersPermission.save();
   }
   console.log('system default completed');
-  
 })();
