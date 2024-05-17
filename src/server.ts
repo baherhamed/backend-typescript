@@ -76,7 +76,6 @@ govsRouters(app);
 usersRouters(app);
 citiesRouters(app);
 
-
 let privateKey;
 let certificate: string;
 let fullchain: string;
@@ -111,18 +110,17 @@ const httpServer = http.createServer(app);
 const httpsServer = https.createServer(credentials, app);
 systemDefaults;
 httpServer.listen(process.env.PORT, async () => {
-  
   console.log(`
   -------------------------
-   Server Run Http at PORT: ${process.env.PORT}
+  Server Run Http at PORT: ${process.env.PORT}
   -------------------------`);
 });
 
-httpsServer.listen(process.env.SSLPORT, async() => {
+httpsServer.listen(process.env.SSLPORT, async () => {
   console.log(`
--------------------------
- Server Run Https at PORT: ${process.env.SSLPORT}
--------------------------`);
+  -------------------------
+  Server Run Https at PORT: ${process.env.SSLPORT}
+  -------------------------`);
 });
 
 export default { httpServer, httpsServer };
