@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import 'dotenv/config'
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: __dirname + '/.env' });
@@ -7,7 +7,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const sslConfig = require('ssl-config')('modern');
+// const sslConfig = require('ssl-config')('modern');
 import * as http from 'http';
 import * as https from 'https';
 
@@ -39,7 +39,6 @@ app.use(
   }),
 );
 
-
 mongoose.set('strictQuery', true);
 mongoose.set('strictPopulate', true);
 
@@ -52,11 +51,14 @@ mongoose.set('strictPopulate', true);
         username: process.env.DB_USER,
         password: process.env.DB_PASS,
       },
-      ssl: false,
+      // ssl: false,
+      
     });
 
     console.log('Successfully Connected To Database');
+    
   } catch (error) {
+
     console.log(`Error While Connecting Database ${error}`);
   }
 })();
@@ -101,9 +103,9 @@ const credentials = {
   key: privateKey,
   cert: String(certificate),
   ca: String(fullchain),
-  ciphers: sslConfig.ciphers,
+  // ciphers: sslConfig.ciphers,
   honorCipherOrder: true,
-  secureOptions: sslConfig.minimumTLSVersion,
+  // secureOptions: sslConfig.minimumTLSVersion,
   passphrase: 'sample',
   agent: false,
 };

@@ -48,15 +48,15 @@ const update = async (req: Request, res: Response) => {
         },
       );
     }
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.updated,
-    );
+    // const message = await responseLanguage(
+    //   requestInfo.language,
+    //   responseMessages.updated,
+    // );
 
     return res
       .send({
         success: true,
-        message,
+        // message,
         data: {
           _id: Object(doc)._id,
           displaySetting: Object(doc)?.displaySetting,
@@ -69,10 +69,10 @@ const update = async (req: Request, res: Response) => {
           //   requestInfo.isAdmin && doc?.lastUpdateInfo
           //     ? await setDocumentDetails(requestInfo,doc?.lastUpdateInfo)
           //     : undefined,
-        },
+        }
       })
       .status(200);
-    // }
+    
   } catch (error) {
     console.log(`System Setting => Update System Setting ${error}`);
 

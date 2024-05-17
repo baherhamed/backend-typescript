@@ -86,7 +86,6 @@ const login = async (req: Request, res: Response) => {
 
   const token = jwt.sign(user, String(process.env.ACCESS_TOKEN_SECRET), {
     expiresIn: '10h',
-
   });
 
   const decode = jwt.decode(token, { complete: true }) as JwtPayload;
@@ -94,7 +93,7 @@ const login = async (req: Request, res: Response) => {
   const ip = req.ip?.split('fff:');
   const userAgent = req.headers['user-agent'];
   const ipAddress = ip![1];
-  await Token.findOneAndUpdate(
+  Token.findOneAndUpdate(
     { userId: user.userId, active: true },
     {
       active: false,

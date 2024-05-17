@@ -722,16 +722,16 @@ const logout = async (req: Request, res: Response) => {
       String(process.env.ACCESS_TOKEN_SECRET),
     ) as JwtPayload;
 
-    await Token.findOneAndUpdate(
-      { userId: decoded.userId, active: true },
-      {
-        active: false,
-        deactivateInfo: { userId: decoded.userId, date: new Date() },
-      },
-      {
-        new: true,
-      },
-    );
+    // await Token.findOneAndUpdate(
+    //   { userId: decoded.userId, active: true },
+    //   {
+    //     active: false,
+    //     deactivateInfo: { userId: decoded.userId, date: new Date() },
+    //   },
+    //   {
+    //     new: true,
+    //   },
+    // );
 
     const message = await responseLanguage(
       req.headers['accept-language'] || 'ar',
