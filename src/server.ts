@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import * as dotenv from "dotenv";
+import * as dotenv from 'dotenv';
 
 dotenv.config({ path: __dirname + '/.env' });
 
@@ -24,19 +24,21 @@ import loginRouters from './routers/security/login';
 import languageRouters from './routers/system-management/languages';
 import govsRouters from './routers/system-management/govs';
 import citiesRouters from './routers/system-management/cities';
+import GlobalSettingRouters from './routers/shared/global-setting';
 
 const app = express();
 
 app.use(
   bodyParser.urlencoded({
-    limit: '5mb',
+    limit: '1mb',
     extended: true,
   }),
 
   bodyParser.json({
-    limit: '5mb',
+    limit: '1mb',
   }),
 );
+
 
 mongoose.set('strictQuery', true);
 mongoose.set('strictPopulate', true);
@@ -51,7 +53,6 @@ mongoose.set('strictPopulate', true);
         password: process.env.DB_PASS,
       },
       ssl: false,
-      sslValidate: false,
     });
 
     console.log('Successfully Connected To Database');
@@ -75,6 +76,7 @@ languageRouters(app);
 govsRouters(app);
 usersRouters(app);
 citiesRouters(app);
+GlobalSettingRouters(app);
 
 let privateKey;
 let certificate: string;

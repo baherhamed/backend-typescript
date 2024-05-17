@@ -9,6 +9,7 @@ import {
   pagination,
   site,
   PermissionsNames,
+  setDocumentDetails,
 } from '../../shared';
 
 const add = async (req: Request, res: Response) => {
@@ -63,7 +64,6 @@ const add = async (req: Request, res: Response) => {
         })
         .status(400);
     }
-    // console.log('requestInfo', requestInfo);
 
     const doc = new Route({
       name: request.name,
@@ -85,7 +85,7 @@ const add = async (req: Request, res: Response) => {
           ar: permission.ar,
           en: permission.en,
           active: permission.active,
-          addInfo: { ...requestInfo },
+          addInfo: requestInfo,
         });
         await newPermission.save();
         permissionsList.push({
@@ -110,6 +110,9 @@ const add = async (req: Request, res: Response) => {
         message,
         data: {
           _id: doc._id,
+          addInfo: requestInfo.isAdmin
+            ? await setDocumentDetails(requestInfo, doc?.addInfo)
+            : undefined,
           permissionsList,
         },
       })
@@ -259,10 +262,13 @@ const update = async (req: Request, res: Response) => {
               ar: permission.ar,
               en: permission.en,
               active: permission.active,
-              addInfo: requestInfo.isAdmin ? permission.addInfo : undefined,
-              lastUpdateInfo: requestInfo.isAdmin
-                ? permission.lastUpdateInfo
+              addInfo: requestInfo.isAdmin
+                ? await setDocumentDetails(requestInfo, doc?.addInfo)
                 : undefined,
+              lastUpdateInfo:
+                requestInfo.isAdmin && doc?.lastUpdateInfo
+                  ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+                  : undefined,
             });
           }
         }
@@ -283,10 +289,13 @@ const update = async (req: Request, res: Response) => {
             en: doc?.en,
             active: doc?.active,
             permissionsList,
-            addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
-            lastUpdateInfo: requestInfo.isAdmin
-              ? doc?.lastUpdateInfo
+            addInfo: requestInfo.isAdmin
+              ? await setDocumentDetails(requestInfo, doc?.addInfo)
               : undefined,
+            lastUpdateInfo:
+              requestInfo.isAdmin && doc?.lastUpdateInfo
+                ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+                : undefined,
           },
         })
         .status(200);
@@ -310,7 +319,6 @@ const update = async (req: Request, res: Response) => {
 const deleted = async (req: Request, res: Response) => {
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-
   const hasPermission = await checkUserPermission(
     req,
     res,
@@ -437,6 +445,12 @@ const getAll = async (req: Request, res: Response) => {
     const data = [];
 
     for await (const doc of result.docs) {
+      const addInfo = requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc.addInfo)
+        : undefined;
+      const lastUpdateInfo = requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc.lastUpdateInfo)
+        : undefined;
       const permissionsList = [];
       const selectedPermissionsList = await Permission.find({
         routeId: doc?._id,
@@ -462,8 +476,8 @@ const getAll = async (req: Request, res: Response) => {
         en: doc.en,
         active: doc.active,
         permissionsList,
-        addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-        lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
+        addInfo,
+        lastUpdateInfo,
       });
     }
 
@@ -482,7 +496,6 @@ const getAll = async (req: Request, res: Response) => {
       .status(200);
   } catch (error) {
     console.log(`Route => Get All Route ${error}`);
-
     const message = await responseLanguage(
       requestInfo.language,
       responseMessages.invalidData,
@@ -539,6 +552,12 @@ const search = async (req: Request, res: Response) => {
 
     const data = [];
     for await (const doc of result.docs) {
+      const addInfo = requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc.addInfo)
+        : undefined;
+      const lastUpdateInfo = requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc.lastUpdateInfo)
+        : undefined;
       const permissionsList = [];
       const selectedPermissionsList = await Permission.find({
         routeId: doc?._id,
@@ -555,18 +574,17 @@ const search = async (req: Request, res: Response) => {
           });
         }
       }
-      if (doc) {
-        data.push({
-          _id: doc._id,
-          name: doc.name,
-          ar: doc.ar,
-          en: doc.en,
-          active: doc.active,
-          permissionsList,
-          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-          lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
-        });
-      }
+
+      data.push({
+        _id: doc._id,
+        name: doc.name,
+        ar: doc.ar,
+        en: doc.en,
+        active: doc.active,
+        permissionsList,
+        addInfo,
+        lastUpdateInfo,
+      });
     }
 
     const message = await responseLanguage(
@@ -684,6 +702,84 @@ const getActive = async (req: Request, res: Response) => {
   }
 };
 
+const view = async (req: Request, res: Response) => {
+  const request = req.body;
+
+  const _id = request._id;
+  const requestInfo = req.body.requestInfo;
+  // const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
+
+  // if (!hasRoute) return;
+  try {
+    if (!_id) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.missingId,
+      );
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(400);
+    }
+
+    const doc = await Route.findOne({ _id });
+
+    const permissionsList = [];
+    const selectedPermissions = await Permission.find({
+      routeId: doc?._id,
+      deleted: false,
+    });
+
+    if (selectedPermissions) {
+      for await (const permission of selectedPermissions) {
+        permissionsList.push({
+          _id: permission._id,
+          name: permission.name,
+          ar: permission.ar,
+          en: permission.en,
+          active: permission.active,
+        });
+      }
+    }
+
+    return res
+      .send({
+        success: true,
+        data: {
+          _id: doc?._id,
+          name: doc?.name,
+          ar: doc?.ar,
+          en: doc?.en,
+          active: doc?.active,
+          permissionsList,
+          addInfo: requestInfo.isDeveloper
+            ? await setDocumentDetails(requestInfo, doc?.addInfo)
+            : undefined,
+          lastUpdateInfo:
+            requestInfo.isDeveloper && doc?.lastUpdateInfo
+              ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+              : undefined,
+        },
+      })
+      .status(200);
+  } catch (error) {
+    console.log(`Route => View Route ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData,
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
+  }
+};
+
 const validateData = async (req: Request) => {
   const request = req.body;
   const routeName = request.name;
@@ -716,8 +812,7 @@ const validateData = async (req: Request) => {
     valid,
     message,
   };
-}
-
+};
 const routessRouters = async (app: express.Application) => {
   app.post(
     `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.add}`,
@@ -748,6 +843,11 @@ const routessRouters = async (app: express.Application) => {
     `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.getActive}`,
     verifyJwtToken,
     getActive,
+  );
+  app.post(
+    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.view}`,
+    verifyJwtToken,
+    view,
   );
 };
 

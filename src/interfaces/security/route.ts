@@ -9,6 +9,7 @@ import paginate from 'mongoose-paginate-v2';
 import autopopulate from 'mongoose-autopopulate';
 
 import { inputsLength } from '../../shared';
+import { RequestTemplate } from '../shared';
 
 
 interface IRoute extends Document {
@@ -17,9 +18,9 @@ interface IRoute extends Document {
   en: string;
   active: boolean;
   deleted: boolean;
-  addInfo: unknown;
-  lastUpdateInfo: unknown;
-  deletedInfo: unknown;
+  addInfo: typeof RequestTemplate;
+  lastUpdateInfo: typeof RequestTemplate;
+  deletedInfo: typeof RequestTemplate;
 }
 
 const RoutesSchema = new Schema(
@@ -51,9 +52,9 @@ const RoutesSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    addInfo: {},
-    lastUpdateInfo: {},
-    deleteInfo: {},
+    addInfo: RequestTemplate,
+    lastUpdateInfo: RequestTemplate,
+    deleteInfo: RequestTemplate,
   },
   {
     versionKey: false,

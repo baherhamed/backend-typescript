@@ -12,6 +12,7 @@ import {
   PermissionsNames,
   checkUserRoutes,
   RoutesNames,
+  setDocumentDetails,
 } from '../../shared';
 
 const add = async (req: Request, res: Response) => {
@@ -77,10 +78,12 @@ const add = async (req: Request, res: Response) => {
         message,
         data: {
           _id: doc._id,
+          addInfo: requestInfo.isAdmin
+            ? await setDocumentDetails(requestInfo, doc?.addInfo)
+            : undefined,
         },
       })
       .status(200);
-
   } catch (error) {
     console.log(`City => Add City ${error}`);
     const message = await responseLanguage(
@@ -160,7 +163,7 @@ const update = async (req: Request, res: Response) => {
     ) {
       const updatedCityData = {
         name: request.name,
-
+        govId: request.govId,
         active: request.active,
         lastUpdateInfo: requestInfo,
       };
@@ -185,9 +188,11 @@ const update = async (req: Request, res: Response) => {
             },
             name: doc?.name,
             active: doc?.active,
-            addInfo: requestInfo.isAdmin ? doc?.addInfo : undefined,
+            addInfo: requestInfo.isAdmin
+              ? await setDocumentDetails(requestInfo, doc!.addInfo)
+              : undefined,
             lastUpdateInfo: requestInfo.isAdmin
-              ? doc?.lastUpdateInfo
+              ? await setDocumentDetails(requestInfo, doc!.lastUpdateInfo)
               : undefined,
           },
         })
@@ -327,6 +332,13 @@ const getAll = async (req: Request, res: Response) => {
     const data = [];
 
     for await (const doc of result.docs) {
+      const addInfo = requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc.addInfo)
+        : undefined;
+      const lastUpdateInfo =
+        requestInfo.isAdmin && doc.lastUpdateInfo
+          ? await setDocumentDetails(requestInfo, doc.lastUpdateInfo)
+          : undefined;
       data.push({
         _id: doc._id,
         gov: {
@@ -335,8 +347,8 @@ const getAll = async (req: Request, res: Response) => {
         },
         name: doc.name,
         active: doc.active,
-        addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-        lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
+        addInfo,
+        lastUpdateInfo,
       });
     }
 
@@ -470,19 +482,25 @@ const search = async (req: Request, res: Response) => {
 
     const data = [];
     for await (const doc of result.docs) {
-      if (doc) {
-        data.push({
-          _id: doc._id,
-          gov: {
-            _id: Object(doc.govId)._id,
-            name: Object(doc.govId).name,
-          },
-          name: doc.name,
-          active: doc.active,
-          addInfo: requestInfo.isAdmin ? doc.addInfo : undefined,
-          lastUpdateInfo: requestInfo.isAdmin ? doc.lastUpdateInfo : undefined,
-        });
-      }
+      const addInfo = requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc?.addInfo)
+        : undefined;
+      const lastUpdateInfo =
+        requestInfo.isAdmin && doc?.lastUpdateInfo
+          ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+          : undefined;
+
+      data.push({
+        _id: doc._id,
+        gov: {
+          _id: Object(doc.govId)._id,
+          name: Object(doc.govId).name,
+        },
+        name: doc.name,
+        active: doc.active,
+        addInfo,
+        lastUpdateInfo,
+      });
     }
     const message = await responseLanguage(
       requestInfo.language,
@@ -543,6 +561,10 @@ const getActive = async (req: Request, res: Response) => {
       if (doc) {
         data.push({
           _id: doc._id,
+          gov: {
+            _id: Object(doc.govId)._id,
+            name: Object(doc.govId).name,
+          },
           name: doc.name,
           active: doc.active,
         });
@@ -577,6 +599,66 @@ const getActive = async (req: Request, res: Response) => {
   }
 };
 
+const view = async (req: Request, res: Response) => {
+  const request = req.body;
+  const _id = request._id;
+  const requestInfo = req.body.requestInfo;
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
+
+  if (!hasRoute) return;
+  try {
+    if (!_id) {
+      const message = await responseLanguage(
+        requestInfo.language,
+        responseMessages.missingId,
+      );
+      return res
+        .send({
+          success: false,
+          message,
+        })
+        .status(400);
+    }
+
+    const doc = await City.findOne({ _id });
+
+    return res
+      .send({
+        success: true,
+        data: {
+          _id: doc?._id,
+          gov: {
+            _id: Object(doc?.govId)._id,
+            name: Object(doc?.govId).name,
+          },
+          name: doc?.name,
+          active: doc?.active,
+          addInfo: requestInfo.isAdmin
+            ? await setDocumentDetails(requestInfo, doc?.addInfo)
+            : undefined,
+          lastUpdateInfo:
+            requestInfo.isAdmin && doc?.lastUpdateInfo
+              ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+              : undefined,
+        },
+      })
+      .status(200);
+  } catch (error) {
+    console.log(`City => View City ${error}`);
+
+    const message = await responseLanguage(
+      requestInfo.language,
+      responseMessages.invalidData,
+    );
+    return res
+      .send({
+        success: false,
+        message,
+      })
+      .status(500);
+  }
+};
+
 const validateData = async (req: Request) => {
   const request = req.body;
   const cityName = request.name;
@@ -597,7 +679,7 @@ const validateData = async (req: Request) => {
     valid,
     message,
   };
-}
+};
 
 const citiesRouters = async (app: express.Application) => {
   app.post(
@@ -634,6 +716,11 @@ const citiesRouters = async (app: express.Application) => {
     `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.getCitiesByGov}`,
     verifyJwtToken,
     getCitiesByGov,
+  );
+  app.post(
+    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.view}`,
+    verifyJwtToken,
+    view,
   );
 };
 

@@ -10,6 +10,7 @@ import paginate from 'mongoose-paginate-v2';
 import autopopulate from 'mongoose-autopopulate';
 
 import { inputsLength } from '../../shared';
+import { RequestTemplate } from '../shared';
 
 interface IPermission extends Document {
   routeId: Types.ObjectId;
@@ -18,9 +19,9 @@ interface IPermission extends Document {
   en: string;
   active: boolean;
   deleted: boolean;
-  addInfo: unknown;
-  lastUpdateInfo: unknown;
-  deletedInfo: unknown;
+  addInfo: typeof RequestTemplate;
+  lastUpdateInfo: typeof RequestTemplate;
+  deletedInfo: typeof RequestTemplate;
 }
 
 const PermissionSchema = new Schema(
@@ -59,9 +60,9 @@ const PermissionSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    addInfo: {},
-    lastUpdateInfo: {},
-    deleteInfo: {},
+    addInfo: RequestTemplate,
+    lastUpdateInfo: RequestTemplate,
+    deleteInfo: RequestTemplate,
   },
   {
     versionKey: false,

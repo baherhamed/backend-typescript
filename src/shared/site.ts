@@ -17,8 +17,10 @@ export const site = {
     delete: 'delete',
     getAll: 'getAll',
     getActive: 'getActive',
+    view: 'view',
     getCitiesByGov: 'getCitiesByGov',
     changePassword: 'changePassword',
+    logout: 'logout',
   },
   apps: {
     home: 'home',
@@ -28,6 +30,22 @@ export const site = {
     users: 'users/',
     govs: 'govs/',
     cities: 'cities/',
+    generalSystemSetting: 'generalSystemSetting/',
+  },
+  systemDefault: {
+    routesList: ['globalSetting', 'users', 'routes', 'permissions'],
+    permissionsList: [
+      'setGlobalSetting',
+      'addUser',
+      'updateUser',
+      'deleteUser',
+      'addRoute',
+      'updateRoute',
+      'deleteRoute',
+      'addPermission',
+      'updatePermission',
+      'deletePermission',
+    ],
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pagination: (result: any) => {

@@ -6,17 +6,17 @@ import mongoose, {
 } from 'mongoose';
 import paginate from 'mongoose-paginate-v2';
 import autopopulate from 'mongoose-autopopulate';
-
 import { inputsLength } from '../../shared/inputs-length';
+import { RequestTemplate } from '../shared';
 
 interface IGov extends Document {
   name: string;
   code: string;
   active: boolean;
   deleted: boolean;
-  addInfo: unknown;
-  lastUpdateInfo: unknown;
-  deletedInfo: unknown;
+  addInfo: typeof RequestTemplate;
+  lastUpdateInfo: typeof RequestTemplate;
+  deletedInfo: typeof RequestTemplate;
 }
 
 const GovSchema = new Schema(
@@ -42,9 +42,9 @@ const GovSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    addInfo: {},
-    lastUpdateInfo: {},
-    deleteInfo: {},
+    addInfo: RequestTemplate,
+    lastUpdateInfo: RequestTemplate,
+    deleteInfo: RequestTemplate,
   },
   {
     versionKey: false,

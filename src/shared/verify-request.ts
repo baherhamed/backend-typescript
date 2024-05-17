@@ -1,29 +1,12 @@
 import { Request, Response } from 'express';
-import { User } from '../interfaces';
+import { Token, User } from '../interfaces';
 
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
 import browser from 'browser-detect';
 import { responseLanguage, responseMessages, setRequestLanguage } from '.';
 import isJwtTokenExpired from 'jwt-check-expiry';
-import { Types } from 'mongoose';
 
-interface RequestInfo {
-  browser: {
-    name: string | undefined;
-    version: string | undefined;
-    mobile: boolean | undefined;
-  };
-  os: {
-    name: string | undefined;
-  };
-  ip_address: string | undefined;
-  userId: Types.ObjectId;
-  language: string;
-  date: Date;
-  isAdmin?: boolean;
-  isDeveloper?: boolean;
-}
 export const verifyJwtToken = async (
   req: Request,
   res: Response,
@@ -32,9 +15,10 @@ export const verifyJwtToken = async (
   const language = await setRequestLanguage(req);
 
   try {
-    const ip = req.ip.split('fff:');
-    const ua = req.headers['user-agent'];
-    const ip_address = ip[1];
+    const ip = req.ip?.split('fff:');
+    const userAgent = req.headers['user-agent'];
+
+    const ipAddress = ip![1];
     if (!req.headers.authorization) {
       const message = await responseLanguage(
         language,
@@ -46,7 +30,7 @@ export const verifyJwtToken = async (
       });
     }
 
-    if (!ua) {
+    if (!userAgent) {
       const message = await responseLanguage(
         language,
         responseMessages.userAgentData,
@@ -58,7 +42,8 @@ export const verifyJwtToken = async (
     }
 
     try {
-      // console.log('req', req);
+      // console.log('headers', req.headers);
+      // console.log('headers', req.headers);
 
       const token = req.headers['authorization'];
       const jwtPayload = token.split('Bearer ')[1];
@@ -75,16 +60,28 @@ export const verifyJwtToken = async (
           language,
           responseMessages.authorizationData,
         );
-        return res
-          .send({
-            success: false,
-            message,
-          })
-          .status(401);
+        return res.status(200).send({
+          success: false,
+          message,
+        });
+      }
+
+      const validateExisitToken = await Token.findOne({ token: jwtPayload });
+
+      if (!validateExisitToken || !validateExisitToken.active) {
+        const message = await responseLanguage(
+          language,
+          responseMessages.authorizationData,
+        );
+        return res.status(200).send({
+          status: 401,
+          success: false,
+          message,
+        });
       }
 
       if (!isExpired && decoded) {
-        const request_browser = browser(req.headers['user-agent']);
+        const requestBrowser = browser(req.headers['user-agent']);
         const selectedUser = await User.findOne({
           _id: decoded.userId,
           active: true,
@@ -100,23 +97,23 @@ export const verifyJwtToken = async (
           isDeveloper = true;
         }
         if (selectedUser) {
-          const requestInfo: RequestInfo = {
+          const requestInfo = {
+            userAgent,
             browser: {
-              name: request_browser.name,
-              version: request_browser.version,
-              mobile: request_browser.mobile,
+              name: requestBrowser.name,
+              version: requestBrowser.version,
+              mobile: requestBrowser.mobile,
             },
             os: {
-              name: request_browser.os,
+              name: requestBrowser.os,
             },
-            ip_address,
+            ipAddress,
             userId: selectedUser._id,
             language,
             date: new Date(),
             isAdmin,
             isDeveloper,
           };
-
           req.body['requestInfo'] = requestInfo;
           next();
         } else {
@@ -138,12 +135,16 @@ export const verifyJwtToken = async (
         language,
         responseMessages.authorizationData,
       );
-      return res
+
+       res
+        .statusCode= 401;
+        res
         .send({
           success: false,
           message,
         })
-        .status(401);
+        return res
+        // .status(401);
     }
   } catch (error) {
     return console.log(`Verify Request ${error}`);

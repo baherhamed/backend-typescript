@@ -1,7 +1,8 @@
 import { hashPassword } from './hash-password';
 import mongoose from 'mongoose';
 const ObjectId = mongoose.Types.ObjectId;
-import { User, Language, Route, Permission } from '../interfaces';
+import { User, Language, Route, Token } from '../interfaces';
+import { site } from '.';
 
 export const systemDefaults = (async () => {
   const defaultLangAr = await Language.findOne({
@@ -56,18 +57,20 @@ export const systemDefaults = (async () => {
     const hashedPassword = await hashPassword({
       password: String(process.env.DEVELOPER_PASSWORD),
     });
-    const routesList = ['users', 'routes', 'permissions'];
-    const permissionsList = [
-      'addUser',
-      'updateUser',
-      'deleteUser',
-      'addRoute',
-      'updateRoute',
-      'deleteRoute',
-      'addPermission',
-      'updatePermission',
-      'deletePermission',
-    ];
+    const routesList = site.systemDefault.routesList;
+    const permissionsList = site.systemDefault.permissionsList;
+    //  [
+    //   'setGlobalSetting',
+    //   'addUser',
+    //   'updateUser',
+    //   'deleteUser',
+    //   'addRoute',
+    //   'updateRoute',
+    //   'deleteRoute',
+    //   'addPermission',
+    //   'updatePermission',
+    //   'deletePermission',
+    // ];
 
     const newUser = new User({
       _id: new ObjectId('606b64ba679e4903d47ab001'),
@@ -128,7 +131,7 @@ export const systemDefaults = (async () => {
       );
     }
 
-    const addUserPermission = new Permission({
+    const addUserPermission = new Token({
       routeId: newRoute._id,
       name: 'addUser',
       en: 'Add User',
@@ -139,7 +142,7 @@ export const systemDefaults = (async () => {
 
     await addUserPermission.save();
 
-    const updateUserPermission = new Permission({
+    const updateUserPermission = new Token({
       routeId: newRoute._id,
       name: 'updateUser',
       en: 'Update User',
@@ -150,7 +153,7 @@ export const systemDefaults = (async () => {
 
     await updateUserPermission.save();
 
-    const deleteUserPermission = new Permission({
+    const deleteUserPermission = new Token({
       routeId: newRoute._id,
       name: 'deleteUser',
       en: 'Delete User',
@@ -161,7 +164,7 @@ export const systemDefaults = (async () => {
 
     await deleteUserPermission.save();
 
-    const exportUsersPermission = new Permission({
+    const exportUsersPermission = new Token({
       routeId: newRoute._id,
       name: 'exportUsers',
       en: 'Export Users',

@@ -1,4 +1,5 @@
 export const PermissionsNames = {
+  setGlobalSetting: 'setGlobalSetting',
   addUser: 'addUser',
   updateUser: 'updateUser',
   deleteUser: 'deleteUser',

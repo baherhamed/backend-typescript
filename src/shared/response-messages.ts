@@ -15,6 +15,10 @@ export const responseMessages = {
     ar: 'تم التعديل',
     en: 'Updated',
   },
+  loggedout: {
+    ar: 'تم تسجيل الخروج',
+    en: 'Loggedout',
+  },
   saved: {
     ar: 'تم الحفظ',
     en: 'Saved',

@@ -8,13 +8,14 @@ import paginate from 'mongoose-paginate-v2';
 import autopopulate from 'mongoose-autopopulate';
 
 import { inputsLength } from '../../shared/inputs-length';
+import { RequestTemplate } from '../shared';
 interface ILanguage extends Document {
   name: string;
   active: boolean;
   deleted: boolean;
-  addInfo: unknown;
-  lastUpdateInfo: unknown;
-  deletedInfo: unknown;
+  addInfo: typeof RequestTemplate;
+  lastUpdateInfo: typeof RequestTemplate;
+  deletedInfo: typeof RequestTemplate;
 }
 
 const LanguageSchema = new Schema(
@@ -38,9 +39,9 @@ const LanguageSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    addInfo: {},
-    lastUpdateInfo: {},
-    deleteInfo: {},
+    addInfo: RequestTemplate,
+    lastUpdateInfo: RequestTemplate,
+    deleteInfo: RequestTemplate,
   },
   {
     versionKey: false,

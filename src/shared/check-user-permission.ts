@@ -19,11 +19,14 @@ export const checkUserPermission = async (
       request.language,
       responseMessages.pemissionNotAllowed,
     );
-    res
+
+    return res
       .send({
         success: false,
         message,
       })
       .status(401);
+
+    res;
   }
 };
