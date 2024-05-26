@@ -4,7 +4,7 @@ const ObjectId = mongoose.Types.ObjectId;
 import { User, Language, Route, Token } from '../interfaces';
 import { site } from '.';
 
-export const systemDefaults = (async () => {
+export const systemDefaults = async () => {
   const defaultLangAr = await Language.findOne({
     code: 1,
   });
@@ -176,4 +176,7 @@ export const systemDefaults = (async () => {
     await exportUsersPermission.save();
   }
   console.log('system default completed');
-})();
+  return true
+}
+
+// ();

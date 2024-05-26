@@ -1,6 +1,6 @@
 import { User } from '../interfaces';
 import { Request, Response } from 'express';
-import { responseLanguage, responseMessages } from '.';
+import { responseLanguage, responseMessages, site } from '.';
 export const checkUserRoutes = async (
   req: Request,
   res: Response,
@@ -19,11 +19,10 @@ export const checkUserRoutes = async (
       request.language,
       responseMessages.routeNotAllowed,
     );
-    res
-      .send({
-        success: false,
-        message,
-      })
-      .status(401);
+     res.send({
+      success: false,
+      statusCode: site.responseStatusCodes.unauthorized,
+      message,
+    });
   }
 };

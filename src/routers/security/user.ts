@@ -13,6 +13,16 @@ import {
   checkUserRoutes,
   RoutesNames,
   setDocumentDetails,
+  handleError,
+  handleNoData,
+  handleExisitData,
+  handleValidateData,
+  handleAddResponse,
+  handleDeleteResponse,
+  handleGetAllResponse,
+  handleSearchResponse,
+  handleUpdateResponse,
+  handleLoggedOutResponse,
 } from '../../shared';
 
 import jwt, { JwtPayload } from 'jsonwebtoken';
@@ -29,16 +39,9 @@ const add = async (req: Request, res: Response) => {
 
   if (!hasRoute || !hasPermission) return;
   try {
-    const checkData = await validateData(req);
+    const checkData = await validateData(req, res);
 
-    if (!checkData.valid) {
-      return res
-        .send({
-          success: false,
-          message: checkData.message,
-        })
-        .status(400);
-    }
+    if (!checkData?.valid) return;
 
     const findUser = {
       $or: [
@@ -57,17 +60,13 @@ const add = async (req: Request, res: Response) => {
     const checkNewUser = await User.findOne(findUser);
 
     if (checkNewUser) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.userExisit,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
+      const response = await handleExisitData({
+        language: requestInfo.language,
+        message: responseMessages.userExisit,
+      });
+      return res.send(response);
     }
+
     const hashedPassword = await hashPassword(request);
     if (!hashedPassword.success) {
       const message = await responseLanguage(
@@ -75,12 +74,11 @@ const add = async (req: Request, res: Response) => {
         responseMessages.password,
       );
 
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
+      return res.send({
+        success: false,
+        statusCode: site.responseStatusCodes.missingData,
+        message,
+      });
     }
 
     const doc = new User({
@@ -100,35 +98,16 @@ const add = async (req: Request, res: Response) => {
       addInfo: requestInfo,
     });
     await doc.save();
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.saved,
-    );
-    return res
-      .send({
-        success: true,
-        message,
-        data: {
-          _id: doc._id,
-          addInfo: requestInfo.isAdmin
-            ? await setDocumentDetails(requestInfo, doc?.addInfo)
-            : undefined,
-        },
-      })
-      .status(200);
-  } catch (error) {
+    const data = {
+      _id: doc._id,
+      addInfo: requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc?.addInfo)
+        : undefined,
+    };
+    handleAddResponse({ language: requestInfo.language, data }, res);
+  } catch (error: any) {
     console.log(`User => Add User ${error}`);
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -145,28 +124,9 @@ const update = async (req: Request, res: Response) => {
 
   if (!hasRoute || !hasPermission) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
-    const checkData = await validateData(req);
+    const checkData = await validateData(req, res);
 
-    if (!checkData.valid) {
-      return res
-        .send({
-          success: false,
-          message: checkData.message,
-        })
-        .status(400);
-    }
+    if (!checkData?.valid) return;
 
     const findUser = {
       $or: [
@@ -186,18 +146,13 @@ const update = async (req: Request, res: Response) => {
     const selectedUser = await User.findOne({ _id });
 
     if (checkIfUserExisit && String(checkIfUserExisit['_id']) !== String(_id)) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.userExisit,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
+      const response = await handleExisitData({
+        language: requestInfo.language,
+        message: responseMessages.userExisit,
+      });
+      return res.send(response);
     }
+
     if (
       !checkIfUserExisit ||
       (checkIfUserExisit && String(checkIfUserExisit['_id']) === String(_id))
@@ -280,50 +235,30 @@ const update = async (req: Request, res: Response) => {
           }
         }
 
-        const message = await responseLanguage(
-          requestInfo.language,
-          responseMessages.updated,
-        );
-
-        return res
-          .send({
-            success: true,
-            message,
-            data: {
-              _id: doc?._id,
-              name: doc?.name,
-              mobile: doc?.mobile,
-              email: doc?.email,
-              language: {
-                _id: Object(doc?.languageId)._id,
-                name: Object(doc?.languageId).name,
-              },
-              routesList,
-              active: doc?.active,
-              addInfo: requestInfo.isAdmin
-                ? await setDocumentDetails(requestInfo, doc!.addInfo)
-                : undefined,
-              lastUpdateInfo: requestInfo.isAdmin
-                ? await setDocumentDetails(requestInfo, doc!.lastUpdateInfo)
-                : undefined,
-            },
-          })
-          .status(200);
+        const data = {
+          _id: doc?._id,
+          name: doc?.name,
+          mobile: doc?.mobile,
+          email: doc?.email,
+          language: {
+            _id: Object(doc?.languageId)._id,
+            name: Object(doc?.languageId).name,
+          },
+          routesList,
+          active: doc?.active,
+          addInfo: requestInfo.isAdmin
+            ? await setDocumentDetails(requestInfo, doc!.addInfo)
+            : undefined,
+          lastUpdateInfo: requestInfo.isAdmin
+            ? await setDocumentDetails(requestInfo, doc!.lastUpdateInfo)
+            : undefined,
+        };
+        handleUpdateResponse({ language: requestInfo.language, data }, res);
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.log(`User => Update User ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -339,75 +274,33 @@ const deleted = async (req: Request, res: Response) => {
 
   if (!hasRoute || !hasPermission) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
-
     const selectedUserToDelete = {
       _id,
       deleted: false,
     };
     const selectedUser = await User.findOne(selectedUserToDelete);
 
-    if (selectedUser) {
-      const deletedUserData = {
-        active: false,
-        deleted: true,
-        deleteInfo: requestInfo,
-      };
-
-      const doc = await User.findOneAndUpdate({ _id }, deletedUserData, {
-        new: true,
-      });
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.deleted,
-      );
-
-      return res
-        .send({
-          success: true,
-          message,
-          data: {
-            _id: doc?._id,
-          },
-        })
-        .status(200);
-    } else {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(500);
+    if (!selectedUser) {
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
-  } catch (error) {
-    console.log(`User => Delete User ${error}`);
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.noData,
+    const deletedUserData = {
+      active: false,
+      deleted: true,
+      deleteInfo: requestInfo,
+    };
+
+    const doc = await User.findOneAndUpdate({ _id }, deletedUserData, {
+      new: true,
+    });
+    handleDeleteResponse(
+      { language: requestInfo.language, data: { _id: doc?._id } },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`User => Delete User ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -446,17 +339,8 @@ const getAll = async (req: Request, res: Response) => {
     const result = await User.paginate(where, query);
 
     if (!result.docs.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
@@ -538,33 +422,17 @@ const getAll = async (req: Request, res: Response) => {
         lastUpdateInfo,
       });
     }
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
+    handleGetAllResponse(
+      {
+        language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`User => Get All User ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+      },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`User => Get All User ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -597,17 +465,8 @@ const search = async (req: Request, res: Response) => {
     const result = await User.paginate(where, query);
 
     if (!result.docs.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
@@ -684,32 +543,17 @@ const search = async (req: Request, res: Response) => {
       });
     }
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
+    handleSearchResponse(
+      {
+        language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`User => Search User ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+      },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`User => Search User ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -722,30 +566,34 @@ const logout = async (req: Request, res: Response) => {
       String(process.env.ACCESS_TOKEN_SECRET),
     ) as JwtPayload;
 
-    // await Token.findOneAndUpdate(
-    //   { userId: decoded.userId, active: true },
-    //   {
-    //     active: false,
-    //     deactivateInfo: { userId: decoded.userId, date: new Date() },
-    //   },
-    //   {
-    //     new: true,
-    //   },
+    await Token.findOneAndUpdate(
+      { userId: decoded.userId, active: true },
+      {
+        active: false,
+        deactivateInfo: { userId: decoded.userId, date: new Date() },
+      },
+      {
+        new: true,
+      },
+    );
+    const language = req.headers['accept-language'] || 'ar';
+    handleLoggedOutResponse({
+      language
+    }, res);
+    // const message = await responseLanguage(
+    //   req.headers['accept-language'] || 'ar',
+    //   responseMessages.loggedout,
     // );
 
-    const message = await responseLanguage(
-      req.headers['accept-language'] || 'ar',
-      responseMessages.loggedout,
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
-      })
-      .status(200);
-  } catch (error) {
+    // return res
+    //   .send({
+    //     success: true,
+    //     message,
+    //   })
+    //   .status(200);
+  } catch (error: any) {
     console.log(`User => logout ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -758,23 +606,8 @@ const view = async (req: Request, res: Response) => {
 
   if (!hasRoute) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
-
     const doc = await User.findOne({ _id });
-
     const routesList = [];
-
     const allRoutesList = await Route.find({ deleted: false });
     const allPermissionsList = await Permission.find({
       deleted: false,
@@ -822,47 +655,36 @@ const view = async (req: Request, res: Response) => {
       }
     }
 
-    return res
-      .send({
-        success: true,
-        data: {
-          _id: doc?._id,
-          name: doc?.name,
-          mobile: doc?.mobile,
-          email: doc?.email,
-          language: {
-            _id: Object(doc?.languageId)._id,
-            name: Object(doc?.languageId).name,
-          },
-          routesList,
-          active: doc?.active,
-          addInfo: requestInfo.isAdmin
-            ? await setDocumentDetails(requestInfo, doc?.addInfo)
-            : undefined,
-          lastUpdateInfo:
-            requestInfo.isAdmin && doc?.lastUpdateInfo
-              ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
-              : undefined,
+    return res.send({
+      success: true,
+      statusCode: site.responseStatusCodes.view,
+      data: {
+        _id: doc?._id,
+        name: doc?.name,
+        mobile: doc?.mobile,
+        email: doc?.email,
+        language: {
+          _id: Object(doc?.languageId)._id,
+          name: Object(doc?.languageId).name,
         },
-      })
-      .status(200);
-  } catch (error) {
+        routesList,
+        active: doc?.active,
+        addInfo: requestInfo.isAdmin
+          ? await setDocumentDetails(requestInfo, doc?.addInfo)
+          : undefined,
+        lastUpdateInfo:
+          requestInfo.isAdmin && doc?.lastUpdateInfo
+            ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+            : undefined,
+      },
+    });
+  } catch (error: any) {
     console.log(`Users => View Users ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
-const validateData = async (req: Request) => {
+const validateData = async (req: Request, res: Response) => {
   const request = req.body;
   const userName = request.name;
   const userMobile = request.mobile;
@@ -884,45 +706,47 @@ const validateData = async (req: Request) => {
     valid = true;
     message = await responseLanguage(requestLanguage, responseMessages.valid);
   }
-  return {
-    valid,
-    message,
-  };
+
+  if (!valid) {
+    handleValidateData({ language: requestLanguage, res, message });
+  } else {
+    return { valid };
+  }
 };
 
 const usersRouters = async (app: express.Application) => {
   app.post(
-    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.add}`,
+    `${site.api}${site.apps.users}${site.appsRoutes.add}`,
     verifyJwtToken,
     add,
   );
   app.put(
-    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.update}`,
+    `${site.api}${site.apps.users}${site.appsRoutes.update}`,
     verifyJwtToken,
     update,
   );
   app.put(
-    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.delete}`,
+    `${site.api}${site.apps.users}${site.appsRoutes.delete}`,
     verifyJwtToken,
     deleted,
   );
   app.post(
-    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.getAll}`,
+    `${site.api}${site.apps.users}${site.appsRoutes.getAll}`,
     verifyJwtToken,
     getAll,
   );
   app.post(
-    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.search}`,
+    `${site.api}${site.apps.users}${site.appsRoutes.search}`,
     verifyJwtToken,
     search,
   );
   app.put(
-    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.logout}`,
-    // verifyJwtToken,
+    `${site.api}${site.apps.users}${site.appsRoutes.logout}`,
+
     logout,
   );
   app.post(
-    `${site.api}${site.modules.security}${site.apps.users}${site.appsRoutes.view}`,
+    `${site.api}${site.apps.users}${site.appsRoutes.view}`,
     verifyJwtToken,
     view,
   );

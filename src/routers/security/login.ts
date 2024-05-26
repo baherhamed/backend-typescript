@@ -11,23 +11,17 @@ import {
   responseLanguage,
   site,
   hashString,
+  handleValidateData,
+  handleLoginFailResponse,
+  handleLoginSuccessResponse,
 } from '../../shared';
 
 const login = async (req: Request, res: Response) => {
   const requestLanguage = await setRequestLanguage(req);
   const request = req.body;
   request.language = requestLanguage;
-
-  const checkData = await validateData(req);
-
-  if (!checkData.valid) {
-    return res
-      .send({
-        success: false,
-        message: checkData.message,
-      })
-      .status(400);
-  }
+  const checkData = await validateData(req, res);
+  if (!checkData?.valid) return;
 
   const findUser = {
     $or: [
@@ -44,48 +38,32 @@ const login = async (req: Request, res: Response) => {
     active: true,
     deleted: false,
   };
+
   const foundUser = await User.findOne(findUser);
 
   if (!foundUser) {
-    const message = await responseLanguage(
-      requestLanguage,
-      responseMessages.userNotFound,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(404);
+    handleLoginFailResponse({ language: requestLanguage }, res)
   }
 
   const checkPassword = await bcrypt.compare(
     request.password,
-    foundUser.password,
+    String(Object(foundUser).password),
   );
 
   if (!checkPassword) {
-    const message = await responseLanguage(
-      requestLanguage,
-      responseMessages.password,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(400);
+    return
   }
 
   const user = {
-    userId: foundUser._id,
-    name: foundUser.name,
-    isAdmin: foundUser.isAdmin,
-    isDeveloper: foundUser?.isDeveloper,
+    userId: Object(foundUser)?._id,
+    name: Object(foundUser)?.name,
+    isAdmin: Object(foundUser)?.isAdmin,
+    isDeveloper: Object(foundUser)?.isDeveloper,
   };
 
   const token = jwt.sign(user, String(process.env.ACCESS_TOKEN_SECRET), {
     expiresIn: '10h',
+    // expiresIn: '10S',
   });
 
   const decode = jwt.decode(token, { complete: true }) as JwtPayload;
@@ -98,7 +76,7 @@ const login = async (req: Request, res: Response) => {
     {
       active: false,
       deactivateInfo: {
-        userId: foundUser._id,
+        userId: Object(foundUser)?._id,
         userAgent,
         browser: {
           name: requestBrowser.name,
@@ -111,8 +89,8 @@ const login = async (req: Request, res: Response) => {
         ipAddress,
         language: request.language,
         date: new Date(),
-        isAdmin: foundUser.isAdmin,
-        isDeveloper: foundUser?.isDeveloper,
+        isAdmin: Object(foundUser)?.isAdmin,
+        isDeveloper: Object(foundUser)?.isDeveloper,
       },
     },
   );
@@ -129,39 +107,35 @@ const login = async (req: Request, res: Response) => {
     active: true,
   });
   await newToken.save();
-  const routesList = foundUser.routesList;
-  const permissionsList = foundUser.permissionsList;
-  const sysetmSetting = await GlobalSetting.findOne({});
+  const routesList = Object(foundUser)?.routesList;
+  const permissionsList = Object(foundUser)?.permissionsList;
+  const sysetmSetting = await GlobalSetting.findOne();
 
   const globalSetting = JSON.stringify({
-    displaySetting: sysetmSetting?.displaySetting,
+    displaySetting: {
+      displayRecordDetails:
+        Object(sysetmSetting)?.displaySetting.displayRecordDetails,
+      showTooltip: Object(sysetmSetting)?.displaySetting.showTooltip,
+      tooltipPosition:
+        Object(sysetmSetting)?.displaySetting.tooltipPosition.name,
+    },
   });
 
   const hasedRoutesList = (await hashString(routesList.toString())).hashedText;
   const hasedPermissionsList = (await hashString(permissionsList.toString()))
     .hashedText;
 
-  const message = await responseLanguage(
-    requestLanguage,
-    responseMessages.authorized,
-  );
-
-  return res
-    .send({
-      success: true,
-      message,
-      data: {
-        token,
-        routesList: hasedRoutesList,
-        permissionsList: hasedPermissionsList,
-        globalSetting,
-        language: Object(foundUser.languageId).name,
-      },
-    })
-    .status(200);
+  const data = {
+    token,
+    routesList: hasedRoutesList,
+    permissionsList: hasedPermissionsList,
+    globalSetting,
+    language: Object(foundUser?.languageId).name,
+  };
+  handleLoginSuccessResponse({ language: requestLanguage, data }, res)
 };
 
-const validateData = async (req: Request) => {
+const validateData = async (req: Request, res: Response) => {
   const request = req.body;
   const userName = request.username;
   const userPassword = request.password;
@@ -183,14 +157,15 @@ const validateData = async (req: Request) => {
     valid = true;
     message = await responseLanguage(requestLanguage, responseMessages.valid);
   }
-  return {
-    valid,
-    message,
-  };
+  if (!valid) {
+    handleValidateData({ language: requestLanguage, res, message });
+  } else {
+    return { valid };
+  }
 };
 
 const loginRouters = (app: express.Application) => {
-  app.post(`${site.api}${site.modules.security}${site.apps.login}`, login);
+  app.post(`${site.api}${site.apps.login}`, login);
 };
 
 export default loginRouters;

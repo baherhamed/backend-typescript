@@ -10,6 +10,17 @@ import {
   site,
   PermissionsNames,
   setDocumentDetails,
+  handleError,
+  handleNoData,
+  handleExisitData,
+  handleValidateData,
+  handleAddResponse,
+  handleUpdateResponse,
+  handleDeleteResponse,
+  handleGetAllResponse,
+  handleSearchResponse,
+  handleGetActiveResponse,
+  handleViewResponse,
 } from '../../shared';
 
 const add = async (req: Request, res: Response) => {
@@ -24,16 +35,8 @@ const add = async (req: Request, res: Response) => {
 
   if (!hasPermission) return;
   try {
-    const checkData = await validateData(req);
-
-    if (!checkData.valid) {
-      return res
-        .send({
-          success: false,
-          message: checkData.message,
-        })
-        .status(400);
-    }
+    const checkData = await validateData(req, res);
+    if (!checkData?.valid) return;
 
     const findRoute = {
       $or: [
@@ -53,16 +56,11 @@ const add = async (req: Request, res: Response) => {
     const checkNewRoute = await Route.findOne(findRoute);
 
     if (checkNewRoute) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.routeExisit,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
+      const response = await handleExisitData({
+        language: requestInfo.language,
+        message: responseMessages.routeExisit,
+      });
+      return res.send(response);
     }
 
     const doc = new Route({
@@ -104,31 +102,17 @@ const add = async (req: Request, res: Response) => {
     );
     await doc.save();
 
-    return res
-      .send({
-        success: true,
-        message,
-        data: {
-          _id: doc._id,
-          addInfo: requestInfo.isAdmin
-            ? await setDocumentDetails(requestInfo, doc?.addInfo)
-            : undefined,
-          permissionsList,
-        },
-      })
-      .status(200);
-  } catch (error) {
+    const data = {
+      _id: doc._id,
+      addInfo: requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc?.addInfo)
+        : undefined,
+      permissionsList,
+    };
+    handleAddResponse({ language: requestInfo.language, data }, res);
+  } catch (error: any) {
     console.log(`Route => Add Route ${error}`);
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -145,29 +129,8 @@ const update = async (req: Request, res: Response) => {
 
   if (!hasPermission) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
-
-    const checkData = await validateData(req);
-
-    if (!checkData.valid) {
-      return res
-        .send({
-          success: false,
-          message: checkData.message,
-        })
-        .status(400);
-    }
+    const checkData = await validateData(req, res);
+    if (!checkData?.valid) return;
 
     const findRoute = {
       $or: [
@@ -187,18 +150,13 @@ const update = async (req: Request, res: Response) => {
     const selectedRoute = await Route.findOne(findRoute);
 
     if (selectedRoute && String(selectedRoute['_id']) !== String(_id)) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.routeExisit,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
+      const response = await handleExisitData({
+        language: requestInfo.language,
+        message: responseMessages.routeExisit,
+      });
+      return res.send(response);
     }
+
     if (
       !selectedRoute ||
       (selectedRoute && String(selectedRoute['_id']) === String(_id))
@@ -273,46 +231,26 @@ const update = async (req: Request, res: Response) => {
           }
         }
       }
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.updated,
-      );
-      return res
-        .send({
-          success: true,
-          message,
-          data: {
-            _id: doc?._id,
-            name: doc?.name,
-            ar: doc?.ar,
-            en: doc?.en,
-            active: doc?.active,
-            permissionsList,
-            addInfo: requestInfo.isAdmin
-              ? await setDocumentDetails(requestInfo, doc?.addInfo)
-              : undefined,
-            lastUpdateInfo:
-              requestInfo.isAdmin && doc?.lastUpdateInfo
-                ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
-                : undefined,
-          },
-        })
-        .status(200);
+      const data = {
+        _id: doc?._id,
+        name: doc?.name,
+        ar: doc?.ar,
+        en: doc?.en,
+        active: doc?.active,
+        permissionsList,
+        addInfo: requestInfo.isAdmin
+          ? await setDocumentDetails(requestInfo, doc?.addInfo)
+          : undefined,
+        lastUpdateInfo:
+          requestInfo.isAdmin && doc?.lastUpdateInfo
+            ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+            : undefined,
+      };
+      handleUpdateResponse({ language: requestInfo.language, data }, res);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.log(`Route => Update Route ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -327,88 +265,47 @@ const deleted = async (req: Request, res: Response) => {
 
   if (!hasPermission) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
-
     const selectedRouteToDelete = {
       _id,
       deleted: false,
     };
     const selectedRoute = await Route.findOne(selectedRouteToDelete);
 
-    if (selectedRoute) {
-      const deletedRouteData = {
-        active: false,
-        deleted: true,
-        deleteInfo: requestInfo,
-      };
-
-      const doc = await Route.findOneAndUpdate({ _id }, deletedRouteData, {
-        new: true,
-      });
-
-      const deletedPermissionsList = await Permission.find({
-        routeId: doc?._id,
-        deleted: false,
-      });
-
-      for await (const permission of deletedPermissionsList) {
-        await Permission.findOneAndUpdate(
-          { _id: permission._id },
-          { active: false, deleted: true, deleteInfo: requestInfo },
-          { new: true },
-        );
-      }
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.deleted,
-      );
-
-      return res
-        .send({
-          success: true,
-          message,
-          data: {
-            _id: doc?._id,
-          },
-        })
-        .status(200);
-    } else {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(500);
+    if (!selectedRoute) {
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
-  } catch (error) {
-    console.log(`Route => Delete Route ${error}`);
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.noData,
+    const deletedRouteData = {
+      active: false,
+      deleted: true,
+      deleteInfo: requestInfo,
+    };
+
+    const doc = await Route.findOneAndUpdate({ _id }, deletedRouteData, {
+      new: true,
+    });
+
+    const deletedPermissionsList = await Permission.find({
+      routeId: doc?._id,
+      deleted: false,
+    });
+
+    for await (const permission of deletedPermissionsList) {
+      await Permission.findOneAndUpdate(
+        { _id: permission._id },
+        { active: false, deleted: true, deleteInfo: requestInfo },
+        { new: true },
+      );
+    }
+
+    handleDeleteResponse(
+      { language: requestInfo.language, data: { _id: doc?._id } },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`Route => Delete Route ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -429,17 +326,8 @@ const getAll = async (req: Request, res: Response) => {
     const result = await Route.paginate(where, query);
 
     if (!result.docs.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
@@ -481,31 +369,17 @@ const getAll = async (req: Request, res: Response) => {
       });
     }
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
+    handleGetAllResponse(
+      {
+        language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`Route => Get All Route ${error}`);
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+      },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`Route => Get All Route ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -537,17 +411,8 @@ const search = async (req: Request, res: Response) => {
     const result = await Route.paginate(where, query);
 
     if (!result.docs.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
@@ -587,32 +452,17 @@ const search = async (req: Request, res: Response) => {
       });
     }
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
+    handleSearchResponse(
+      {
+        language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`Route => Search Route ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+      },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`Route => Search Route ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -628,17 +478,8 @@ const getActive = async (req: Request, res: Response) => {
     const result = await Route.find(where);
 
     if (!result.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
@@ -674,31 +515,15 @@ const getActive = async (req: Request, res: Response) => {
       });
     }
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
+    handleGetActiveResponse({
+      language: requestInfo.language,
+      data,
+    },
+      res,
     );
-
-    return res
-      .send({
-        success: true,
-        message,
-        data,
-      })
-      .status(200);
-  } catch (error) {
+  } catch (error: any) {
     console.log(`Routes => Get Active routes ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -711,21 +536,7 @@ const view = async (req: Request, res: Response) => {
 
   // if (!hasRoute) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
-
     const doc = await Route.findOne({ _id });
-
     const permissionsList = [];
     const selectedPermissions = await Permission.find({
       routeId: doc?._id,
@@ -744,43 +555,35 @@ const view = async (req: Request, res: Response) => {
       }
     }
 
-    return res
-      .send({
-        success: true,
-        data: {
-          _id: doc?._id,
-          name: doc?.name,
-          ar: doc?.ar,
-          en: doc?.en,
-          active: doc?.active,
-          permissionsList,
-          addInfo: requestInfo.isDeveloper
-            ? await setDocumentDetails(requestInfo, doc?.addInfo)
-            : undefined,
-          lastUpdateInfo:
-            requestInfo.isDeveloper && doc?.lastUpdateInfo
-              ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
-              : undefined,
-        },
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`Route => View Route ${error}`);
+    const data = {
+      _id: doc?._id,
+      name: doc?.name,
+      ar: doc?.ar,
+      en: doc?.en,
+      active: doc?.active,
+      permissionsList,
+      addInfo: requestInfo.isDeveloper
+        ? await setDocumentDetails(requestInfo, doc?.addInfo)
+        : undefined,
+      lastUpdateInfo:
+        requestInfo.isDeveloper && doc?.lastUpdateInfo
+          ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+          : undefined,
+    };
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+    handleViewResponse({
+      language: requestInfo.language,
+      data,
+    },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`Route => View Route ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
-const validateData = async (req: Request) => {
+const validateData = async (req: Request, res: Response) => {
   const request = req.body;
   const routeName = request.name;
   const routeNameAr = request.ar;
@@ -808,44 +611,46 @@ const validateData = async (req: Request) => {
     valid = true;
     message = await responseLanguage(requestLanguage, responseMessages.valid);
   }
-  return {
-    valid,
-    message,
-  };
+  if (!valid) {
+    handleValidateData({ language: requestLanguage, res, message });
+  } else {
+    return { valid };
+  }
 };
+
 const routessRouters = async (app: express.Application) => {
   app.post(
-    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.add}`,
+    `${site.api}${site.apps.routes}${site.appsRoutes.add}`,
     verifyJwtToken,
     add,
   );
   app.put(
-    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.update}`,
+    `${site.api}${site.apps.routes}${site.appsRoutes.update}`,
     verifyJwtToken,
     update,
   );
   app.put(
-    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.delete}`,
+    `${site.api}${site.apps.routes}${site.appsRoutes.delete}`,
     verifyJwtToken,
     deleted,
   );
   app.post(
-    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.getAll}`,
+    `${site.api}${site.apps.routes}${site.appsRoutes.getAll}`,
     verifyJwtToken,
     getAll,
   );
   app.post(
-    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.search}`,
+    `${site.api}${site.apps.routes}${site.appsRoutes.search}`,
     verifyJwtToken,
     search,
   );
   app.post(
-    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.getActive}`,
+    `${site.api}${site.apps.routes}${site.appsRoutes.getActive}`,
     verifyJwtToken,
     getActive,
   );
   app.post(
-    `${site.api}${site.modules.security}${site.apps.routes}${site.appsRoutes.view}`,
+    `${site.api}${site.apps.routes}${site.appsRoutes.view}`,
     verifyJwtToken,
     view,
   );

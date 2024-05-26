@@ -1,4 +1,4 @@
-import 'dotenv/config'
+import 'dotenv/config';
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: __dirname + '/.env' });
@@ -25,6 +25,8 @@ import languageRouters from './routers/system-management/languages';
 import govsRouters from './routers/system-management/govs';
 import citiesRouters from './routers/system-management/cities';
 import GlobalSettingRouters from './routers/shared/global-setting';
+import jsonRouters from './routers/json/fixed';
+
 
 const app = express();
 
@@ -44,22 +46,25 @@ mongoose.set('strictPopulate', true);
 
 (async () => {
   try {
-    await mongoose.connect(String(process.env.DB_HOST), {
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+
+    const options = {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      useNewUrlParser: true, 
+      useUnifiedTopology: true,
       auth: {
-        username: process.env.DB_USER,
-        password: process.env.DB_PASS,
-      },
-      // ssl: false,
-      
-    });
+        username: process.env.dbUser,
+        password: process.env.dbPass,
+      }
+    };
+
+    await mongoose.connect(String(process.env.url), options);
+    await systemDefaults();
 
     console.log('Successfully Connected To Database');
-    
   } catch (error) {
-
     console.log(`Error While Connecting Database ${error}`);
+
   }
 })();
 
@@ -79,6 +84,7 @@ govsRouters(app);
 usersRouters(app);
 citiesRouters(app);
 GlobalSettingRouters(app);
+jsonRouters(app);
 
 let privateKey;
 let certificate: string;
@@ -112,7 +118,7 @@ const credentials = {
 
 const httpServer = http.createServer(app);
 const httpsServer = https.createServer(credentials, app);
-systemDefaults;
+
 httpServer.listen(process.env.PORT, async () => {
   console.log(`
   -------------------------

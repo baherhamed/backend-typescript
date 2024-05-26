@@ -4,6 +4,7 @@ import { RequestTemplate } from '../shared';
 
 interface GeneralSystemSetting {
   displaySetting: object;
+
   // addInfo: typeof RequestTemplate;
   // lastUpdateInfo: typeof RequestTemplate;
 }
@@ -18,6 +19,13 @@ const GolobalSettingSchema = new Schema(
       showTooltip: {
         type: Boolean,
         default: false,
+      },
+      tooltipPosition: {
+        // type: Object,
+        id: Number,
+        name: String,
+        ar: String,
+        en: String,
       },
     },
     // displaySetting:{},

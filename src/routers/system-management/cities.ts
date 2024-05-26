@@ -13,6 +13,17 @@ import {
   checkUserRoutes,
   RoutesNames,
   setDocumentDetails,
+  handleError,
+  handleNoData,
+  handleExisitData,
+  handleAddResponse,
+  handleUpdateResponse,
+  handleDeleteResponse,
+  handleGetAllResponse,
+  handleGetActiveResponse,
+  handleSearchResponse,
+  handleViewResponse,
+  handleValidateData,
 } from '../../shared';
 
 const add = async (req: Request, res: Response) => {
@@ -27,16 +38,9 @@ const add = async (req: Request, res: Response) => {
 
   if (!hasRoute || !hasPermission) return;
   try {
-    const checkData = await validateData(req);
+     const checkData = await validateData(req, res);
 
-    if (!checkData.valid) {
-      return res
-        .send({
-          success: false,
-          message: checkData.message,
-        })
-        .status(400);
-    }
+    if (!checkData?.valid) return;
 
     const findCity = {
       govId: request.govId,
@@ -47,16 +51,11 @@ const add = async (req: Request, res: Response) => {
     const checkNewCity = await City.findOne(findCity);
 
     if (checkNewCity) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.cityExisit,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
+      const response = await handleExisitData({
+        language: requestInfo.language,
+        message: responseMessages.cityExisit,
+      });
+      return res.send(response);
     }
 
     const doc = new City({
@@ -68,34 +67,17 @@ const add = async (req: Request, res: Response) => {
     });
     await doc.save();
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.saved,
-    );
-    return res
-      .send({
-        success: true,
-        message,
-        data: {
-          _id: doc._id,
-          addInfo: requestInfo.isAdmin
-            ? await setDocumentDetails(requestInfo, doc?.addInfo)
-            : undefined,
-        },
-      })
-      .status(200);
-  } catch (error) {
+    const data = {
+      _id: doc._id,
+      addInfo: requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc?.addInfo)
+        : undefined,
+    };
+
+    handleAddResponse({ language: requestInfo.language, data }, res);
+  } catch (error: any) {
     console.log(`City => Add City ${error}`);
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -112,29 +94,9 @@ const update = async (req: Request, res: Response) => {
 
   if (!hasRoute || !hasPermission) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
+     const checkData = await validateData(req, res);
 
-    const checkData = await validateData(req);
-
-    if (!checkData.valid) {
-      return res
-        .send({
-          success: false,
-          message: checkData.message,
-        })
-        .status(400);
-    }
+    if (!checkData?.valid) return;
 
     const findCity = {
       govId: request.govId,
@@ -145,18 +107,13 @@ const update = async (req: Request, res: Response) => {
     const selectedCity = await City.findOne(findCity);
 
     if (selectedCity && String(selectedCity['_id']) !== String(_id)) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.cityExisit,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
+      const response = await handleExisitData({
+        language: requestInfo.language,
+        message: responseMessages.cityExisit,
+      });
+      return res.send(response);
     }
+
     if (
       !selectedCity ||
       (selectedCity && String(selectedCity['_id']) === String(_id))
@@ -172,45 +129,26 @@ const update = async (req: Request, res: Response) => {
         new: true,
       });
 
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.updated,
-      );
-      return res
-        .send({
-          success: true,
-          message,
-          data: {
-            _id: doc?._id,
-            gov: {
-              _id: Object(doc?.govId)._id,
-              name: Object(doc?.govId).name,
-            },
-            name: doc?.name,
-            active: doc?.active,
-            addInfo: requestInfo.isAdmin
-              ? await setDocumentDetails(requestInfo, doc!.addInfo)
-              : undefined,
-            lastUpdateInfo: requestInfo.isAdmin
-              ? await setDocumentDetails(requestInfo, doc!.lastUpdateInfo)
-              : undefined,
-          },
-        })
-        .status(200);
+      const data = {
+        _id: doc?._id,
+        gov: {
+          _id: Object(doc?.govId)._id,
+          name: Object(doc?.govId).name,
+        },
+        name: doc?.name,
+        active: doc?.active,
+        addInfo: requestInfo.isAdmin
+          ? await setDocumentDetails(requestInfo, doc!.addInfo)
+          : undefined,
+        lastUpdateInfo: requestInfo.isAdmin
+          ? await setDocumentDetails(requestInfo, doc!.lastUpdateInfo)
+          : undefined,
+      };
+      handleUpdateResponse({ language: requestInfo.language, data }, res);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.log(`City => Update City ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -226,75 +164,35 @@ const deleted = async (req: Request, res: Response) => {
 
   if (!hasRoute || !hasPermission) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
-
     const selectedCityToDelete = {
       _id,
       deleted: false,
     };
+
     const selectedCity = await City.findOne(selectedCityToDelete);
 
-    if (selectedCity) {
-      const deletedCityData = {
-        active: false,
-        deleted: true,
-        deleteInfo: requestInfo,
-      };
-
-      const doc = await City.findOneAndUpdate({ _id }, deletedCityData, {
-        new: true,
-      });
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.deleted,
-      );
-
-      return res
-        .send({
-          success: true,
-          message,
-          data: {
-            _id: doc?._id,
-          },
-        })
-        .status(200);
-    } else {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(500);
+    if (!selectedCity) {
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
-  } catch (error) {
-    console.log(`City => Delete City ${error}`);
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.noData,
+    const deletedCityData = {
+      active: false,
+      deleted: true,
+      deleteInfo: requestInfo,
+    };
+
+    const doc = await City.findOneAndUpdate({ _id }, deletedCityData, {
+      new: true,
+    });
+
+    handleDeleteResponse(
+      { language: requestInfo.language, data: { _id: doc?._id } },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`City => Delete City ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -316,17 +214,8 @@ const getAll = async (req: Request, res: Response) => {
     const result = await City.paginate(where, query);
 
     if (!result.docs.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
@@ -352,32 +241,17 @@ const getAll = async (req: Request, res: Response) => {
       });
     }
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
+    handleGetAllResponse(
+      {
+        language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`City => Get All City ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+      },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`City => Get All City ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -395,17 +269,8 @@ const getCitiesByGov = async (req: Request, res: Response) => {
     const result = await City.find(where);
 
     if (!result.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
@@ -416,32 +281,16 @@ const getCitiesByGov = async (req: Request, res: Response) => {
         name: doc.name,
       });
     }
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
+    handleGetActiveResponse(
+      {
+        language: requestInfo.language,
         data,
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`City => Get Cities By Gov ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+      },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`City => Get Cities By Gov ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -467,17 +316,8 @@ const search = async (req: Request, res: Response) => {
     const result = await City.paginate(where, query);
 
     if (!result.docs.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
@@ -502,32 +342,18 @@ const search = async (req: Request, res: Response) => {
         lastUpdateInfo,
       });
     }
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
-    );
 
-    return res
-      .send({
-        success: true,
-        message,
+    handleSearchResponse(
+      {
+        language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`City => Search All ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+      },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`City => Search All ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -543,59 +369,32 @@ const getActive = async (req: Request, res: Response) => {
     const result = await City.find(where);
 
     if (!result.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
     for await (const doc of result) {
-      if (doc) {
-        data.push({
-          _id: doc._id,
-          gov: {
-            _id: Object(doc.govId)._id,
-            name: Object(doc.govId).name,
-          },
-          name: doc.name,
-          active: doc.active,
-        });
-      }
+      data.push({
+        _id: doc._id,
+        gov: {
+          _id: Object(doc.govId)._id,
+          name: Object(doc.govId).name,
+        },
+        name: doc.name,
+        active: doc.active,
+      });
     }
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
+    handleGetActiveResponse({
+      language: requestInfo.language,
+      data,
+    },
+      res,
     );
-
-    return res
-      .send({
-        success: true,
-        message,
-        data,
-      })
-      .status(200);
-  } catch (error) {
+  } catch (error: any) {
     console.log(`City => Get Active City ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -607,59 +406,37 @@ const view = async (req: Request, res: Response) => {
 
   if (!hasRoute) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
-
     const doc = await City.findOne({ _id });
+    const data = {
+      _id: doc?._id,
+      gov: {
+        _id: Object(doc?.govId)._id,
+        name: Object(doc?.govId).name,
+      },
+      name: doc?.name,
+      active: doc?.active,
+      addInfo: requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc?.addInfo)
+        : undefined,
+      lastUpdateInfo:
+        requestInfo.isAdmin && doc?.lastUpdateInfo
+          ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+          : undefined,
+    };
 
-    return res
-      .send({
-        success: true,
-        data: {
-          _id: doc?._id,
-          gov: {
-            _id: Object(doc?.govId)._id,
-            name: Object(doc?.govId).name,
-          },
-          name: doc?.name,
-          active: doc?.active,
-          addInfo: requestInfo.isAdmin
-            ? await setDocumentDetails(requestInfo, doc?.addInfo)
-            : undefined,
-          lastUpdateInfo:
-            requestInfo.isAdmin && doc?.lastUpdateInfo
-              ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
-              : undefined,
-        },
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`City => View City ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+    handleViewResponse({
+      language: requestInfo.language,
+      data,
+    },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`City => View City ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
-const validateData = async (req: Request) => {
+const validateData = async (req: Request, res: Response) => {
   const request = req.body;
   const cityName = request.name;
   const requestLanguage = request.requestInfo.language;
@@ -675,50 +452,52 @@ const validateData = async (req: Request) => {
     valid = true;
     message = await responseLanguage(requestLanguage, responseMessages.valid);
   }
-  return {
-    valid,
-    message,
-  };
+
+  if (!valid) {
+    handleValidateData({ language: requestLanguage, res, message });
+  } else {
+    return { valid };
+  }
 };
 
 const citiesRouters = async (app: express.Application) => {
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.add}`,
+    `${site.api}${site.apps.cities}${site.appsRoutes.add}`,
     verifyJwtToken,
     add,
   );
   app.put(
-    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.update}`,
+    `${site.api}${site.apps.cities}${site.appsRoutes.update}`,
     verifyJwtToken,
     update,
   );
   app.put(
-    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.delete}`,
+    `${site.api}${site.apps.cities}${site.appsRoutes.delete}`,
     verifyJwtToken,
     deleted,
   );
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.getAll}`,
+    `${site.api}${site.apps.cities}${site.appsRoutes.getAll}`,
     verifyJwtToken,
     getAll,
   );
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.search}`,
+    `${site.api}${site.apps.cities}${site.appsRoutes.search}`,
     verifyJwtToken,
     search,
   );
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.getActive}`,
+    `${site.api}${site.apps.cities}${site.appsRoutes.getActive}`,
     verifyJwtToken,
     getActive,
   );
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.getCitiesByGov}`,
+    `${site.api}${site.apps.cities}${site.appsRoutes.getCitiesByGov}`,
     verifyJwtToken,
     getCitiesByGov,
   );
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.cities}${site.appsRoutes.view}`,
+    `${site.api}${site.apps.cities}${site.appsRoutes.view}`,
     verifyJwtToken,
     view,
   );

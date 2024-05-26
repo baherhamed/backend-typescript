@@ -1,12 +1,9 @@
 import { site } from '.';
+import { IMessageLanguage } from '../interfaces';
 
-interface Message {
-  ar: string;
-  en: string;
-}
 export const responseLanguage = async (
   requestLanguage: string,
-  message: Message,
+  message: IMessageLanguage,
   err?: string,
 ) => {
   let responseMessage;

@@ -12,11 +12,14 @@ import {
   PermissionsNames,
   checkUserRoutes,
   RoutesNames,
+  handleError,
+  handleGetActiveResponse,
+  handleUpdateResponse,
 } from '../../shared';
 
 const update = async (req: Request, res: Response) => {
   const request = req.body;
-  console.log('request', request);
+
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.globalSetting);
@@ -48,44 +51,14 @@ const update = async (req: Request, res: Response) => {
         },
       );
     }
-    // const message = await responseLanguage(
-    //   requestInfo.language,
-    //   responseMessages.updated,
-    // );
-
-    return res
-      .send({
-        success: true,
-        // message,
-        data: {
-          _id: Object(doc)._id,
-          displaySetting: Object(doc)?.displaySetting,
-          // code: doc?.code,
-          // active: doc?.active,
-          // addInfo: requestInfo.isAdmin
-          //   ? await setDocumentDetails(requestInfo,doc?.addInfo)
-          //   : undefined,
-          // lastUpdateInfo:
-          //   requestInfo.isAdmin && doc?.lastUpdateInfo
-          //     ? await setDocumentDetails(requestInfo,doc?.lastUpdateInfo)
-          //     : undefined,
-        }
-      })
-      .status(200);
-    
-  } catch (error) {
+    const data = {
+      _id: Object(doc)._id,
+      displaySetting: Object(doc).displaySetting,
+    }
+    handleUpdateResponse({ language: requestInfo.language, data }, res);
+  } catch (error: any) {
     console.log(`System Setting => Update System Setting ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -97,49 +70,33 @@ const getActive = async (req: Request, res: Response) => {
 
     const data = {
       _id: doc?._id,
-      displaySetting: Object(doc)?.displaySetting,
+      displaySetting: doc?.displaySetting,
     };
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
+    handleGetActiveResponse({
+      language: requestInfo.language,
+      data,
+    },
+      res,
     );
-
-    return res
-      .send({
-        success: true,
-        message,
-        data,
-      })
-      .status(200);
-  } catch (error) {
+  } catch (error: any) {
     console.log(`System Setting => Get Active System Setting ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
-const generalSystemSettingRouters = async (app: express.Application) => {
+const globalSystemSettingRouters = async (app: express.Application) => {
   app.post(
-    `${site.api}${site.apps.generalSystemSetting}${site.appsRoutes.update}`,
+    `${site.api}${site.apps.globalSystemSetting}${site.appsRoutes.update}`,
     verifyJwtToken,
     update,
   );
 
   app.get(
-    `${site.api}${site.apps.generalSystemSetting}${site.appsRoutes.getActive}`,
+    `${site.api}${site.apps.globalSystemSetting}${site.appsRoutes.getActive}`,
     verifyJwtToken,
     getActive,
   );
 };
 
-export default generalSystemSettingRouters;
+export default globalSystemSettingRouters;

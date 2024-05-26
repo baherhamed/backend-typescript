@@ -4,7 +4,13 @@ import { Token, User } from '../interfaces';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
 import browser from 'browser-detect';
-import { responseLanguage, responseMessages, setRequestLanguage } from '.';
+import {
+  handleError,
+  handleUnauthorization,
+  responseLanguage,
+  responseMessages,
+  setRequestLanguage,
+} from '.';
 import isJwtTokenExpired from 'jwt-check-expiry';
 
 export const verifyJwtToken = async (
@@ -20,25 +26,11 @@ export const verifyJwtToken = async (
 
     const ipAddress = ip![1];
     if (!req.headers.authorization) {
-      const message = await responseLanguage(
-        language,
-        responseMessages.authorizationData,
-      );
-      return res.send({
-        success: false,
-        message,
-      });
+      handleUnauthorization({ language, res });
     }
 
     if (!userAgent) {
-      const message = await responseLanguage(
-        language,
-        responseMessages.userAgentData,
-      );
-      return res.send({
-        success: false,
-        message,
-      });
+    handleUnauthorization({ language, res });
     }
 
     try {
@@ -46,7 +38,10 @@ export const verifyJwtToken = async (
       // console.log('headers', req.headers);
 
       const token = req.headers['authorization'];
-      const jwtPayload = token.split('Bearer ')[1];
+      if (!token) {
+      handleUnauthorization({ language, res });
+      }
+      const jwtPayload = token!.split('Bearer ')[1];
       const isExpired = isJwtTokenExpired(jwtPayload);
 
       const decoded = jwt.verify(
@@ -56,28 +51,13 @@ export const verifyJwtToken = async (
       //  what happed when token not expired
 
       if (isExpired) {
-        const message = await responseLanguage(
-          language,
-          responseMessages.authorizationData,
-        );
-        return res.status(200).send({
-          success: false,
-          message,
-        });
+      handleUnauthorization({ language, res });
       }
 
       const validateExisitToken = await Token.findOne({ token: jwtPayload });
 
       if (!validateExisitToken || !validateExisitToken.active) {
-        const message = await responseLanguage(
-          language,
-          responseMessages.authorizationData,
-        );
-        return res.status(200).send({
-          status: 401,
-          success: false,
-          message,
-        });
+      handleUnauthorization({ language, res });
       }
 
       if (!isExpired && decoded) {
@@ -116,35 +96,11 @@ export const verifyJwtToken = async (
           };
           req.body['requestInfo'] = requestInfo;
           next();
-        } else {
-          const message = await responseLanguage(
-            language,
-            responseMessages.authorizationData,
-          );
-          return res
-            .send({
-              success: false,
-              message,
-            })
-            .status(401);
         }
       }
     } catch (error) {
-      console.log(`Verify Request => No Authorization ${error}`);
-      const message = await responseLanguage(
-        language,
-        responseMessages.authorizationData,
-      );
-
-       res
-        .statusCode= 401;
-        res
-        .send({
-          success: false,
-          message,
-        })
-        return res
-        // .status(401);
+      console.log(`Verify Request 123=> No Authorization ${error}`);
+    handleUnauthorization({ language, res });
     }
   } catch (error) {
     return console.log(`Verify Request ${error}`);

@@ -1,6 +1,6 @@
 import { User } from '../interfaces';
 import { Request, Response } from 'express';
-import { responseLanguage, responseMessages } from '.';
+import { responseLanguage, responseMessages, site } from '.';
 export const checkUserPermission = async (
   req: Request,
   res: Response,
@@ -20,13 +20,10 @@ export const checkUserPermission = async (
       responseMessages.pemissionNotAllowed,
     );
 
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(401);
-
-    res;
+     res.send({
+      success: false,
+      statusCode: site.responseStatusCodes.unauthorized,
+      message,
+    });
   }
 };

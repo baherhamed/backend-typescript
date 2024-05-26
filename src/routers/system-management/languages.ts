@@ -4,6 +4,9 @@ import {
   responseLanguage,
   responseMessages,
   verifyJwtToken,
+  handleError,
+  handleGetActiveResponse,
+  handleNoData,
 } from '../../shared';
 import express, { Request, Response } from 'express';
 
@@ -19,17 +22,8 @@ const getActiveLanguages = async (req: Request, res: Response) => {
     const result = await Language.find(query);
 
     if (!result.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
@@ -42,37 +36,21 @@ const getActiveLanguages = async (req: Request, res: Response) => {
       });
     }
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
+    handleGetActiveResponse({
+      language: requestInfo.language,
+      data,
+    },
+      res,
     );
-
-    return res
-      .send({
-        success: true,
-        message,
-        data,
-      })
-      .status(200);
-  } catch (error) {
+  } catch (error: any) {
     console.log(`Language => Get All Languages ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
 const languageRouters = (app: express.Application) => {
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.languages}${site.appsRoutes.getActive}`,
+    `${site.api}${site.apps.languages}${site.appsRoutes.getActive}`,
     verifyJwtToken,
     getActiveLanguages,
   );

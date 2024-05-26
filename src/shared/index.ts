@@ -14,3 +14,4 @@ export * from './check-user-routes';
 export * from './upload-files';
 export * from './hash-string';
 export * from './set-record-details';
+export * from './handle-response';

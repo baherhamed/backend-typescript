@@ -13,30 +13,34 @@ import {
   checkUserRoutes,
   RoutesNames,
   setDocumentDetails,
+  handleError,
+  handleNoData,
+  handleExisitData,
+  handleValidateData,
+  handleAddResponse,
+  handleUpdateResponse,
+  handleDeleteResponse,
+  handleGetAllResponse,
+  handleSearchResponse,
+  handleGetActiveResponse,
+  handleViewResponse,
 } from '../../shared';
 
 const add = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
-  const hasPermission = await checkUserPermission(
-    req,
-    res,
-    PermissionsNames.addGov,
-  );
-
-  if (!hasRoute || !hasPermission) return;
   try {
-    const checkData = await validateData(req);
+    const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
+    const hasPermission = await checkUserPermission(
+      req,
+      res,
+      PermissionsNames.addGov,
+    );
 
-    if (!checkData.valid) {
-      return res
-        .send({
-          success: false,
-          message: checkData.message,
-        })
-        .status(400);
-    }
+    if (!hasRoute || !hasPermission) return;
+    const checkData = await validateData(req, res);
+
+    if (!checkData?.valid) return;
 
     const findGov = {
       name: request.name,
@@ -46,18 +50,12 @@ const add = async (req: Request, res: Response) => {
     const checkNewGov = await Gov.findOne(findGov);
 
     if (checkNewGov) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.govExisit,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
+      const response = await handleExisitData({
+        language: requestInfo.language,
+        message: responseMessages.govExisit,
+      });
+      return res.send(response);
     }
-
     const doc = new Gov({
       name: request.name,
       code: request.code,
@@ -67,35 +65,17 @@ const add = async (req: Request, res: Response) => {
     });
     await doc.save();
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.saved,
-    );
+    const data = {
+      _id: doc._id,
+      addInfo: requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc?.addInfo)
+        : undefined,
+    };
 
-    return res
-      .send({
-        success: true,
-        message,
-        data: {
-          _id: doc._id,
-          addInfo: requestInfo.isAdmin
-            ? await setDocumentDetails(requestInfo, doc?.addInfo)
-            : undefined,
-        },
-      })
-      .status(200);
-  } catch (error) {
+    handleAddResponse({ language: requestInfo.language, data }, res);
+  } catch (error: any) {
     console.log(`Gov => Add Gov ${error}`);
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -112,28 +92,9 @@ const update = async (req: Request, res: Response) => {
 
   if (!hasRoute || !hasPermission) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
-    const checkData = await validateData(req);
+    const checkData = await validateData(req, res);
 
-    if (!checkData.valid) {
-      return res
-        .send({
-          success: false,
-          message: checkData.message,
-        })
-        .status(400);
-    }
+    if (!checkData?.valid) return;
 
     const findGov = {
       name: request.name,
@@ -143,18 +104,13 @@ const update = async (req: Request, res: Response) => {
     const selectedGov = await Gov.findOne(findGov);
 
     if (selectedGov && String(selectedGov['_id']) !== String(_id)) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.govExisit,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
+      const response = await handleExisitData({
+        language: requestInfo.language,
+        message: responseMessages.govExisit,
+      });
+      return res.send(response);
     }
+
     if (
       !selectedGov ||
       (selectedGov && String(selectedGov['_id']) === String(_id))
@@ -170,44 +126,24 @@ const update = async (req: Request, res: Response) => {
         new: true,
       });
 
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.updated,
-      );
-
-      return res
-        .send({
-          success: true,
-          message,
-          data: {
-            _id: doc?._id,
-            name: doc?.name,
-            code: doc?.code,
-            active: doc?.active,
-            addInfo: requestInfo.isAdmin
-              ? await setDocumentDetails(requestInfo, doc?.addInfo)
-              : undefined,
-            lastUpdateInfo:
-              requestInfo.isAdmin && doc?.lastUpdateInfo
-                ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
-                : undefined,
-          },
-        })
-        .status(200);
+      const data = {
+        _id: doc?._id,
+        name: doc?.name,
+        code: doc?.code,
+        active: doc?.active,
+        addInfo: requestInfo.isAdmin
+          ? await setDocumentDetails(requestInfo, doc?.addInfo)
+          : undefined,
+        lastUpdateInfo:
+          requestInfo.isAdmin && doc?.lastUpdateInfo
+            ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+            : undefined,
+      };
+      handleUpdateResponse({ language: requestInfo.language, data }, res);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.log(`Gov => Update Gov ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -223,74 +159,33 @@ const deleted = async (req: Request, res: Response) => {
 
   if (!hasRoute || !hasPermission) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
     const selectedGovToDelete = {
       _id,
       deleted: false,
     };
     const selectedGov = await Gov.findOne(selectedGovToDelete);
-
-    if (selectedGov) {
-      const deletedGovData = {
-        active: false,
-        deleted: true,
-        deleteInfo: requestInfo,
-      };
-
-      const doc = await Gov.findOneAndUpdate({ _id }, deletedGovData, {
-        new: true,
-      });
-
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.deleted,
-      );
-
-      return res
-        .send({
-          success: true,
-          message,
-          data: {
-            _id: doc?._id,
-          },
-        })
-        .status(200);
-    } else {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(500);
+    if (!selectedGov) {
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
-  } catch (error) {
-    console.log(`Gov => Delete Gov ${error}`);
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.noData,
+    const deletedGovData = {
+      active: false,
+      deleted: true,
+      deleteInfo: requestInfo,
+    };
+
+    const doc = await Gov.findOneAndUpdate({ _id }, deletedGovData, {
+      new: true,
+    });
+
+    handleDeleteResponse(
+      { language: requestInfo.language, data: { _id: doc?._id } },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`Gov => Delete Gov ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -313,17 +208,8 @@ const getAll = async (req: Request, res: Response) => {
     const result = await Gov.paginate(where, query);
 
     if (!result.docs.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
@@ -347,32 +233,17 @@ const getAll = async (req: Request, res: Response) => {
       });
     }
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
+    handleGetAllResponse(
+      {
+        language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`Gov => Get All Gov ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+      },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`Gov => Get All Gov ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -402,17 +273,8 @@ const search = async (req: Request, res: Response) => {
     const result = await Gov.paginate(where, query);
 
     if (!result.docs.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
@@ -434,32 +296,17 @@ const search = async (req: Request, res: Response) => {
       });
     }
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
-    );
-
-    return res
-      .send({
-        success: true,
-        message,
+    handleSearchResponse(
+      {
+        language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`Gov => Search All ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+      },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`Gov => Search All ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
@@ -475,117 +322,69 @@ const getActive = async (req: Request, res: Response) => {
     const result = await Gov.find(where);
 
     if (!result.length) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.noData,
-      );
-
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(200);
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
     }
 
     const data = [];
     for await (const doc of result) {
-      if (doc) {
-        data.push({
-          _id: doc._id,
-          name: doc.name,
-          code: doc.code,
-          active: doc.active,
-        });
-      }
+      data.push({
+        _id: doc._id,
+        name: doc.name,
+        code: doc.code,
+        active: doc.active,
+      });
     }
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.done,
+    handleGetActiveResponse({
+      language: requestInfo.language,
+      data,
+    },
+      res,
     );
-
-    return res
-      .send({
-        success: true,
-        message,
-        data,
-      })
-      .status(200);
-  } catch (error) {
+  } catch (error: any) {
     console.log(`Gov => Get Active Gov ${error}`);
-
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
-    );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+    handleError({ message: error.message, res });
   }
 };
 
 const view = async (req: Request, res: Response) => {
   const request = req.body;
-
   const _id = request._id;
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
 
   if (!hasRoute) return;
   try {
-    if (!_id) {
-      const message = await responseLanguage(
-        requestInfo.language,
-        responseMessages.missingId,
-      );
-      return res
-        .send({
-          success: false,
-          message,
-        })
-        .status(400);
-    }
-
     const doc = await Gov.findOne({ _id });
-    return res
-      .send({
-        success: true,
-        data: {
-          _id: doc?._id,
-          name: doc?.name,
-          code: doc?.code,
-          active: doc?.active,
-          addInfo: requestInfo.isAdmin
-            ? await setDocumentDetails(requestInfo, doc?.addInfo)
-            : undefined,
-          lastUpdateInfo:
-            requestInfo.isAdmin && doc?.lastUpdateInfo
-              ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
-              : undefined,
-        },
-      })
-      .status(200);
-  } catch (error) {
-    console.log(`Gov => View Gov ${error}`);
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.invalidData,
+    const data = {
+      _id: doc?._id,
+      name: doc?.name,
+      code: doc?.code,
+      active: doc?.active,
+      addInfo: requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc?.addInfo)
+        : undefined,
+      lastUpdateInfo:
+        requestInfo.isAdmin && doc?.lastUpdateInfo
+          ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+          : undefined,
+    };
+
+    handleViewResponse({
+      language: requestInfo.language,
+      data,
+    },
+      res,
     );
-    return res
-      .send({
-        success: false,
-        message,
-      })
-      .status(500);
+  } catch (error: any) {
+    console.log(`Gov => View Gov ${error}`);
+    handleError({ message: error.message, res });
   }
 };
 
-const validateData = async (req: Request) => {
+const validateData = async (req: Request, res: Response) => {
   const request = req.body;
   const govName = request.name;
   const requestLanguage = request.requestInfo.language;
@@ -598,45 +397,47 @@ const validateData = async (req: Request) => {
     valid = true;
     message = await responseLanguage(requestLanguage, responseMessages.valid);
   }
-  return {
-    valid,
-    message,
-  };
+
+  if (!valid) {
+    handleValidateData({ language: requestLanguage, res, message });
+  } else {
+    return { valid };
+  }
 };
 
 const govsRouters = async (app: express.Application) => {
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.add}`,
+    `${site.api}${site.apps.govs}${site.appsRoutes.add}`,
     verifyJwtToken,
     add,
   );
   app.put(
-    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.update}`,
+    `${site.api}${site.apps.govs}${site.appsRoutes.update}`,
     verifyJwtToken,
     update,
   );
   app.put(
-    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.delete}`,
+    `${site.api}${site.apps.govs}${site.appsRoutes.delete}`,
     verifyJwtToken,
     deleted,
   );
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.getAll}`,
+    `${site.api}${site.apps.govs}${site.appsRoutes.getAll}`,
     verifyJwtToken,
     getAll,
   );
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.search}`,
+    `${site.api}${site.apps.govs}${site.appsRoutes.search}`,
     verifyJwtToken,
     search,
   );
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.getActive}`,
+    `${site.api}${site.apps.govs}${site.appsRoutes.getActive}`,
     verifyJwtToken,
     getActive,
   );
   app.post(
-    `${site.api}${site.modules.systemManagement}${site.apps.govs}${site.appsRoutes.view}`,
+    `${site.api}${site.apps.govs}${site.appsRoutes.view}`,
     verifyJwtToken,
     view,
   );
