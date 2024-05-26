@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import * as dotenv from 'dotenv';
-
+import cluster from 'cluster';
+import os from 'os';
 dotenv.config({ path: __dirname + '/.env' });
 
 import bodyParser from 'body-parser';
@@ -28,109 +29,128 @@ import GlobalSettingRouters from './routers/shared/global-setting';
 import jsonRouters from './routers/json/fixed';
 
 
-const app = express();
+// START ADD CLUSTER
 
-app.use(
-  bodyParser.urlencoded({
-    limit: '1mb',
-    extended: true,
-  }),
 
-  bodyParser.json({
-    limit: '1mb',
-  }),
-);
-
-mongoose.set('strictQuery', true);
-mongoose.set('strictPopulate', true);
-
-(async () => {
-  try {
-
-    const options = {
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      useNewUrlParser: true, 
-      useUnifiedTopology: true,
-      auth: {
-        username: process.env.dbUser,
-        password: process.env.dbPass,
-      }
-    };
-
-    await mongoose.connect(String(process.env.url), options);
-    await systemDefaults();
-
-    console.log('Successfully Connected To Database');
-  } catch (error) {
-    console.log(`Error While Connecting Database ${error}`);
-
+const numCPUs = os.cpus().length;
+console.log('numCPUs', numCPUs);
+if (cluster.isPrimary) {
+  console.log(`Master process ${process.pid} is running`);
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
   }
-})();
 
-app.post('/', (req, res) => {
-  res.send('Backend works post request');
-});
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`Worker process ${worker.process.pid} died. Restarting...`);
+    cluster.fork();
+  });
+} else {
+  // END ADD CLUSTER
+  const app = express();
 
-app.get('/', (req, res) => {
-  res.send('Backend works get request');
-});
+  app.use(
+    bodyParser.urlencoded({
+      limit: '1mb',
+      extended: true,
+    }),
 
-app.use(cors());
-loginRouters(app);
-routesRouters(app);
-languageRouters(app);
-govsRouters(app);
-usersRouters(app);
-citiesRouters(app);
-GlobalSettingRouters(app);
-jsonRouters(app);
+    bodyParser.json({
+      limit: '1mb',
+    }),
+  );
 
-let privateKey;
-let certificate: string;
-let fullchain: string;
-let dir = './cer';
+  mongoose.set('strictQuery', true);
+  mongoose.set('strictPopulate', true);
 
-if (!fs.existsSync(dir)) {
-  dir = '/etc/letsencrypt/live/resellers.tebah-soft.com';
-}
+  (async () => {
+    try {
 
-privateKey = fs.readFileSync(`${dir}/privkey.pem`, 'utf8');
-certificate = fs.readFileSync(`${dir}/cert.pem`, 'utf8');
-fullchain = fs.readFileSync(`${dir}/fullchain.pem`, 'utf8');
+      const options = {
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+        auth: {
+          username: process.env.dbUser,
+          password: process.env.dbPass,
+        }
+      };
 
-if (!privateKey || !certificate) {
+      await mongoose.connect(String(process.env.url), options);
+      await systemDefaults();
+
+      console.log('Successfully Connected To Database');
+    } catch (error) {
+      console.log(`Error While Connecting Database ${error}`);
+
+    }
+  })();
+
+  app.post('/', (req, res) => {
+    res.send('Backend works post request');
+  });
+
+  app.get('/', (req, res) => {
+    res.send('Backend works get request');
+  });
+
+  app.use(cors());
+  loginRouters(app);
+  routesRouters(app);
+  languageRouters(app);
+  govsRouters(app);
+  usersRouters(app);
+  citiesRouters(app);
+  GlobalSettingRouters(app);
+  jsonRouters(app);
+
+  let privateKey;
+  let certificate: string;
+  let fullchain: string;
+  let dir = './cer';
+
+  if (!fs.existsSync(dir)) {
+    dir = '/etc/letsencrypt/live/resellers.tebah-soft.com';
+  }
+
   privateKey = fs.readFileSync(`${dir}/privkey.pem`, 'utf8');
   certificate = fs.readFileSync(`${dir}/cert.pem`, 'utf8');
   fullchain = fs.readFileSync(`${dir}/fullchain.pem`, 'utf8');
+
+  if (!privateKey || !certificate) {
+    privateKey = fs.readFileSync(`${dir}/privkey.pem`, 'utf8');
+    certificate = fs.readFileSync(`${dir}/cert.pem`, 'utf8');
+    fullchain = fs.readFileSync(`${dir}/fullchain.pem`, 'utf8');
+  }
+
+  const credentials = {
+    key: privateKey,
+    cert: String(certificate),
+    ca: String(fullchain),
+    // ciphers: sslConfig.ciphers,
+    honorCipherOrder: true,
+    // secureOptions: sslConfig.minimumTLSVersion,
+    passphrase: 'sample',
+    agent: false,
+  };
+
+  // const httpServer = http.createServer(app);
+  // const httpsServer = https.createServer(credentials, app);
+
+
+  const httpServer = http.createServer(app);
+  const httpsServer = https.createServer(credentials, app);
+
+  httpServer.listen(process.env.PORT, async () => {
+    console.log(`
+    -------------------------
+    Server Run Http at PORT: ${process.env.PORT}
+    -------------------------`);
+  });
+
+  httpsServer.listen(process.env.SSLPORT, async () => {
+    console.log(`
+    -------------------------
+    Server Run Https at PORT: ${process.env.SSLPORT}
+    -------------------------`);
+  });
+  // export default { httpServer, httpsServer };
 }
-
-const credentials = {
-  key: privateKey,
-  cert: String(certificate),
-  ca: String(fullchain),
-  // ciphers: sslConfig.ciphers,
-  honorCipherOrder: true,
-  // secureOptions: sslConfig.minimumTLSVersion,
-  passphrase: 'sample',
-  agent: false,
-};
-
-const httpServer = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
-
-httpServer.listen(process.env.PORT, async () => {
-  console.log(`
-  -------------------------
-  Server Run Http at PORT: ${process.env.PORT}
-  -------------------------`);
-});
-
-httpsServer.listen(process.env.SSLPORT, async () => {
-  console.log(`
-  -------------------------
-  Server Run Https at PORT: ${process.env.SSLPORT}
-  -------------------------`);
-});
-
-export default { httpServer, httpsServer };
