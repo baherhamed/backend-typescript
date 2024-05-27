@@ -48,13 +48,18 @@ const GovSchema = new Schema(
   },
   {
     versionKey: false,
+    // collection: 'govs',
+  
   },
 );
 
 GovSchema.plugin(paginate);
 GovSchema.plugin(autopopulate);
-
+// <IGov, PaginateModel<IGov>, PaginateOptions>
 export const Gov = mongoose.model<IGov, PaginateModel<IGov>, PaginateOptions>(
   'govs',
   GovSchema,
 );
+
+
+

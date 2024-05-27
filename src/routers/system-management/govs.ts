@@ -319,7 +319,7 @@ const getActive = async (req: Request, res: Response) => {
       deleted: false,
     };
 
-    const result = await Gov.find(where);
+    const result = await Gov.find(where)
 
     if (!result.length) {
       const response = await handleNoData({ language: requestInfo.language });
