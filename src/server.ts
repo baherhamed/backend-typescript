@@ -27,25 +27,7 @@ import govsRouters from './routers/system-management/govs';
 import citiesRouters from './routers/system-management/cities';
 import GlobalSettingRouters from './routers/shared/global-setting';
 import jsonRouters from './routers/json/fixed';
-import { Gov } from './interfaces';
 
-
-// const NodeCache = require("node-cache");
-// const myCache = new NodeCache();
-// try {
-//   const govsList = Gov.find({ active: true });
-
-//   console.log('govsList', govsList);
-// } catch (error) {
-//   console.log('read fgovsx seerr', error);
-
-// }
-// const getGovs = async () => {
-//   const govsList = await Gov.find({active:true});
-//   console.log('govsList', govsList);
-// }
-
-// getGovs()
 // START ADD CLUSTER
 
 
@@ -53,7 +35,7 @@ const numCPUs = os.cpus().length;
 console.log('numCPUs', numCPUs);
 if (cluster.isPrimary) {
   console.log(`Master process ${process.pid} is running`);
-  for (let i = 0; i < numCPUs; i++) {
+  for (let i = 0; i < numCPUs/6; i++) {
     cluster.fork();
   }
 
