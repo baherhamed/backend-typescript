@@ -1,12 +1,14 @@
-import { GlobalSetting, RequestTemplate } from '..';
-
+import { GlobalSetting } from '..';
+import { User } from '../../interfaces';
+import browser from 'browser-detect';
 export const setDocumentDetails = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestInfo: any,
-  data?: RequestTemplate,
+  data?: any,
 ) => {
   const globalSetting = await GlobalSetting.findOne({});
   try {
+
     if (
       (!globalSetting &&
         Object(globalSetting).displaySetting.displayRecordDetails) ||
@@ -18,14 +20,35 @@ export const setDocumentDetails = async (
       globalSetting &&
       Object(globalSetting).displaySetting.displayRecordDetails
     ) {
+
+      const requestBrowser = browser(data.userAgent);
+
+      const ipAddress = Object(data).ipAddress;
+      const language = Object(data).language;
+      const date = Object(data).date;
+      const selectedUser = await User.findOne({
+        _id: Object(data).userId,
+        active: true,
+        deleted: false,
+      });
+      let isAdmin = false;
+      let isDeveloper = false;
+      if (selectedUser?.isAdmin) {
+        isAdmin = true;
+      }
+      if (selectedUser?.isDeveloper) {
+        isDeveloper = true;
+      }
+
       return {
-        userName: Object(data).userId?.name,
+        userName: selectedUser?.name,
         browser:
-          Object(data).browser?.name + ' - ' + Object(data).browser?.version,
-        mobile: Object(data).browser?.mobile,
-        os: Object(data).os?.name,
-        ipAddress: Object(data)?.ip_address || Object(data)?.ipAddress,
-        date: Object(data)?.date,
+          requestBrowser?.name + ' - ' + requestBrowser?.version,
+        mobile: requestBrowser?.mobile,
+        os: requestBrowser.os,
+        ipAddress,
+        date,
+        language,
       };
     }
   } catch (error) {
