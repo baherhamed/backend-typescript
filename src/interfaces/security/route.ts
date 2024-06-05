@@ -1,29 +1,21 @@
-import mongoose, {
-  Schema,
-  Document,
-  PaginateModel,
-  PaginateOptions,
-} from 'mongoose';
-
-import paginate from 'mongoose-paginate-v2';
+import mongoose, { Schema, PaginateOptions } from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
-
-import { inputsLength } from '../../shared';
-import { RequestTemplate } from '../shared';
-
-
-interface IRoute extends Document {
+import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
+const ObjectId = mongoose.Schema.Types.ObjectId;
+import { RequestTemplate, inputsLength } from '../../shared';
+export interface IRoute {
+  _id: typeof ObjectId;
   name: string;
   ar: string;
   en: string;
   active: boolean;
   deleted: boolean;
-  addInfo: typeof RequestTemplate;
-  lastUpdateInfo: typeof RequestTemplate;
-  deletedInfo: typeof RequestTemplate;
+  addInfo: RequestTemplate;
+  lastUpdateInfo: RequestTemplate;
+  deletedInfo: RequestTemplate;
 }
 
-const RoutesSchema = new Schema(
+const RoutesSchema = new Schema<IRoute>(
   {
     name: {
       type: String,
@@ -45,27 +37,28 @@ const RoutesSchema = new Schema(
     },
     active: {
       type: Boolean,
-      required: [true, 'Please Enter Route Status'],
       default: true,
     },
     deleted: {
       type: Boolean,
       default: false,
     },
-    addInfo: RequestTemplate,
-    lastUpdateInfo: RequestTemplate,
-    deleteInfo: RequestTemplate,
+    addInfo: {},
+    lastUpdateInfo: {},
+    deletedInfo: {},
   },
   {
     versionKey: false,
   },
 );
 
-RoutesSchema.plugin(paginate);
+RoutesSchema.plugin(mongoosePagination);
 RoutesSchema.plugin(autopopulate);
 
-export const Route = mongoose.model<
+type RouteModel = Pagination<IRoute>;
+
+export const Route: RouteModel = mongoose.model<
   IRoute,
-  PaginateModel<IRoute>,
+  Pagination<IRoute>,
   PaginateOptions
 >('routes', RoutesSchema);

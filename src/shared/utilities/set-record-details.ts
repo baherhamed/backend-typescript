@@ -1,8 +1,9 @@
-import { GlobalSetting, RequestTemplate } from '../interfaces';
+import { GlobalSetting, RequestTemplate } from '..';
+
 export const setDocumentDetails = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   requestInfo: any,
-  data?: typeof RequestTemplate,
+  data?: RequestTemplate,
 ) => {
   const globalSetting = await GlobalSetting.findOne({});
   try {

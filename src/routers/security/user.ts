@@ -1,31 +1,31 @@
 import express, { Request, Response } from 'express';
-import { Permission, Route, Token, User } from '../../interfaces';
 import {
-  inputsLength,
-  responseMessages,
-  hashPassword,
-  responseLanguage,
-  verifyJwtToken,
-  checkUserPermission,
-  pagination,
-  site,
   PermissionsNames,
-  checkUserRoutes,
   RoutesNames,
-  setDocumentDetails,
-  handleError,
-  handleNoData,
-  handleExisitData,
-  handleValidateData,
+  checkUserPermission,
+  checkUserRoutes,
   handleAddResponse,
   handleDeleteResponse,
+  handleError,
+  handleExisitData,
   handleGetAllResponse,
+  handleLoggedOutResponse,
+  handleNoData,
   handleSearchResponse,
   handleUpdateResponse,
-  handleLoggedOutResponse,
+  handleValidateData,
+  hashPassword,
+  inputsLength,
+  pagination,
+  responseLanguage,
+  responseMessages,
+  setDocumentDetails,
+  site,
+  verifyJwtToken,
 } from '../../shared';
 
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { Permission, Route, Token, User } from '../../interfaces';
 
 const add = async (req: Request, res: Response) => {
   const request = req.body;
@@ -196,11 +196,11 @@ const update = async (req: Request, res: Response) => {
         for await (const activeRoute of allRoutesList) {
           const permissionsList = [];
           for await (const perm of allPermissionsList) {
-            if (String(perm.routeId._id) === String(activeRoute?._id)) {
+            if (String(Object(perm.routeId)._id) === String(activeRoute?._id)) {
               if (doc?.permissionsList.includes(perm.name)) {
                 permissionsList.push({
                   _id: perm._id,
-                  routeId: perm.routeId._id,
+                  routeId: Object(perm.routeId)._id,
                   name: perm.name,
                   ar: perm.ar,
                   en: perm.en,
@@ -209,7 +209,7 @@ const update = async (req: Request, res: Response) => {
               } else {
                 permissionsList.push({
                   _id: perm._id,
-                  routeId: perm.routeId._id,
+                  routeId: Object(perm.routeId)._id,
                   name: perm.name,
                   ar: perm.ar,
                   en: perm.en,
@@ -305,40 +305,32 @@ const deleted = async (req: Request, res: Response) => {
 };
 
 const getAll = async (req: Request, res: Response) => {
-  const request = req.body;
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
   if (!hasRoute) return;
   try {
-    const query = {
-      page: req.query?.page || request.page || pagination.page,
-      limit: req.query?.limit || request.limit || pagination.getAll,
-    };
-
     let where;
 
     if (requestInfo.isDeveloper) {
       where = {
-        $or: [{ isDeveloper: true }, { isAdmin: true }],
-        $in: [
-          { isDeveloper: true, isAdmin: false },
-          { isDeveloper: false, isAdmin: true },
-        ],
-        deleted: false,
+        query: {
+          $or: [{ isDeveloper: true }, { isAdmin: true }],
+          deleted: false,
+        },
+        ...site.setPaginationQuery(req),
       };
     } else if (requestInfo.isAdmin) {
       where = {
-        isDeveloper: false,
-        $in: [
-          { isDeveloper: false, isAdmin: true },
-          { isDeveloper: false, isAdmin: false },
-        ],
-        deleted: false,
+        query: {
+          isDeveloper: false,
+          deleted: false,
+        },
+        ...site.setPaginationQuery(req),
       };
     }
-    const result = await User.paginate(where, query);
+    const result = await User.paginate(where);
 
-    if (!result.docs.length) {
+    if (!result?.docs.length) {
       const response = await handleNoData({ language: requestInfo.language });
       return res.send(response);
     }
@@ -362,11 +354,11 @@ const getAll = async (req: Request, res: Response) => {
       for await (const activeRoute of allRoutesList) {
         const permissionsList = [];
         for await (const perm of allPermissionsList) {
-          if (String(perm.routeId._id) === String(activeRoute?._id)) {
+          if (String(Object(perm.routeId)._id) === String(activeRoute?._id)) {
             if (doc.permissionsList.includes(perm.name)) {
               permissionsList.push({
                 _id: perm._id,
-                routeId: perm.routeId._id,
+                routeId: Object(perm.routeId)._id,
                 name: perm.name,
                 ar: perm.ar,
                 en: perm.en,
@@ -375,7 +367,7 @@ const getAll = async (req: Request, res: Response) => {
             } else {
               permissionsList.push({
                 _id: perm._id,
-                routeId: perm.routeId._id,
+                routeId: Object(perm.routeId)._id,
                 name: perm.name,
                 ar: perm.ar,
                 en: perm.en,
@@ -442,29 +434,37 @@ const search = async (req: Request, res: Response) => {
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
   if (!hasRoute) return;
   try {
-    const query = {
-      page: req.query?.page || request.page || pagination.page,
-      limit: req.query?.limit || request.query?.limit || pagination.search,
-    };
-
-    const where = {
-      deleted: false,
-    };
-
+    let where = { query: {} };
+    if (requestInfo.isDeveloper) {
+      where = {
+        query: {
+          $or: [{ isDeveloper: true }, { isAdmin: true }],
+        },
+        ...site.setPaginationQuery(req),
+      };
+    } else if (requestInfo.isAdmin) {
+      where = {
+        query: {
+          isDeveloper: false,
+          deleted: false,
+        },
+        ...site.setPaginationQuery(req),
+      };
+    }
     if (request.query.name) {
-      Object(where)['name'] = new RegExp(request.query.name, 'i');
+      Object(where.query).name = new RegExp(request.query.name, 'i');
     }
     if (request.query.mobile) {
-      Object(where)['mobile'] = new RegExp(request.query.mobile, 'i');
+      Object(where.query).mobile = new RegExp(request.query.mobile);
     }
 
     if (request.query.email) {
-      Object(where)['email'] = new RegExp(request.query.email, 'i');
+      Object(where.query).email = new RegExp(request.query.email, 'i');
     }
 
-    const result = await User.paginate(where, query);
+    const result = await User.paginate(where);
 
-    if (!result.docs.length) {
+    if (!result?.docs.length) {
       const response = await handleNoData({ language: requestInfo.language });
       return res.send(response);
     }
@@ -488,11 +488,11 @@ const search = async (req: Request, res: Response) => {
       for await (const activeRoute of allRoutesList) {
         const permissionsList = [];
         for await (const perm of allPermissionsList) {
-          if (String(perm.routeId._id) === String(activeRoute?._id)) {
+          if (String(Object(perm.routeId)._id) === String(activeRoute?._id)) {
             if (doc.permissionsList.includes(perm.name)) {
               permissionsList.push({
                 _id: perm._id,
-                routeId: perm.routeId._id,
+                routeId: Object(perm.routeId)._id,
                 name: perm.name,
                 ar: perm.ar,
                 en: perm.en,
@@ -501,7 +501,7 @@ const search = async (req: Request, res: Response) => {
             } else {
               permissionsList.push({
                 _id: perm._id,
-                routeId: perm.routeId._id,
+                routeId: Object(perm.routeId)._id,
                 name: perm.name,
                 ar: perm.ar,
                 en: perm.en,
@@ -577,9 +577,12 @@ const logout = async (req: Request, res: Response) => {
       },
     );
     const language = req.headers['accept-language'] || 'ar';
-    handleLoggedOutResponse({
-      language
-    }, res);
+    handleLoggedOutResponse(
+      {
+        language,
+      },
+      res,
+    );
     // const message = await responseLanguage(
     //   req.headers['accept-language'] || 'ar',
     //   responseMessages.loggedout,
@@ -616,11 +619,11 @@ const view = async (req: Request, res: Response) => {
     for await (const activeRoute of allRoutesList) {
       const permissionsList = [];
       for await (const perm of allPermissionsList) {
-        if (String(perm.routeId._id) === String(activeRoute?._id)) {
+        if (String(Object(perm.routeId)._id) === String(activeRoute?._id)) {
           if (doc?.permissionsList.includes(perm.name)) {
             permissionsList.push({
               _id: perm._id,
-              routeId: perm.routeId._id,
+              routeId: Object(perm.routeId)._id,
               name: perm.name,
               ar: perm.ar,
               en: perm.en,
@@ -629,7 +632,7 @@ const view = async (req: Request, res: Response) => {
           } else {
             permissionsList.push({
               _id: perm._id,
-              routeId: perm.routeId._id,
+              routeId: Object(perm.routeId)._id,
               name: perm.name,
               ar: perm.ar,
               en: perm.en,

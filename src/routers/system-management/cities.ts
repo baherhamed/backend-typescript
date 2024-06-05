@@ -1,30 +1,12 @@
 import express, { Request, Response } from 'express';
-import { City } from '../../interfaces';
 
 import {
-  inputsLength,
-  responseMessages,
-  responseLanguage,
-  verifyJwtToken,
-  checkUserPermission,
-  pagination,
-  site,
-  PermissionsNames,
-  checkUserRoutes,
-  RoutesNames,
-  setDocumentDetails,
-  handleError,
-  handleNoData,
-  handleExisitData,
-  handleAddResponse,
-  handleUpdateResponse,
-  handleDeleteResponse,
-  handleGetAllResponse,
-  handleGetActiveResponse,
-  handleSearchResponse,
-  handleViewResponse,
-  handleValidateData,
+  PermissionsNames, RoutesNames, checkUserPermission, checkUserRoutes, handleAddResponse, handleDeleteResponse,
+  handleError, handleExisitData, handleGetActiveResponse, handleGetAllResponse, handleNoData, handleSearchResponse,
+  handleUpdateResponse, handleValidateData, handleViewResponse, inputsLength, pagination, responseLanguage, responseMessages,
+  setDocumentDetails, site, verifyJwtToken
 } from '../../shared';
+import { City } from '../../interfaces';
 
 const add = async (req: Request, res: Response) => {
   const request = req.body;
@@ -38,7 +20,7 @@ const add = async (req: Request, res: Response) => {
 
   if (!hasRoute || !hasPermission) return;
   try {
-     const checkData = await validateData(req, res);
+    const checkData = await validateData(req, res);
 
     if (!checkData?.valid) return;
 
@@ -94,7 +76,7 @@ const update = async (req: Request, res: Response) => {
 
   if (!hasRoute || !hasPermission) return;
   try {
-     const checkData = await validateData(req, res);
+    const checkData = await validateData(req, res);
 
     if (!checkData?.valid) return;
 
@@ -197,23 +179,19 @@ const deleted = async (req: Request, res: Response) => {
 };
 
 const getAll = async (req: Request, res: Response) => {
-  const request = req.body;
+
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
   if (!hasRoute) return;
   try {
-    const query = {
-      page: req.query?.page || request.page || pagination.page,
-      limit: req.query?.limit || request.limit || pagination.getAll,
-    };
-
     const where = {
       deleted: false,
+      ...site.setPaginationQuery(req)
     };
 
-    const result = await City.paginate(where, query);
+    const result = await City.paginate(where);
 
-    if (!result.docs.length) {
+    if (!result?.docs.length) {
       const response = await handleNoData({ language: requestInfo.language });
       return res.send(response);
     }
@@ -241,7 +219,61 @@ const getAll = async (req: Request, res: Response) => {
       });
     }
 
-    handleGetAllResponse(
+    handleGetAllResponse({ language: requestInfo.language, data, paginationInfo: site.pagination(result), }, res,);
+  } catch (error: any) {
+    console.log(`City => Get All City ${error}`);
+    handleError({ message: error.message, res });
+  }
+};
+
+const search = async (req: Request, res: Response) => {
+  const request = req.body;
+  const requestInfo = req.body.requestInfo;
+  const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
+  if (!hasRoute) return;
+  try {
+    const where = {
+      query: {
+        deleted: false,
+      },
+      ...site.setPaginationQuery(req)
+    };
+
+    if (request.query.name) {
+      Object(where.query).name = new RegExp(request.query.name, 'i');
+    }
+
+    const result = await City.paginate(where);
+
+    if (!result?.docs.length) {
+      const response = await handleNoData({ language: requestInfo.language });
+      return res.send(response);
+    }
+
+    const data = [];
+    for await (const doc of result.docs) {
+      const addInfo = requestInfo.isAdmin
+        ? await setDocumentDetails(requestInfo, doc?.addInfo)
+        : undefined;
+      const lastUpdateInfo =
+        requestInfo.isAdmin && doc?.lastUpdateInfo
+          ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
+          : undefined;
+
+      data.push({
+        _id: doc._id,
+        gov: {
+          _id: Object(doc.govId)._id,
+          name: Object(doc.govId).name,
+        },
+        name: doc.name,
+        active: doc.active,
+        addInfo,
+        lastUpdateInfo,
+      });
+    }
+
+    handleSearchResponse(
       {
         language: requestInfo.language,
         data,
@@ -250,7 +282,7 @@ const getAll = async (req: Request, res: Response) => {
       res,
     );
   } catch (error: any) {
-    console.log(`City => Get All City ${error}`);
+    console.log(`City => Search All ${error}`);
     handleError({ message: error.message, res });
   }
 };
@@ -294,68 +326,6 @@ const getCitiesByGov = async (req: Request, res: Response) => {
   }
 };
 
-const search = async (req: Request, res: Response) => {
-  const request = req.body;
-  const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
-  if (!hasRoute) return;
-  try {
-    const query = {
-      page: req.query?.page || request.page || pagination.page,
-      limit: req.query?.limit || request.query?.limit || pagination.search,
-    };
-
-    const where = {
-      deleted: false,
-    };
-
-    if (request.query.name) {
-      Object(where)['name'] = new RegExp(request.query.name, 'i');
-    }
-
-    const result = await City.paginate(where, query);
-
-    if (!result.docs.length) {
-      const response = await handleNoData({ language: requestInfo.language });
-      return res.send(response);
-    }
-
-    const data = [];
-    for await (const doc of result.docs) {
-      const addInfo = requestInfo.isAdmin
-        ? await setDocumentDetails(requestInfo, doc?.addInfo)
-        : undefined;
-      const lastUpdateInfo =
-        requestInfo.isAdmin && doc?.lastUpdateInfo
-          ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
-          : undefined;
-
-      data.push({
-        _id: doc._id,
-        gov: {
-          _id: Object(doc.govId)._id,
-          name: Object(doc.govId).name,
-        },
-        name: doc.name,
-        active: doc.active,
-        addInfo,
-        lastUpdateInfo,
-      });
-    }
-
-    handleSearchResponse(
-      {
-        language: requestInfo.language,
-        data,
-        paginationInfo: site.pagination(result),
-      },
-      res,
-    );
-  } catch (error: any) {
-    console.log(`City => Search All ${error}`);
-    handleError({ message: error.message, res });
-  }
-};
 
 const getActive = async (req: Request, res: Response) => {
   const requestInfo = req.body.requestInfo;

@@ -6,19 +6,21 @@ import mongoose, {
 } from 'mongoose';
 import paginate from 'mongoose-paginate-v2';
 import autopopulate from 'mongoose-autopopulate';
+import { RequestTemplate, inputsLength } from '..';
 
-import { inputsLength } from '../../shared/inputs-length';
-import { RequestTemplate } from '../shared';
-interface ILanguage extends Document {
+
+
+interface ILanguage {
+  code?: string;
   name: string;
   active: boolean;
   deleted: boolean;
-  addInfo: typeof RequestTemplate;
-  lastUpdateInfo: typeof RequestTemplate;
-  deletedInfo: typeof RequestTemplate;
+  addInfo:  RequestTemplate;
+  lastUpdateInfo:  RequestTemplate;
+  deletedInfo:  RequestTemplate;
 }
 
-const LanguageSchema = new Schema(
+const LanguageSchema = new Schema<ILanguage>(
   {
     code: {
       type: Number,
@@ -39,9 +41,9 @@ const LanguageSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    addInfo: RequestTemplate,
-    lastUpdateInfo: RequestTemplate,
-    deleteInfo: RequestTemplate,
+    // addInfo: RequestTemplate,
+    // lastUpdateInfo: RequestTemplate,
+    // deleteInfo: RequestTemplate,
   },
   {
     versionKey: false,
@@ -51,8 +53,15 @@ const LanguageSchema = new Schema(
 LanguageSchema.plugin(paginate);
 LanguageSchema.plugin(autopopulate);
 
-export const Language = mongoose.model<
-  ILanguage,
-  PaginateModel<ILanguage>,
-  PaginateOptions
->('languages', LanguageSchema);
+// export const Language = mongoose.model<
+//   ILanguage,
+//   PaginateModel<ILanguage>,
+//   PaginateOptions
+// >('languages', LanguageSchema);
+
+type LanguageModel = PaginateModel<ILanguage>;
+
+export const Language: LanguageModel = mongoose.model<ILanguage, PaginateModel<ILanguage>, PaginateOptions>(
+  'languages', LanguageSchema
+);
+

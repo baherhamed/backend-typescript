@@ -1,3 +1,5 @@
+import { PaginationModel, pagination } from '..';
+import { Request } from 'express';
 export const site = {
   language: {
     ar: 'ar',
@@ -5,10 +7,6 @@ export const site = {
   },
   route: 'localhost',
   api: '/api/',
-  // modules: {
-  //   security: 'security/',
-  //   systemManagement: 'systemManagement/',
-  // },
   appsRoutes: {
     login: 'login',
     add: 'add',
@@ -48,17 +46,18 @@ export const site = {
       'deletePermission',
     ],
   },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pagination: (result: any) => {
+  pagination: (result: PaginationModel) => {
     return {
       totalDocs: result.totalDocs,
-      limit: result.limit,
       totalPages: result.totalPages,
-      page: result.page,
+      page: result.page ,
+      limit: result.limit,
+      pagingCounter: result.pagingCounter,
       hasPrevPage: result.hasPrevPage,
       hasNextPage: result.hasNextPage,
       prevPage: result.prevPage,
       nextPage: result.nextPage,
+      hasMore: result.hasMore
     };
   },
   responseStatusCodes: {
@@ -79,4 +78,14 @@ export const site = {
     globalSetting: 713,
     view: 1000,
   },
+  setPaginationQuery: (req: Request) => {
+    
+    return {
+      page:  req?.body.page ,
+      // page: req?.query.page || req?.body.page || pagination.page,
+      limit: req?.query.limit || req?.body.limit || pagination.search,
+   };
+
+  }
+
 };

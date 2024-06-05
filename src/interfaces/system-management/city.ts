@@ -1,29 +1,25 @@
-import mongoose, {
-  Schema,
-  Document,
-  PaginateModel,
-  PaginateOptions,
-  Types,
-} from 'mongoose';
-import paginate from 'mongoose-paginate-v2';
-import autopopulate from 'mongoose-autopopulate';
-import { RequestTemplate } from '../shared';
-import { inputsLength } from '../../shared/inputs-length';
+import mongoose, { Schema, PaginateOptions } from 'mongoose';
 
-interface ICity extends Document {
-  govId: Types.ObjectId;
+import autopopulate from 'mongoose-autopopulate';
+import { RequestTemplate, inputsLength } from '../../shared';
+import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
+const ObjectId = mongoose.Schema.Types.ObjectId;
+
+interface ICity {
+  _id: typeof ObjectId;
+  govId: typeof ObjectId;
   name: string;
   active: boolean;
   deleted: boolean;
-  addInfo: typeof RequestTemplate;
-  lastUpdateInfo: typeof RequestTemplate;
-  deletedInfo: typeof RequestTemplate;
+  addInfo: RequestTemplate;
+  lastUpdateInfo: RequestTemplate;
+  deletedInfo: RequestTemplate;
 }
 
-const CitySchema = new Schema(
+const CitySchema = new Schema<ICity>(
   {
     govId: {
-      type: Types.ObjectId,
+      type: ObjectId,
       ref: 'govs',
       autopopulate: {
         select: '  name active deleted',
@@ -39,26 +35,28 @@ const CitySchema = new Schema(
     },
     active: {
       type: Boolean,
-      required: [true, 'Please Enter City State'],
+      default: true,
     },
     deleted: {
       type: Boolean,
       default: false,
     },
-    addInfo: RequestTemplate,
-    lastUpdateInfo: RequestTemplate,
-    deleteInfo: RequestTemplate,
+    addInfo: {},
+    lastUpdateInfo: {},
+    deletedInfo: {},
   },
   {
     versionKey: false,
   },
 );
 
-CitySchema.plugin(paginate);
+CitySchema.plugin(mongoosePagination);
 CitySchema.plugin(autopopulate);
 
-export const City = mongoose.model<
+type CityModel = Pagination<ICity>;
+
+export const City: CityModel = mongoose.model<
   ICity,
-  PaginateModel<ICity>,
+  Pagination<ICity>,
   PaginateOptions
 >('cities', CitySchema);

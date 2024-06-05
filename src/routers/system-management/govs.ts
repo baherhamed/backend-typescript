@@ -1,30 +1,11 @@
 import express, { Request, Response } from 'express';
-import { Gov } from '../../interfaces';
-
 import {
-  inputsLength,
-  responseMessages,
-  responseLanguage,
+  PermissionsNames, RoutesNames, checkUserPermission, checkUserRoutes, handleAddResponse, handleDeleteResponse, handleError,
+  handleExisitData, handleGetActiveResponse, handleGetAllResponse, handleNoData, handleSearchResponse, handleUpdateResponse,
+  handleValidateData, handleViewResponse, inputsLength, responseLanguage, responseMessages, setDocumentDetails, site,
   verifyJwtToken,
-  checkUserPermission,
-  pagination,
-  site,
-  PermissionsNames,
-  checkUserRoutes,
-  RoutesNames,
-  setDocumentDetails,
-  handleError,
-  handleNoData,
-  handleExisitData,
-  handleValidateData,
-  handleAddResponse,
-  handleUpdateResponse,
-  handleDeleteResponse,
-  handleGetAllResponse,
-  handleSearchResponse,
-  handleGetActiveResponse,
-  handleViewResponse,
 } from '../../shared';
+import { Gov } from '../../interfaces';
 
 const add = async (req: Request, res: Response) => {
   const request = req.body;
@@ -148,6 +129,7 @@ const update = async (req: Request, res: Response) => {
 };
 
 const deleted = async (req: Request, res: Response) => {
+
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
@@ -190,24 +172,19 @@ const deleted = async (req: Request, res: Response) => {
 };
 
 const getAll = async (req: Request, res: Response) => {
-  const request = req.body;
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
   if (!hasRoute) return;
 
   try {
-    const query = {
-      page: req.query?.page || request.page || pagination.page,
-      limit: req.query?.limit || request.limit || pagination.getAll,
-    };
-
     const where = {
       deleted: false,
+      ...site.setPaginationQuery(req),
     };
 
-    const result = await Gov.paginate(where, query);
+    const result = await Gov.paginate(where);
 
-    if (!result.docs.length) {
+    if (!result?.docs.length) {
       const response = await handleNoData({ language: requestInfo.language });
       return res.send(response);
     }
@@ -233,14 +210,7 @@ const getAll = async (req: Request, res: Response) => {
       });
     }
 
-    handleGetAllResponse(
-      {
-        language: requestInfo.language,
-        data,
-        paginationInfo: site.pagination(result),
-      },
-      res,
-    );
+    handleGetAllResponse({ language: requestInfo.language, data, paginationInfo: site.pagination(result), }, res,);
   } catch (error: any) {
     console.log(`Gov => Get All Gov ${error}`);
     handleError({ message: error.message, res });
@@ -253,26 +223,24 @@ const search = async (req: Request, res: Response) => {
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
   if (!hasRoute) return;
   try {
-    const query = {
-      page: req.query?.page || request.page || pagination.page,
-      limit: req.query?.limit || request.query?.limit || pagination.search,
-    };
-
     const where = {
-      deleted: false,
+      query: {
+        deleted: false,
+      },
+      ...site.setPaginationQuery(req),
     };
 
     if (request.query.name) {
-      Object(where)['name'] = new RegExp(request.query.name, 'i');
+      Object(where.query).name = new RegExp(request.query.name, 'i');
     }
 
     if (request.query.code) {
-      Object(where)['code'] = new RegExp(request.query.code);
+      Object(where.query).code = new RegExp(request.query.code, 'i');
     }
 
-    const result = await Gov.paginate(where, query);
+    const result = await Gov.paginate(where);
 
-    if (!result.docs.length) {
+    if (!result?.docs.length) {
       const response = await handleNoData({ language: requestInfo.language });
       return res.send(response);
     }
@@ -319,7 +287,7 @@ const getActive = async (req: Request, res: Response) => {
       deleted: false,
     };
 
-    const result = await Gov.find(where)
+    const result = await Gov.find(where);
 
     if (!result.length) {
       const response = await handleNoData({ language: requestInfo.language });
@@ -336,10 +304,11 @@ const getActive = async (req: Request, res: Response) => {
       });
     }
 
-    handleGetActiveResponse({
-      language: requestInfo.language,
-      data,
-    },
+    handleGetActiveResponse(
+      {
+        language: requestInfo.language,
+        data,
+      },
       res,
     );
   } catch (error: any) {
@@ -372,10 +341,11 @@ const view = async (req: Request, res: Response) => {
           : undefined,
     };
 
-    handleViewResponse({
-      language: requestInfo.language,
-      data,
-    },
+    handleViewResponse(
+      {
+        language: requestInfo.language,
+        data,
+      },
       res,
     );
   } catch (error: any) {

@@ -1,33 +1,26 @@
-import mongoose, {
-  Types,
-  Document,
-  PaginateModel,
-  PaginateOptions,
-  Schema,
-} from 'mongoose';
-
-import paginate from 'mongoose-paginate-v2';
+import mongoose, { Schema, PaginateOptions } from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
+import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
+import { RequestTemplate, inputsLength } from '../../shared';
 
-import { inputsLength } from '../../shared';
-import { RequestTemplate } from '../shared';
-
-interface IPermission extends Document {
-  routeId: Types.ObjectId;
+const ObjectId = mongoose.Schema.Types.ObjectId;
+interface IPermission {
+  _id: typeof ObjectId;
+  routeId: typeof ObjectId;
   name: string;
   ar: string;
   en: string;
   active: boolean;
   deleted: boolean;
-  addInfo: typeof RequestTemplate;
-  lastUpdateInfo: typeof RequestTemplate;
-  deletedInfo: typeof RequestTemplate;
+  addInfo: RequestTemplate;
+  lastUpdateInfo: RequestTemplate;
+  deletedInfo: RequestTemplate;
 }
 
-const PermissionSchema = new Schema(
+const PermissionSchema = new Schema<IPermission>(
   {
     routeId: {
-      type: Types.ObjectId,
+      type: ObjectId,
       ref: 'routes',
       autopopulate: {
         select: 'name ar en active deleted',
@@ -53,26 +46,27 @@ const PermissionSchema = new Schema(
     },
     active: {
       type: Boolean,
-      required: [true, 'Please Enter Permission Status'],
       default: true,
     },
     deleted: {
       type: Boolean,
       default: false,
     },
-    addInfo: RequestTemplate,
-    lastUpdateInfo: RequestTemplate,
-    deleteInfo: RequestTemplate,
+    addInfo: {},
+    lastUpdateInfo: {},
+    deletedInfo: {},
   },
   {
     versionKey: false,
   },
 );
-PermissionSchema.plugin(paginate);
+PermissionSchema.plugin(mongoosePagination);
 PermissionSchema.plugin(autopopulate);
 
-export const Permission = mongoose.model<
+type PermissionModel = Pagination<IPermission>;
+
+export const Permission: PermissionModel = mongoose.model<
   IPermission,
-  PaginateModel<IPermission>,
+  Pagination<IPermission>,
   PaginateOptions
 >('permissions', PermissionSchema);

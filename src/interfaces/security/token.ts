@@ -1,17 +1,12 @@
-import mongoose, {
-  Types,
-  Document,
-  PaginateModel,
-  PaginateOptions,
-  Schema,
-} from 'mongoose';
-
-import paginate from 'mongoose-paginate-v2';
+import mongoose, { Schema, PaginateOptions } from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
-import { RequestTemplate } from '../shared';
+import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
+const ObjectId = mongoose.Schema.Types.ObjectId;
+import { RequestTemplate } from '../../shared';
 
-interface IToken extends Document {
-  userId: Types.ObjectId;
+interface IToken {
+  _id: typeof ObjectId;
+  userId: typeof ObjectId;
   token: string;
   createdOn: Date;
   expiredOn: Date;
@@ -20,14 +15,14 @@ interface IToken extends Document {
   isMobile: boolean;
   active: boolean;
   deleted: boolean;
-  addInfo: typeof RequestTemplate;
-  deactivateInfo: typeof RequestTemplate;
+  addInfo: RequestTemplate;
+  deactivateInfo: RequestTemplate;
 }
 
-const TokenSchema = new Schema(
+const TokenSchema = new Schema<IToken>(
   {
     userId: {
-      type: Types.ObjectId,
+      type: ObjectId,
       ref: 'users',
       autopopulate: {
         select: 'name active deleted',
@@ -36,7 +31,6 @@ const TokenSchema = new Schema(
     token: {
       type: String,
       required: [true, 'Please Enter Token'],
-      // trim: true,
     },
     createdOn: {
       type: Date,
@@ -56,7 +50,6 @@ const TokenSchema = new Schema(
     },
     active: {
       type: Boolean,
-      required: [true, 'Please Enter Token Status'],
       default: true,
     },
     signature: {
@@ -64,18 +57,20 @@ const TokenSchema = new Schema(
       required: [true, 'Please Enter Token Signature'],
     },
 
-    addInfo: RequestTemplate,
-    deactivateInfo: RequestTemplate,
-   },
+    addInfo: {},
+    deactivateInfo: {},
+  },
   {
     versionKey: false,
   },
 );
-TokenSchema.plugin(paginate);
+TokenSchema.plugin(mongoosePagination);
 TokenSchema.plugin(autopopulate);
 
-export const Token = mongoose.model<
+type TokenModel = Pagination<IToken>;
+
+export const Token: TokenModel = mongoose.model<
   IToken,
-  PaginateModel<IToken>,
+  Pagination<IToken>,
   PaginateOptions
 >('tokens', TokenSchema);

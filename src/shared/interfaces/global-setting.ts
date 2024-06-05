@@ -1,6 +1,5 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { PaginateModel, PaginateOptions, Schema } from 'mongoose';
 
-import { RequestTemplate } from '../shared';
 
 interface GeneralSystemSetting {
   displaySetting: object;
@@ -9,7 +8,7 @@ interface GeneralSystemSetting {
   // lastUpdateInfo: typeof RequestTemplate;
 }
 
-const GolobalSettingSchema = new Schema(
+const GlobalSettingSchema = new Schema<GeneralSystemSetting>(
   {
     displaySetting: {
       displayRecordDetails: {
@@ -29,8 +28,8 @@ const GolobalSettingSchema = new Schema(
       },
     },
     // displaySetting:{},
-    addInfo: RequestTemplate,
-    lastUpdateInfo: RequestTemplate,
+    // addInfo: RequestTemplate,
+    // lastUpdateInfo: RequestTemplate,
   },
   {
     versionKey: false,
@@ -38,7 +37,8 @@ const GolobalSettingSchema = new Schema(
   },
 );
 
-export const GlobalSetting = mongoose.model<GeneralSystemSetting>(
-  'globalSettings',
-  GolobalSettingSchema,
+type GlobalSystemSettingModel = PaginateModel<GeneralSystemSetting>;
+
+export const GlobalSetting: GlobalSystemSettingModel = mongoose.model<GeneralSystemSetting, PaginateModel<GeneralSystemSetting>, PaginateOptions>(
+  'globalSettings', GlobalSettingSchema
 );

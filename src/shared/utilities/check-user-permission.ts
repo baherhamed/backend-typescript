@@ -1,10 +1,11 @@
-import { User } from '../interfaces';
 import { Request, Response } from 'express';
-import { responseLanguage, responseMessages, site } from '.';
-export const checkUserRoutes = async (
+import { responseLanguage, responseMessages, site } from '..';
+import { User } from '../../interfaces';
+
+export const checkUserPermission = async (
   req: Request,
   res: Response,
-  route: string,
+  permission: string,
 ) => {
   const request = req.body.requestInfo;
   const selectedUser = await User.findOne({
@@ -12,13 +13,14 @@ export const checkUserRoutes = async (
     active: true,
     deleted: false,
   });
-  if (selectedUser && selectedUser.routesList.includes(route)) {
+  if (selectedUser && selectedUser.permissionsList.includes(permission)) {
     return true;
   } else {
     const message = await responseLanguage(
       request.language,
-      responseMessages.routeNotAllowed,
+      responseMessages.pemissionNotAllowed,
     );
+
      res.send({
       success: false,
       statusCode: site.responseStatusCodes.unauthorized,

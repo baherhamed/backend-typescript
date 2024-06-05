@@ -1,20 +1,17 @@
 import express, { Request, Response } from 'express';
 
-import { User, Token, GlobalSetting } from '../../interfaces';
+
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import browser from 'browser-detect';
 import bcrypt from 'bcrypt';
 import {
-  inputsLength,
-  responseMessages,
-  setRequestLanguage,
-  responseLanguage,
-  site,
+  GlobalSetting, handleLoginFailResponse, handleLoginSuccessResponse, handleValidateData,
   hashString,
-  handleValidateData,
-  handleLoginFailResponse,
-  handleLoginSuccessResponse,
+  inputsLength,
+  responseLanguage, responseMessages, setRequestLanguage, site
 } from '../../shared';
+import { Token, User } from '../../interfaces';
+
 
 const login = async (req: Request, res: Response) => {
   const requestLanguage = await setRequestLanguage(req);
@@ -41,8 +38,9 @@ const login = async (req: Request, res: Response) => {
 
   const foundUser = await User.findOne(findUser);
 
+
   if (!foundUser) {
-    handleLoginFailResponse({ language: requestLanguage }, res)
+    return handleLoginFailResponse({ language: requestLanguage }, res);
   }
 
   const checkPassword = await bcrypt.compare(
@@ -51,7 +49,7 @@ const login = async (req: Request, res: Response) => {
   );
 
   if (!checkPassword) {
-    return
+    return handleLoginFailResponse({ language: requestLanguage }, res);
   }
 
   const user = {
@@ -132,7 +130,7 @@ const login = async (req: Request, res: Response) => {
     globalSetting,
     language: Object(foundUser?.languageId).name,
   };
-  handleLoginSuccessResponse({ language: requestLanguage, data }, res)
+   handleLoginSuccessResponse({ language: requestLanguage, data }, res);
 };
 
 const validateData = async (req: Request, res: Response) => {

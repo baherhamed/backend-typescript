@@ -1,35 +1,28 @@
-import mongoose, {
-  Schema,
-  Types,
-  Document,
-  PaginateModel,
-  PaginateOptions,
-} from 'mongoose';
-
-import paginate from 'mongoose-paginate-v2';
+import mongoose, { Schema, PaginateOptions } from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
+import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
+const ObjectId = mongoose.Schema.Types.ObjectId;
+import { RequestTemplate, inputsLength } from '../../shared';
 
-import { inputsLength } from '../../shared';
-import { RequestTemplate } from '../shared';
-
-interface IUser extends Document {
+interface IUser  {
+  _id: typeof ObjectId;
   name: string;
   mobile: string;
   email: string;
   password: string;
-  languageId: mongoose.Types.ObjectId;
+  languageId: typeof ObjectId;
   routesList: [string];
   permissionsList: [string];
   active: boolean;
   deleted: boolean;
   isAdmin: boolean;
   isDeveloper: boolean;
-  addInfo: typeof RequestTemplate;
-  lastUpdateInfo: typeof RequestTemplate;
-  deletedInfo: typeof RequestTemplate;
+  addInfo: RequestTemplate;
+  lastUpdateInfo: RequestTemplate;
+  deletedInfo: RequestTemplate;
 }
 
-const UsersSchema = new Schema(
+const UsersSchema = new Schema<IUser>(
   {
     name: {
       type: String,
@@ -55,7 +48,7 @@ const UsersSchema = new Schema(
       trim: true,
     },
     languageId: {
-      type: Types.ObjectId,
+      type: ObjectId,
       ref: 'languages',
       autopopulate: {
         select: ' code name active deleted',
@@ -73,37 +66,36 @@ const UsersSchema = new Schema(
     },
     active: {
       type: Boolean,
-      required: [true, 'Please Enter State'],
+      default: true,
     },
     isAdmin: {
       type: Boolean,
-      required: [true, 'Please Enter Is Admin State'],
       default: false,
     },
     isDeveloper: {
       type: Boolean,
-      required: [true, 'Please Enter Is Develper State'],
       default: false,
     },
     deleted: {
       type: Boolean,
       default: false,
     },
-    addInfo: RequestTemplate,
-    lastUpdateInfo: RequestTemplate,
-    deleteInfo: RequestTemplate,
+    addInfo: {},
+    lastUpdateInfo: {},
+    deletedInfo: {},
   },
-
   {
     versionKey: false,
   },
 );
 
-UsersSchema.plugin(paginate);
+UsersSchema.plugin(mongoosePagination);
 UsersSchema.plugin(autopopulate);
 
-export const User = mongoose.model<
+type UserModel = Pagination<IUser>;
+
+export const User: UserModel = mongoose.model<
   IUser,
-  PaginateModel<IUser>,
+  Pagination<IUser>,
   PaginateOptions
 >('users', UsersSchema);

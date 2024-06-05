@@ -1,5 +1,4 @@
-import { site } from '.';
-import { IMessageLanguage } from '../interfaces';
+import { IMessageLanguage, site } from '..';
 
 export const responseLanguage = async (
   requestLanguage: string,

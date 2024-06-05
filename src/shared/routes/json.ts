@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express';
-import { handleGlobalSettingResponse, setRequestLanguage, site, verifyJwtToken } from '../../shared';
+import { handleGlobalSettingResponse, setRequestLanguage, site, verifyJwtToken } from '..';
+
+
 
 export const tooltipPositionsList = [
   {

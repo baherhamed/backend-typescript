@@ -1,14 +1,7 @@
-import { Language } from '../../interfaces';
-import {
-  site,
-  responseLanguage,
-  responseMessages,
-  verifyJwtToken,
-  handleError,
-  handleGetActiveResponse,
-  handleNoData,
-} from '../../shared';
+
+
 import express, { Request, Response } from 'express';
+import { Language, handleError, handleGetActiveResponse, handleNoData, site, verifyJwtToken } from '../../shared';
 
 const getActiveLanguages = async (req: Request, res: Response) => {
   const requestInfo = req.body.requestInfo;

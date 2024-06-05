@@ -1,4 +1,4 @@
-import { responseLanguage, responseMessages, site } from '.';
+
 import { Response } from 'express';
 import {
   IHandleAddResponse,
@@ -18,6 +18,9 @@ import {
   IHandleValidateData,
   IHandleViewResponse,
 } from '../interfaces';
+import { responseLanguage } from '.';
+import { responseMessages, site } from '..';
+
 
 export const handleError = async (data: IHandleError) => {
   const message = data.message ? data.message : responseMessages.invalidData;

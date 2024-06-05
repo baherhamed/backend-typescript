@@ -14,7 +14,6 @@ import * as https from 'https';
 
 import fs from 'fs';
 
-import { systemDefaults } from './shared/system-default';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import routesRouters from './routers/security/routes';
@@ -22,20 +21,32 @@ import routesRouters from './routers/security/routes';
 import usersRouters from './routers/security/user';
 import loginRouters from './routers/security/login';
 
-import languageRouters from './routers/system-management/languages';
+import languageRouters from './shared/routes/languages';
 import govsRouters from './routers/system-management/govs';
 import citiesRouters from './routers/system-management/cities';
-import GlobalSettingRouters from './routers/shared/global-setting';
-import jsonRouters from './routers/json/fixed';
 
-// START ADD CLUSTER
 
+import NodeCache from "node-cache";
+import { Gov } from "./interfaces"
+
+import globalSystemSettingRouters from './shared/routes/global-setting';
+import jsonRouters from './shared/routes/json';
+import { systemDefaults } from './shared';
+const myCache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
+
+
+// let govsList = async () => {
+// setTimeout(() => {
+//    Gov.find({ active: true })
+// }, 3000);
+// };
+// console.log('govsList', govsList);
 
 const numCPUs = os.cpus().length;
 console.log('numCPUs', numCPUs);
 if (cluster.isPrimary) {
   console.log(`Master process ${process.pid} is running`);
-  for (let i = 0; i < numCPUs/6; i++) {
+  for (let i = 0; i < numCPUs / 6; i++) {
     cluster.fork();
   }
 
@@ -98,7 +109,7 @@ if (cluster.isPrimary) {
   govsRouters(app);
   usersRouters(app);
   citiesRouters(app);
-  GlobalSettingRouters(app);
+  globalSystemSettingRouters(app);
   jsonRouters(app);
 
   let privateKey;

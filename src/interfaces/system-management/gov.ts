@@ -1,25 +1,20 @@
-import mongoose, {
-  Schema,
-  Document,
-  PaginateModel,
-  PaginateOptions,
-} from 'mongoose';
-import paginate from 'mongoose-paginate-v2';
+import mongoose, { Schema, PaginateOptions } from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
-import { inputsLength } from '../../shared/inputs-length';
-import { RequestTemplate } from '../shared';
-
-interface IGov extends Document {
+import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
+import { RequestTemplate, inputsLength } from '../../shared';
+const ObjectId = mongoose.Schema.Types.ObjectId;
+interface IGov {
+  _id: typeof ObjectId,
   name: string;
   code: string;
   active: boolean;
   deleted: boolean;
-  addInfo: typeof RequestTemplate;
-  lastUpdateInfo: typeof RequestTemplate;
-  deletedInfo: typeof RequestTemplate;
+  addInfo?: RequestTemplate;
+  lastUpdateInfo?: RequestTemplate;
+  deletedInfo?: RequestTemplate;
 }
 
-const GovSchema = new Schema(
+const GovSchema = new Schema<IGov>(
   {
     name: {
       type: String,
@@ -36,30 +31,28 @@ const GovSchema = new Schema(
     },
     active: {
       type: Boolean,
-      required: [true, 'Please Enter Gov State'],
+      default: true
     },
     deleted: {
       type: Boolean,
       default: false,
     },
-    addInfo: RequestTemplate,
-    lastUpdateInfo: RequestTemplate,
-    deleteInfo: RequestTemplate,
+    addInfo: {},
+    lastUpdateInfo: {},
+    deletedInfo: {}
   },
   {
     versionKey: false,
-    // collection: 'govs',
-  
   },
 );
 
-GovSchema.plugin(paginate);
+GovSchema.plugin(mongoosePagination);
 GovSchema.plugin(autopopulate);
-// <IGov, PaginateModel<IGov>, PaginateOptions>
-export const Gov = mongoose.model<IGov, PaginateModel<IGov>, PaginateOptions>(
+
+type GovModel = Pagination<IGov>;
+
+export const Gov: GovModel = mongoose.model<IGov, Pagination<IGov>, PaginateOptions>(
   'govs',
-  GovSchema,
+  GovSchema
 );
-
-
 

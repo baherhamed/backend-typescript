@@ -1,6 +1,6 @@
-import { Schema, Types } from 'mongoose';
-import autopopulate from 'mongoose-autopopulate';
-export const RequestTemplate = new Schema({
+import {  Types } from 'mongoose';
+
+export interface RequestTemplate {
   userAgent: String,
   browser: {
     name: String,
@@ -23,6 +23,4 @@ export const RequestTemplate = new Schema({
   date: Date,
   isAdmin: Boolean,
   isDeveloper: Boolean,
-});
-
-RequestTemplate.plugin(autopopulate);
+}

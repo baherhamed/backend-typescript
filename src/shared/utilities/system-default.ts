@@ -1,8 +1,9 @@
-import { hashPassword } from './hash-password';
+
 import mongoose from 'mongoose';
+import { Language, hashPassword, site } from '..';
+import { Permission, Route, User } from '../../interfaces';
 const ObjectId = mongoose.Types.ObjectId;
-import { User, Language, Route, Token } from '../interfaces';
-import { site } from '.';
+
 
 export const systemDefaults = async () => {
   const defaultLangAr = await Language.findOne({
@@ -131,7 +132,7 @@ export const systemDefaults = async () => {
       );
     }
 
-    const addUserPermission = new Token({
+    const addUserPermission = new Permission({
       routeId: newRoute._id,
       name: 'addUser',
       en: 'Add User',
@@ -142,7 +143,7 @@ export const systemDefaults = async () => {
 
     await addUserPermission.save();
 
-    const updateUserPermission = new Token({
+    const updateUserPermission = new Permission({
       routeId: newRoute._id,
       name: 'updateUser',
       en: 'Update User',
@@ -153,7 +154,7 @@ export const systemDefaults = async () => {
 
     await updateUserPermission.save();
 
-    const deleteUserPermission = new Token({
+    const deleteUserPermission = new Permission({
       routeId: newRoute._id,
       name: 'deleteUser',
       en: 'Delete User',
@@ -164,7 +165,7 @@ export const systemDefaults = async () => {
 
     await deleteUserPermission.save();
 
-    const exportUsersPermission = new Token({
+    const exportUsersPermission = new Permission({
       routeId: newRoute._id,
       name: 'exportUsers',
       en: 'Export Users',

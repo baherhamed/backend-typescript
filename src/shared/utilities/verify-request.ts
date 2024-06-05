@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Token, User } from '../interfaces';
+
 
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
@@ -7,11 +7,11 @@ import browser from 'browser-detect';
 import {
   handleError,
   handleUnauthorization,
-  responseLanguage,
-  responseMessages,
   setRequestLanguage,
 } from '.';
 import isJwtTokenExpired from 'jwt-check-expiry';
+import { Token, User } from '../../interfaces';
+
 
 export const verifyJwtToken = async (
   req: Request,
@@ -41,6 +41,7 @@ export const verifyJwtToken = async (
       if (!token) {
       handleUnauthorization({ language, res });
       }
+      
       const jwtPayload = token!.split('Bearer ')[1];
       const isExpired = isJwtTokenExpired(jwtPayload);
 

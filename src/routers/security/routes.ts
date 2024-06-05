@@ -1,27 +1,27 @@
 import express, { Request, Response } from 'express';
-import { Route, Permission } from '../../interfaces';
 import {
-  inputsLength,
-  responseMessages,
-  responseLanguage,
-  verifyJwtToken,
-  checkUserPermission,
-  pagination,
-  site,
   PermissionsNames,
-  setDocumentDetails,
-  handleError,
-  handleNoData,
-  handleExisitData,
-  handleValidateData,
+  checkUserPermission,
   handleAddResponse,
-  handleUpdateResponse,
   handleDeleteResponse,
-  handleGetAllResponse,
-  handleSearchResponse,
+  handleError,
+  handleExisitData,
   handleGetActiveResponse,
+  handleGetAllResponse,
+  handleNoData,
+  handleSearchResponse,
+  handleUpdateResponse,
+  handleValidateData,
   handleViewResponse,
+  inputsLength,
+  pagination,
+  responseLanguage,
+  responseMessages,
+  setDocumentDetails,
+  site,
+  verifyJwtToken,
 } from '../../shared';
+import { Permission, Route } from '../../interfaces';
 
 const add = async (req: Request, res: Response) => {
   const request = req.body;
@@ -310,22 +310,17 @@ const deleted = async (req: Request, res: Response) => {
 };
 
 const getAll = async (req: Request, res: Response) => {
-  const request = req.body;
   const requestInfo = req.body.requestInfo;
 
   try {
-    const query = {
-      page: req.query?.page || request.page || pagination.page,
-      limit: req.query?.limit || request.limit || pagination.getAll,
-    };
-
     const where = {
       deleted: false,
+      ...site.setPaginationQuery(req),
     };
 
-    const result = await Route.paginate(where, query);
+    const result = await Route.paginate(where);
 
-    if (!result.docs.length) {
+    if (!result?.docs.length) {
       const response = await handleNoData({ language: requestInfo.language });
       return res.send(response);
     }
@@ -388,29 +383,26 @@ const search = async (req: Request, res: Response) => {
   const requestInfo = req.body.requestInfo;
 
   try {
-    const query = {
-      page: req.query?.page || request.page || pagination.page,
-      limit: req.query?.limit || request.query?.limit || pagination.search,
-    };
-
     const where = {
-      deleted: false,
+      query: {
+        deleted: false,
+      },
+      ...site.setPaginationQuery(req)
     };
-
     if (request.query.name) {
-      Object(where)['name'] = new RegExp(request.query.name, 'i');
+      Object(where.query)['name'] = new RegExp(request.query.name, 'i');
     }
     if (request.query.ar) {
-      Object(where)['ar'] = new RegExp(request.query.ar, 'i');
+      Object(where.query)['ar'] = new RegExp(request.query.ar, 'i');
     }
 
     if (request.query.en) {
-      Object(where)['en'] = new RegExp(request.query.en, 'i');
+      Object(where.query)['en'] = new RegExp(request.query.en, 'i');
     }
 
-    const result = await Route.paginate(where, query);
+    const result = await Route.paginate(where);
 
-    if (!result.docs.length) {
+    if (!result?.docs.length) {
       const response = await handleNoData({ language: requestInfo.language });
       return res.send(response);
     }
@@ -515,10 +507,11 @@ const getActive = async (req: Request, res: Response) => {
       });
     }
 
-    handleGetActiveResponse({
-      language: requestInfo.language,
-      data,
-    },
+    handleGetActiveResponse(
+      {
+        language: requestInfo.language,
+        data,
+      },
       res,
     );
   } catch (error: any) {
@@ -571,10 +564,11 @@ const view = async (req: Request, res: Response) => {
           : undefined,
     };
 
-    handleViewResponse({
-      language: requestInfo.language,
-      data,
-    },
+    handleViewResponse(
+      {
+        language: requestInfo.language,
+        data,
+      },
       res,
     );
   } catch (error: any) {
