@@ -178,7 +178,9 @@ const getAll = async (req: Request, res: Response) => {
 
   try {
     const where = {
-      deleted: false,
+      query: {
+        deleted: false,
+      },
       ...site.setPaginationQuery(req),
     };
 

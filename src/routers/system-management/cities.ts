@@ -1,10 +1,28 @@
 import express, { Request, Response } from 'express';
 
 import {
-  PermissionsNames, RoutesNames, checkUserPermission, checkUserRoutes, handleAddResponse, handleDeleteResponse,
-  handleError, handleExisitData, handleGetActiveResponse, handleGetAllResponse, handleNoData, handleSearchResponse,
-  handleUpdateResponse, handleValidateData, handleViewResponse, inputsLength, pagination, responseLanguage, responseMessages,
-  setDocumentDetails, site, verifyJwtToken
+  PermissionsNames,
+  RoutesNames,
+  checkUserPermission,
+  checkUserRoutes,
+  handleAddResponse,
+  handleDeleteResponse,
+  handleError,
+  handleExisitData,
+  handleGetActiveResponse,
+  handleGetAllResponse,
+  handleNoData,
+  handleSearchResponse,
+  handleUpdateResponse,
+  handleValidateData,
+  handleViewResponse,
+  inputsLength,
+  pagination,
+  responseLanguage,
+  responseMessages,
+  setDocumentDetails,
+  site,
+  verifyJwtToken,
 } from '../../shared';
 import { City } from '../../interfaces';
 
@@ -179,14 +197,15 @@ const deleted = async (req: Request, res: Response) => {
 };
 
 const getAll = async (req: Request, res: Response) => {
-
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
   if (!hasRoute) return;
   try {
     const where = {
-      deleted: false,
-      ...site.setPaginationQuery(req)
+      query: {
+        deleted: false,
+      },
+      ...site.setPaginationQuery(req),
     };
 
     const result = await City.paginate(where);
@@ -219,7 +238,14 @@ const getAll = async (req: Request, res: Response) => {
       });
     }
 
-    handleGetAllResponse({ language: requestInfo.language, data, paginationInfo: site.pagination(result), }, res,);
+    handleGetAllResponse(
+      {
+        language: requestInfo.language,
+        data,
+        paginationInfo: site.pagination(result),
+      },
+      res,
+    );
   } catch (error: any) {
     console.log(`City => Get All City ${error}`);
     handleError({ message: error.message, res });
@@ -236,8 +262,12 @@ const search = async (req: Request, res: Response) => {
       query: {
         deleted: false,
       },
-      ...site.setPaginationQuery(req)
+      ...site.setPaginationQuery(req),
     };
+
+    if (request.query.gov?._id) {
+      Object(where.query).govId = request.query.gov?._id;
+    }
 
     if (request.query.name) {
       Object(where.query).name = new RegExp(request.query.name, 'i');
@@ -326,7 +356,6 @@ const getCitiesByGov = async (req: Request, res: Response) => {
   }
 };
 
-
 const getActive = async (req: Request, res: Response) => {
   const requestInfo = req.body.requestInfo;
 
@@ -356,10 +385,11 @@ const getActive = async (req: Request, res: Response) => {
       });
     }
 
-    handleGetActiveResponse({
-      language: requestInfo.language,
-      data,
-    },
+    handleGetActiveResponse(
+      {
+        language: requestInfo.language,
+        data,
+      },
       res,
     );
   } catch (error: any) {
@@ -394,10 +424,11 @@ const view = async (req: Request, res: Response) => {
           : undefined,
     };
 
-    handleViewResponse({
-      language: requestInfo.language,
-      data,
-    },
+    handleViewResponse(
+      {
+        language: requestInfo.language,
+        data,
+      },
       res,
     );
   } catch (error: any) {

@@ -439,6 +439,7 @@ const search = async (req: Request, res: Response) => {
       where = {
         query: {
           $or: [{ isDeveloper: true }, { isAdmin: true }],
+          deleted: false,
         },
         ...site.setPaginationQuery(req),
       };

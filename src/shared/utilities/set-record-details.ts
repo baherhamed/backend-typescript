@@ -21,7 +21,7 @@ export const setDocumentDetails = async (
       Object(globalSetting).displaySetting.displayRecordDetails
     ) {
 
-      const requestBrowser = browser(data.userAgent);
+      const requestBrowser = browser(data?.userAgent);
 
       const ipAddress = Object(data).ipAddress;
       const language = Object(data).language;
