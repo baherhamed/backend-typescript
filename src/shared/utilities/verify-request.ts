@@ -7,6 +7,7 @@ import browser from 'browser-detect';
 import {
   handleError,
   handleUnauthorization,
+  handleUserLoginResponse,
   setRequestLanguage,
 } from '.';
 import isJwtTokenExpired from 'jwt-check-expiry';
@@ -107,4 +108,39 @@ export const verifyJwtToken = async (
   } catch (error) {
     return console.log(`Verify Request ${error}`);
   }
+};
+
+
+export const checkUserLogin = async (req: Request, res: Response) => {
+  const language = await setRequestLanguage(req);
+
+  const token = req.headers['authorization'];
+  const navToRoute = req.body.navToRoute;
+  if (!token) {
+    handleUnauthorization({ language, res });
+  }
+  const jwtPayload = token!.split('Bearer ')[1];
+  const isExpired = isJwtTokenExpired(jwtPayload);
+
+  const decoded = jwt.verify(
+    jwtPayload,
+    String(process.env.ACCESS_TOKEN_SECRET),
+  ) as JwtPayload;
+
+  const validateExisitToken = await Token.findOne({ token: jwtPayload });
+
+  if (isExpired || !validateExisitToken || !validateExisitToken.active) {
+    handleUserLoginResponse({ success: false }, res);
+  }
+
+  const selectedUser = await User.findOne({
+    _id: decoded.userId,
+    active: true,
+    deleted: false,
+  });
+
+  if (!selectedUser || !selectedUser?.routesList.includes(navToRoute)) {
+    handleUserLoginResponse({ success: false }, res);
+  }
+  handleUserLoginResponse({ success: true }, res);
 };

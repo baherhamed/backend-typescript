@@ -17,6 +17,7 @@ import {
   IHandleUpdateResponse,
   IHandleValidateData,
   IHandleViewResponse,
+  IUserLogin,
 } from '../interfaces';
 import { responseLanguage } from '.';
 import { responseMessages, site } from '..';
@@ -253,4 +254,12 @@ export const handleGlobalSettingResponse = async (
     // message,
     data: result.data,
   });
+};
+
+export const handleUserLoginResponse = async (
+  result: IUserLogin,
+  res: Response,
+) => {
+  const { success } = result;
+  return res.send(success);
 };

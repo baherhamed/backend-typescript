@@ -79,3 +79,7 @@ export interface IHandleGlobalSettingResponse {
   language: string;
   data: {};
 }
+
+export interface IUserLogin {
+  success: Boolean;
+}

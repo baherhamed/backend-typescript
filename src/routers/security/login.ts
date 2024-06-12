@@ -5,7 +5,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import browser from 'browser-detect';
 import bcrypt from 'bcrypt';
 import {
-  GlobalSetting, handleLoginFailResponse, handleLoginSuccessResponse, handleValidateData,
+  GlobalSetting, checkUserLogin, handleLoginFailResponse, handleLoginSuccessResponse, handleValidateData,
   hashString,
   inputsLength,
   responseLanguage, responseMessages, setRequestLanguage, site
@@ -133,6 +133,10 @@ const login = async (req: Request, res: Response) => {
    handleLoginSuccessResponse({ language: requestLanguage, data }, res);
 };
 
+const isLogin = async (req: Request, res: Response) => {
+  checkUserLogin(req, res);
+ };
+
 const validateData = async (req: Request, res: Response) => {
   const request = req.body;
   const userName = request.username;
@@ -164,6 +168,7 @@ const validateData = async (req: Request, res: Response) => {
 
 const loginRouters = (app: express.Application) => {
   app.post(`${site.api}${site.apps.login}`, login);
+  app.post(`${site.api}${site.apps.login}/isLogin`, isLogin);
 };
 
 export default loginRouters;
