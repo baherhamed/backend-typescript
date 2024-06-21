@@ -1,4 +1,3 @@
-
 import { Response } from 'express';
 import {
   IHandleAddResponse,
@@ -21,7 +20,6 @@ import {
 } from '../interfaces';
 import { responseLanguage } from '.';
 import { responseMessages, site } from '..';
-
 
 export const handleError = async (data: IHandleError) => {
   const message = data.message ? data.message : responseMessages.invalidData;
@@ -164,10 +162,10 @@ export const handleGetActiveResponse = async (
   result: IHandleGetActiveResponse,
   res: Response,
 ) => {
-  const message = await responseLanguage(
-    result.language,
-    responseMessages.done,
-  );
+  // const message = await responseLanguage(
+  //   result.language,
+  //   responseMessages.done,
+  // );
   return res.send({
     success: true,
     statusCode: site.responseStatusCodes.getActive,
@@ -180,10 +178,10 @@ export const handleViewResponse = async (
   result: IHandleViewResponse,
   res: Response,
 ) => {
-  const message = await responseLanguage(
-    result.language,
-    responseMessages.done,
-  );
+  // const message = await responseLanguage(
+  //   result.language,
+  //   responseMessages.done,
+  // );
   return res.send({
     success: true,
     statusCode: site.responseStatusCodes.getActive,
@@ -204,7 +202,6 @@ export const handleLoggedOutResponse = async (
     success: true,
     statusCode: site.responseStatusCodes.loggedOut,
     message,
-
   });
 };
 
@@ -220,7 +217,6 @@ export const handleLoginFailResponse = async (
     success: false,
     statusCode: site.responseStatusCodes.loggedInFail,
     message,
-
   });
 };
 
@@ -232,11 +228,12 @@ export const handleLoginSuccessResponse = async (
     result.language,
     responseMessages.authorized,
   );
+
   return res.send({
     success: true,
     statusCode: site.responseStatusCodes.loggedInSuccess,
-    message, data: result.data,
-
+    message,
+    data: result.data,
   });
 };
 
@@ -244,10 +241,10 @@ export const handleGlobalSettingResponse = async (
   result: IHandleGlobalSettingResponse,
   res: Response,
 ) => {
-  const message = await responseLanguage(
-    result.language,
-    responseMessages.done,
-  );
+  // const message = await responseLanguage(
+  //   result.language,
+  //   responseMessages.done,
+  // );
   return res.send({
     success: true,
     statusCode: site.responseStatusCodes.globalSetting,

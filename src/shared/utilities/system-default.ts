@@ -60,18 +60,6 @@ export const systemDefaults = async () => {
     });
     const routesList = site.systemDefault.routesList;
     const permissionsList = site.systemDefault.permissionsList;
-    //  [
-    //   'setGlobalSetting',
-    //   'addUser',
-    //   'updateUser',
-    //   'deleteUser',
-    //   'addRoute',
-    //   'updateRoute',
-    //   'deleteRoute',
-    //   'addPermission',
-    //   'updatePermission',
-    //   'deletePermission',
-    // ];
 
     const newUser = new User({
       _id: new ObjectId('606b64ba679e4903d47ab001'),

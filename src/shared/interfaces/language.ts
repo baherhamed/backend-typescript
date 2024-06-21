@@ -8,16 +8,14 @@ import paginate from 'mongoose-paginate-v2';
 import autopopulate from 'mongoose-autopopulate';
 import { RequestTemplate, inputsLength } from '..';
 
-
-
 interface ILanguage {
   code?: string;
   name: string;
   active: boolean;
   deleted: boolean;
-  addInfo:  RequestTemplate;
-  lastUpdateInfo:  RequestTemplate;
-  deletedInfo:  RequestTemplate;
+  addInfo: RequestTemplate;
+  lastUpdateInfo: RequestTemplate;
+  deletedInfo: RequestTemplate;
 }
 
 const LanguageSchema = new Schema<ILanguage>(
@@ -41,9 +39,9 @@ const LanguageSchema = new Schema<ILanguage>(
       type: Boolean,
       default: false,
     },
-    // addInfo: RequestTemplate,
-    // lastUpdateInfo: RequestTemplate,
-    // deleteInfo: RequestTemplate,
+    addInfo: {},
+    lastUpdateInfo: {},
+    deletedInfo: {},
   },
   {
     versionKey: false,
@@ -53,15 +51,10 @@ const LanguageSchema = new Schema<ILanguage>(
 LanguageSchema.plugin(paginate);
 LanguageSchema.plugin(autopopulate);
 
-// export const Language = mongoose.model<
-//   ILanguage,
-//   PaginateModel<ILanguage>,
-//   PaginateOptions
-// >('languages', LanguageSchema);
-
 type LanguageModel = PaginateModel<ILanguage>;
 
-export const Language: LanguageModel = mongoose.model<ILanguage, PaginateModel<ILanguage>, PaginateOptions>(
-  'languages', LanguageSchema
-);
-
+export const Language: LanguageModel = mongoose.model<
+  ILanguage,
+  PaginateModel<ILanguage>,
+  PaginateOptions
+>('languages', LanguageSchema);

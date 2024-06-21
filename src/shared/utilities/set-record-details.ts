@@ -1,14 +1,9 @@
 import { GlobalSetting } from '..';
 import { User } from '../../interfaces';
 import browser from 'browser-detect';
-export const setDocumentDetails = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  requestInfo: any,
-  data?: any,
-) => {
+export const setDocumentDetails = async (requestInfo: any, data?: any) => {
   const globalSetting = await GlobalSetting.findOne({});
   try {
-
     if (
       (!globalSetting &&
         Object(globalSetting).displaySetting.displayRecordDetails) ||
@@ -20,7 +15,6 @@ export const setDocumentDetails = async (
       globalSetting &&
       Object(globalSetting).displaySetting.displayRecordDetails
     ) {
-
       const requestBrowser = browser(data?.userAgent);
 
       const ipAddress = Object(data).ipAddress;
@@ -42,8 +36,7 @@ export const setDocumentDetails = async (
 
       return {
         userName: selectedUser?.name,
-        browser:
-          requestBrowser?.name + ' - ' + requestBrowser?.version,
+        browser: requestBrowser?.name + ' - ' + requestBrowser?.version,
         mobile: requestBrowser?.mobile,
         os: requestBrowser.os,
         ipAddress,

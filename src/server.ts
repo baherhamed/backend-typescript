@@ -25,22 +25,9 @@ import languageRouters from './shared/routes/languages';
 import govsRouters from './routers/system-management/govs';
 import citiesRouters from './routers/system-management/cities';
 
-
-import NodeCache from "node-cache";
-import { Gov } from "./interfaces"
-
 import globalSystemSettingRouters from './shared/routes/global-setting';
 import jsonRouters from './shared/routes/json';
 import { systemDefaults } from './shared';
-const myCache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
-
-
-// let govsList = async () => {
-// setTimeout(() => {
-//    Gov.find({ active: true })
-// }, 3000);
-// };
-// console.log('govsList', govsList);
 
 const numCPUs = os.cpus().length;
 console.log('numCPUs', numCPUs);
@@ -74,14 +61,13 @@ if (cluster.isPrimary) {
 
   (async () => {
     try {
-
       const options = {
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
         auth: {
           username: process.env.dbUser,
           password: process.env.dbPass,
-        }
+        },
       };
 
       await mongoose.connect(String(process.env.url), options);
@@ -90,7 +76,6 @@ if (cluster.isPrimary) {
       console.log('Successfully Connected To Database');
     } catch (error) {
       console.log(`Error While Connecting Database ${error}`);
-
     }
   })();
 
@@ -142,10 +127,6 @@ if (cluster.isPrimary) {
     agent: false,
   };
 
-  // const httpServer = http.createServer(app);
-  // const httpsServer = https.createServer(credentials, app);
-
-
   const httpServer = http.createServer(app);
   const httpsServer = https.createServer(credentials, app);
 
@@ -162,5 +143,4 @@ if (cluster.isPrimary) {
     Server Run Https at PORT: ${process.env.SSLPORT}
     -------------------------`);
   });
-  // export default { httpServer, httpsServer };
 }

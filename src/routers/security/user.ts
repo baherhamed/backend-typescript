@@ -584,17 +584,7 @@ const logout = async (req: Request, res: Response) => {
       },
       res,
     );
-    // const message = await responseLanguage(
-    //   req.headers['accept-language'] || 'ar',
-    //   responseMessages.loggedout,
-    // );
 
-    // return res
-    //   .send({
-    //     success: true,
-    //     message,
-    //   })
-    //   .status(200);
   } catch (error: any) {
     console.log(`User => logout ${error}`);
     handleError({ message: error.message, res });

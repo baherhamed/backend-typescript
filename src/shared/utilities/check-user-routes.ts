@@ -1,6 +1,5 @@
-
 import { Request, Response } from 'express';
-import {  responseLanguage, responseMessages, site } from '..';
+import { responseLanguage, responseMessages, site } from '..';
 import { User } from '../../interfaces';
 
 export const checkUserRoutes = async (
@@ -14,6 +13,7 @@ export const checkUserRoutes = async (
     active: true,
     deleted: false,
   });
+
   if (selectedUser && selectedUser.routesList.includes(route)) {
     return true;
   } else {
@@ -21,7 +21,7 @@ export const checkUserRoutes = async (
       request.language,
       responseMessages.routeNotAllowed,
     );
-     res.send({
+    res.send({
       success: false,
       statusCode: site.responseStatusCodes.unauthorized,
       message,

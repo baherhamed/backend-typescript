@@ -64,8 +64,8 @@ export const responseMessages = {
     en: 'Please Check Username',
   },
   authorized: {
-    ar: 'تم تسجيل الدخول',
-    en: 'You are authorized',
+    ar: 'جاري تسجيل الدخول ...',
+    en: 'loging ...',
   },
   authorizationData: {
     ar: 'توجد مشكلة في المصادقة يرجي إعادة تسجيل الدخول',

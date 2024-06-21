@@ -5,12 +5,12 @@ export const responseLanguage = async (
   message: IMessageLanguage,
   err?: string,
 ) => {
-  let responseMessage;
+  let responseMessage = '';
   let errorMessage = '';
   if (err) {
     errorMessage = err;
   }
-  if (requestLanguage === site.language.ar) {
+  if (!requestLanguage || requestLanguage === site.language.ar) {
     responseMessage = `${message.ar}${errorMessage}`;
   } else if (requestLanguage === site.language.en) {
     responseMessage = `${message.en}${errorMessage}`;

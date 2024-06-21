@@ -50,14 +50,14 @@ export const site = {
     return {
       totalDocs: result.totalDocs,
       totalPages: result.totalPages,
-      page: result.page ,
+      page: result.page,
       limit: result.limit,
       pagingCounter: result.pagingCounter,
       hasPrevPage: result.hasPrevPage,
       hasNextPage: result.hasNextPage,
       prevPage: result.prevPage,
       nextPage: result.nextPage,
-      hasMore: result.hasMore
+      hasMore: result.hasMore,
     };
   },
   responseStatusCodes: {
@@ -79,13 +79,9 @@ export const site = {
     view: 1000,
   },
   setPaginationQuery: (req: Request) => {
-    
     return {
-      page:  req?.body.page ,
-      // page: req?.query.page || req?.body.page || pagination.page,
+      page: req?.query.page || req?.body.page || pagination.page,
       limit: req?.query.limit || req?.body.limit || pagination.search,
-   };
-
-  }
-
+    };
+  },
 };

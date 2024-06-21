@@ -389,7 +389,7 @@ const search = async (req: Request, res: Response) => {
       query: {
         deleted: false,
       },
-      ...site.setPaginationQuery(req)
+      ...site.setPaginationQuery(req),
     };
     if (request.query.name) {
       Object(where.query)['name'] = new RegExp(request.query.name, 'i');
@@ -491,8 +491,6 @@ const getActive = async (req: Request, res: Response) => {
             _id: permission._id,
             name: permission.name,
             ar: permission.ar,
-            en: permission.en,
-            // active: permission.active,
           });
         }
       }
@@ -527,9 +525,7 @@ const view = async (req: Request, res: Response) => {
 
   const _id = request._id;
   const requestInfo = req.body.requestInfo;
-  // const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
 
-  // if (!hasRoute) return;
   try {
     const doc = await Route.findOne({ _id });
     const permissionsList = [];
@@ -640,7 +636,7 @@ const routessRouters = async (app: express.Application) => {
     verifyJwtToken,
     search,
   );
-  app.post(
+  app.get(
     `${site.api}${site.apps.routes}${site.appsRoutes.getActive}`,
     verifyJwtToken,
     getActive,

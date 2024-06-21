@@ -1,17 +1,22 @@
 import express, { Request, Response } from 'express';
 
-
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import browser from 'browser-detect';
 import bcrypt from 'bcrypt';
 import {
-  GlobalSetting, checkUserLogin, handleLoginFailResponse, handleLoginSuccessResponse, handleValidateData,
+  GlobalSetting,
+  checkUserLogin,
+  handleLoginFailResponse,
+  handleLoginSuccessResponse,
+  handleValidateData,
   hashString,
   inputsLength,
-  responseLanguage, responseMessages, setRequestLanguage, site
+  responseLanguage,
+  responseMessages,
+  setRequestLanguage,
+  site,
 } from '../../shared';
 import { Token, User } from '../../interfaces';
-
 
 const login = async (req: Request, res: Response) => {
   const requestLanguage = await setRequestLanguage(req);
@@ -38,7 +43,6 @@ const login = async (req: Request, res: Response) => {
 
   const foundUser = await User.findOne(findUser);
 
-
   if (!foundUser) {
     return handleLoginFailResponse({ language: requestLanguage }, res);
   }
@@ -61,7 +65,6 @@ const login = async (req: Request, res: Response) => {
 
   const token = jwt.sign(user, String(process.env.ACCESS_TOKEN_SECRET), {
     expiresIn: '10h',
-    // expiresIn: '10S',
   });
 
   const decode = jwt.decode(token, { complete: true }) as JwtPayload;
@@ -130,12 +133,12 @@ const login = async (req: Request, res: Response) => {
     globalSetting,
     language: Object(foundUser?.languageId).name,
   };
-   handleLoginSuccessResponse({ language: requestLanguage, data }, res);
+  handleLoginSuccessResponse({ language: requestLanguage, data }, res);
 };
 
 const isLogin = async (req: Request, res: Response) => {
   checkUserLogin(req, res);
- };
+};
 
 const validateData = async (req: Request, res: Response) => {
   const request = req.body;
