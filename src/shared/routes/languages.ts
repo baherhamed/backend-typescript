@@ -1,7 +1,12 @@
-
-
 import express, { Request, Response } from 'express';
-import { Language, handleError, handleGetActiveResponse, handleNoData, site, verifyJwtToken } from '../../shared';
+import {
+  Language,
+  handleError,
+  handleGetActiveResponse,
+  handleNoData,
+  site,
+  verifyJwtToken,
+} from '../../shared';
 
 const getActiveLanguages = async (req: Request, res: Response) => {
   const requestInfo = req.body.requestInfo;
@@ -29,10 +34,11 @@ const getActiveLanguages = async (req: Request, res: Response) => {
       });
     }
 
-    handleGetActiveResponse({
-      language: requestInfo.language,
-      data,
-    },
+    handleGetActiveResponse(
+      {
+        language: requestInfo.language,
+        data,
+      },
       res,
     );
   } catch (error: any) {

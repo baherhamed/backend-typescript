@@ -7,7 +7,7 @@ import {
   handleUserLoginResponse,
   setRequestLanguage,
 } from '.';
-import isJwtTokenExpired from 'jwt-check-expiry';
+
 import { Token, User } from '../../interfaces';
 
 export const verifyJwtToken = async (
@@ -16,34 +16,29 @@ export const verifyJwtToken = async (
   next: () => void,
 ) => {
   const language = await setRequestLanguage(req);
-  // console.log('req.headers', req.headers);
-
-  const ip = req.ip?.split('fff:');
-  const userAgent = req.headers['user-agent'];
-  const ipAddress = req.socket.remoteAddress || ip?.[1];
-  if (!req.headers?.authorization || !userAgent) {
-    handleUnauthorization({ language, res });
-  }
-
   try {
-    let token = req.headers?.authorization;
+    // console.log('path', req.path);
+    // console.log('headers', req.headers);
 
-    token = token?.split('Bearer ')[1] || '';
+    const ip = req.ip?.split('fff:');
+    const userAgent = req.headers['user-agent'];
+    const ipAddress = req.socket.remoteAddress || ip?.[1];
+    if (!req.headers?.authorization || !userAgent) {
+      handleUnauthorization({ language, res });
+    }
+
+    const { authorization } = req.headers;
+
+    const token = authorization?.split('Bearer ')[1] || '';
 
     if (!token) {
       handleUnauthorization({ language, res });
     }
 
-    const isExpired = isJwtTokenExpired(token);
-
     const decoded = jwt.verify(
       token,
       String(process.env.ACCESS_TOKEN_SECRET),
     ) as JwtPayload;
-
-    if (isExpired) {
-      handleUnauthorization({ language, res });
-    }
 
     const validateExisitToken = await Token.findOne({ token });
 
@@ -67,6 +62,8 @@ export const verifyJwtToken = async (
     };
     next();
   } catch (error) {
+    console.log('Verify  ===>errror', error);
+
     handleUnauthorization({ language, res });
     return console.log(`Verify Request ${error}`);
   }

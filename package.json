@@ -7,7 +7,7 @@
     "start": "nodemon dist/server.js --trace-deprecation",
     "dev": "nodemon src/server.ts --trace-deprecation",
     "prettier": "prettier --config .prettierrc \"src/**/*.ts\" --write",
-    "lint": "eslint **/*.ts",
+    "lint": "eslint --fix .",
     "build": "rm -rf dist && npm run lint && npm run prettier && npx tsc && cp src/.env dist/.env"
   },
   "author": "Baher Hamed",
@@ -22,6 +22,7 @@
     "browser-detect": "^0.2.28",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "eslint-config-prettier": "^9.1.0",
     "express": "^4.19.2",
     "formidable": "^3.5.1",
     "jsonwebtoken": "^9.0.2",
@@ -43,13 +44,18 @@
     "@types/node": "^20.14.0",
     "@typescript-eslint/eslint-plugin": "^7.11.0",
     "@typescript-eslint/parser": "^7.11.0",
-    "eslint": "^9.4.0",
-    "prettier": "^3.3.0",
+    "eslint": "^9.5.0",
+    "prettier": "^3.3.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   },
   "repository": {
     "type": "git",
     "url": "git://github.com/baherhamed/backend-typescript.git"
-  }
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/baherhamed/backend-typescript/issues"
+  },
+  "homepage": "https://github.com/baherhamed/backend-typescript#readme"
 }

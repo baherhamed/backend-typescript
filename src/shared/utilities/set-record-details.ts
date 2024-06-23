@@ -5,11 +5,7 @@ export const setDocumentDetails = async (requestInfo: any, data?: any) => {
   const globalSetting = await GlobalSetting.findOne({});
 
   try {
-    if (
-      !globalSetting ||
-      !requestInfo ||
-      !requestInfo?.isAdmin
-    ) {
+    if (!globalSetting || !requestInfo || !requestInfo?.isAdmin) {
       return {};
     } else if (
       globalSetting &&
@@ -23,7 +19,6 @@ export const setDocumentDetails = async (requestInfo: any, data?: any) => {
       const date = Object(data).date;
       const selectedUser = await User.findOne({
         _id,
-
       });
       let isAdmin = false;
       let isDeveloper = false;

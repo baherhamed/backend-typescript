@@ -1,9 +1,7 @@
-
 import mongoose from 'mongoose';
 import { Language, hashPassword, site } from '..';
 import { Permission, Route, User } from '../../interfaces';
 const ObjectId = mongoose.Types.ObjectId;
-
 
 export const systemDefaults = async () => {
   const defaultLangAr = await Language.findOne({
@@ -165,7 +163,7 @@ export const systemDefaults = async () => {
     await exportUsersPermission.save();
   }
   console.log('system default completed');
-  return true
-}
+  return true;
+};
 
 // ();

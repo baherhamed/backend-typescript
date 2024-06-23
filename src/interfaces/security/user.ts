@@ -4,7 +4,7 @@ import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
 const ObjectId = mongoose.Schema.Types.ObjectId;
 import { RequestTemplate, inputsLength } from '../../shared';
 
-interface IUser  {
+interface IUser {
   _id: typeof ObjectId;
   name: string;
   mobile: string;

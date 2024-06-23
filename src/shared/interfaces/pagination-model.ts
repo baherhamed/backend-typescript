@@ -1,4 +1,3 @@
-
 export class PaginationModel {
   totalDocs: number | undefined;
   limit: number | undefined = 0;

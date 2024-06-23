@@ -10,5 +10,5 @@ export const inputsLength = {
   routeName: 3,
   govName: 3,
   govCode: 2,
-  cityName: 3
+  cityName: 3,
 };

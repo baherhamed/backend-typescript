@@ -584,7 +584,6 @@ const logout = async (req: Request, res: Response) => {
       },
       res,
     );
-
   } catch (error: any) {
     console.log(`User => logout ${error}`);
     handleError({ message: error.message, res });

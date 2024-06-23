@@ -1,7 +1,10 @@
 import express, { Request, Response } from 'express';
-import { handleGlobalSettingResponse, setRequestLanguage, site, verifyJwtToken } from '..';
-
-
+import {
+  handleGlobalSettingResponse,
+  setRequestLanguage,
+  site,
+  verifyJwtToken,
+} from '..';
 
 export const tooltipPositionsList = [
   {

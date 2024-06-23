@@ -4,7 +4,7 @@ import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
 import { RequestTemplate, inputsLength } from '../../shared';
 const ObjectId = mongoose.Schema.Types.ObjectId;
 interface IGov {
-  _id: typeof ObjectId,
+  _id: typeof ObjectId;
   name: string;
   code: string;
   active: boolean;
@@ -31,7 +31,7 @@ const GovSchema = new Schema<IGov>(
     },
     active: {
       type: Boolean,
-      default: true
+      default: true,
     },
     deleted: {
       type: Boolean,
@@ -39,7 +39,7 @@ const GovSchema = new Schema<IGov>(
     },
     addInfo: {},
     lastUpdateInfo: {},
-    deletedInfo: {}
+    deletedInfo: {},
   },
   {
     versionKey: false,
@@ -51,8 +51,8 @@ GovSchema.plugin(autopopulate);
 
 type GovModel = Pagination<IGov>;
 
-export const Gov: GovModel = mongoose.model<IGov, Pagination<IGov>, PaginateOptions>(
-  'govs',
-  GovSchema
-);
-
+export const Gov: GovModel = mongoose.model<
+  IGov,
+  Pagination<IGov>,
+  PaginateOptions
+>('govs', GovSchema);

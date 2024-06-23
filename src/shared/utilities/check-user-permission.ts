@@ -21,7 +21,7 @@ export const checkUserPermission = async (
       responseMessages.pemissionNotAllowed,
     );
 
-     res.send({
+    res.send({
       success: false,
       statusCode: site.responseStatusCodes.unauthorized,
       message,
