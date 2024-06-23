@@ -16,61 +16,58 @@ export const verifyJwtToken = async (
   next: () => void,
 ) => {
   const language = await setRequestLanguage(req);
+  // console.log('req.headers', req.headers);
+
+  const ip = req.ip?.split('fff:');
+  const userAgent = req.headers['user-agent'];
+  const ipAddress = req.socket.remoteAddress || ip?.[1];
+  if (!req.headers?.authorization || !userAgent) {
+    handleUnauthorization({ language, res });
+  }
 
   try {
-    const ip = req.ip?.split('fff:');
-    const userAgent = req.headers['user-agent'];
-    const ipAddress = req.socket.remoteAddress || ip?.[1];
-    if (!req.headers?.authorization || !userAgent) {
+    let token = req.headers?.authorization;
+
+    token = token?.split('Bearer ')[1] || '';
+
+    if (!token) {
       handleUnauthorization({ language, res });
     }
 
-    try {
-      let token = req.headers?.authorization;
+    const isExpired = isJwtTokenExpired(token);
 
-      token = token?.split('Bearer ')[1] || '';
+    const decoded = jwt.verify(
+      token,
+      String(process.env.ACCESS_TOKEN_SECRET),
+    ) as JwtPayload;
 
-      if (!token) {
-        handleUnauthorization({ language, res });
-      }
-
-      const isExpired = isJwtTokenExpired(token);
-
-      const decoded = jwt.verify(
-        token,
-        String(process.env.ACCESS_TOKEN_SECRET),
-      ) as JwtPayload;
-
-      if (isExpired) {
-        handleUnauthorization({ language, res });
-      }
-
-      const validateExisitToken = await Token.findOne({ token });
-
-      if (!validateExisitToken || !validateExisitToken.active) {
-        handleUnauthorization({ language, res });
-      }
-
-      const selectedUser = await User.findOne({
-        _id: decoded.userId,
-        active: true,
-        deleted: false,
-      });
-
-      req.body['requestInfo'] = {
-        userAgent,
-        ipAddress,
-        userId: String(selectedUser?._id),
-        language,
-        date: new Date(),
-        isAdmin: selectedUser?.isAdmin,
-      };
-      next();
-    } catch (error) {
-      console.log(`Verify Request 123=> No Authorization ${error}`);
+    if (isExpired) {
       handleUnauthorization({ language, res });
     }
+
+    const validateExisitToken = await Token.findOne({ token });
+
+    if (!validateExisitToken || !validateExisitToken.active) {
+      handleUnauthorization({ language, res });
+    }
+
+    const selectedUser = await User.findOne({
+      _id: decoded.userId,
+      active: true,
+      deleted: false,
+    });
+
+    req.body['requestInfo'] = {
+      userAgent,
+      ipAddress,
+      userId: String(selectedUser?._id),
+      language,
+      date: new Date(),
+      isAdmin: selectedUser?.isAdmin,
+    };
+    next();
   } catch (error) {
+    handleUnauthorization({ language, res });
     return console.log(`Verify Request ${error}`);
   }
 };

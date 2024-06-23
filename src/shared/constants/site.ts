@@ -19,6 +19,7 @@ export const site = {
     getCitiesByGov: 'getCitiesByGov',
     changePassword: 'changePassword',
     logout: 'logout',
+    getGlobalSystemSetting: 'getGlobalSystemSetting',
   },
   apps: {
     home: 'home',

@@ -1,7 +1,24 @@
 import mongoose, { PaginateModel, PaginateOptions, Schema } from 'mongoose';
 
 interface GeneralSystemSetting {
-  displaySetting: object;
+  // displaySetting: object;\
+  displaySetting: {
+    displayRecordDetails: {
+      type: Boolean;
+      default: false;
+    };
+    showTooltip: {
+      type: Boolean;
+      default: false;
+    };
+    tooltipPosition: {
+      id: Number;
+      name: String;
+      ar: String;
+      en: String;
+    };
+    displayTooltipPosition: string;
+  };
 }
 
 const GlobalSettingSchema = new Schema<GeneralSystemSetting>(

@@ -197,6 +197,8 @@ const deleted = async (req: Request, res: Response) => {
 };
 
 const getAll = async (req: Request, res: Response) => {
+
+
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
   if (!hasRoute) return;

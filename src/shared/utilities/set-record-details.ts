@@ -3,12 +3,12 @@ import { User } from '../../interfaces';
 import browser from 'browser-detect';
 export const setDocumentDetails = async (requestInfo: any, data?: any) => {
   const globalSetting = await GlobalSetting.findOne({});
+
   try {
     if (
-      (!globalSetting &&
-        Object(globalSetting).displaySetting.displayRecordDetails) ||
+      !globalSetting ||
       !requestInfo ||
-      (!requestInfo.isAdmin && !requestInfo.isDeveloper)
+      !requestInfo?.isAdmin
     ) {
       return {};
     } else if (
@@ -17,13 +17,13 @@ export const setDocumentDetails = async (requestInfo: any, data?: any) => {
     ) {
       const requestBrowser = browser(data?.userAgent);
 
+      const _id = String(data.userId);
       const ipAddress = Object(data).ipAddress;
       const language = Object(data).language;
       const date = Object(data).date;
       const selectedUser = await User.findOne({
-        _id: Object(data).userId,
-        active: true,
-        deleted: false,
+        _id,
+
       });
       let isAdmin = false;
       let isDeveloper = false;

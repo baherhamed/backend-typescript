@@ -1,8 +1,25 @@
 import express, { Request, Response } from 'express';
 import {
-  PermissionsNames, RoutesNames, checkUserPermission, checkUserRoutes, handleAddResponse, handleDeleteResponse, handleError,
-  handleExisitData, handleGetActiveResponse, handleGetAllResponse, handleNoData, handleSearchResponse, handleUpdateResponse,
-  handleValidateData, handleViewResponse, inputsLength, responseLanguage, responseMessages, setDocumentDetails, site,
+  PermissionsNames,
+  RoutesNames,
+  checkUserPermission,
+  checkUserRoutes,
+  handleAddResponse,
+  handleDeleteResponse,
+  handleError,
+  handleExisitData,
+  handleGetActiveResponse,
+  handleGetAllResponse,
+  handleNoData,
+  handleSearchResponse,
+  handleUpdateResponse,
+  handleValidateData,
+  handleViewResponse,
+  inputsLength,
+  responseLanguage,
+  responseMessages,
+  setDocumentDetails,
+  site,
   verifyJwtToken,
 } from '../../shared';
 import { Gov } from '../../interfaces';
@@ -129,7 +146,6 @@ const update = async (req: Request, res: Response) => {
 };
 
 const deleted = async (req: Request, res: Response) => {
-
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
   const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
@@ -212,7 +228,14 @@ const getAll = async (req: Request, res: Response) => {
       });
     }
 
-    handleGetAllResponse({ language: requestInfo.language, data, paginationInfo: site.pagination(result), }, res,);
+    handleGetAllResponse(
+      {
+        language: requestInfo.language,
+        data,
+        paginationInfo: site.pagination(result),
+      },
+      res,
+    );
   } catch (error: any) {
     console.log(`Gov => Get All Gov ${error}`);
     handleError({ message: error.message, res });

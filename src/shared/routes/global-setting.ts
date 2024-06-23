@@ -1,9 +1,16 @@
 import express, { Request, Response } from 'express';
-import { GlobalSetting, PermissionsNames, RoutesNames, checkUserPermission, checkUserRoutes, handleError, handleGetActiveResponse,
-   handleUpdateResponse, site, verifyJwtToken } from '..';
-;
-
-
+import {
+  GlobalSetting,
+  PermissionsNames,
+  RoutesNames,
+  checkUserPermission,
+  checkUserRoutes,
+  handleError,
+  handleGetActiveResponse,
+  handleUpdateResponse,
+  site,
+  verifyJwtToken,
+} from '..';
 const update = async (req: Request, res: Response) => {
   const request = req.body;
 
@@ -41,10 +48,36 @@ const update = async (req: Request, res: Response) => {
     const data = {
       _id: Object(doc)._id,
       displaySetting: Object(doc).displaySetting,
-    }
+    };
     handleUpdateResponse({ language: requestInfo.language, data }, res);
   } catch (error: any) {
     console.log(`System Setting => Update System Setting ${error}`);
+    handleError({ message: error.message, res });
+  }
+};
+
+const getGlobalSystemSetting = async (req: Request, res: Response) => {
+  const requestInfo = req.body.requestInfo;
+
+  try {
+    const doc = await GlobalSetting.findOne({});
+    const data = {
+      displaySetting: {
+        displayRecordDetails: doc?.displaySetting.displayRecordDetails,
+        showTooltip: doc?.displaySetting.showTooltip,
+        displayTooltipPosition: doc?.displaySetting.tooltipPosition.name,
+      },
+    };
+
+    handleGetActiveResponse(
+      {
+        language: requestInfo.language,
+        data,
+      },
+      res,
+    );
+  } catch (error: any) {
+    console.log(`System Setting => Get Active System Setting ${error}`);
     handleError({ message: error.message, res });
   }
 };
@@ -53,17 +86,16 @@ const getActive = async (req: Request, res: Response) => {
   const requestInfo = req.body.requestInfo;
 
   try {
-    const doc = await GlobalSetting.findOne();
+    const data = await GlobalSetting.findOne({});
+    // const data = {
+    //   ...doc,
+    // };
 
-    const data = {
-      _id: doc?._id,
-      displaySetting: doc?.displaySetting,
-    };
-
-    handleGetActiveResponse({
-      language: requestInfo.language,
-      data,
-    },
+    handleGetActiveResponse(
+      {
+        language: requestInfo.language,
+        data,
+      },
       res,
     );
   } catch (error: any) {
@@ -83,6 +115,11 @@ const globalSystemSettingRouters = async (app: express.Application) => {
     `${site.api}${site.apps.globalSystemSetting}${site.appsRoutes.getActive}`,
     verifyJwtToken,
     getActive,
+  );
+  app.get(
+    `${site.api}${site.apps.globalSystemSetting}${site.appsRoutes.getGlobalSystemSetting}`,
+    verifyJwtToken,
+    getGlobalSystemSetting,
   );
 };
 
