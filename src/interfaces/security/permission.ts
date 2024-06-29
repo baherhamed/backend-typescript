@@ -1,4 +1,4 @@
-import mongoose, { Schema, PaginateOptions } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
 import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
 import { RequestTemplate, inputsLength } from '../../shared';
@@ -67,6 +67,5 @@ type PermissionModel = Pagination<IPermission>;
 
 export const Permission: PermissionModel = mongoose.model<
   IPermission,
-  Pagination<IPermission>,
-  PaginateOptions
+  Pagination<IPermission>
 >('permissions', PermissionSchema);

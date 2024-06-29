@@ -1,17 +1,17 @@
 import { Types } from 'mongoose';
 
 export interface RequestTemplate {
-  userAgent: String;
+  userAgent: string;
   browser: {
-    name: String;
-    version: String;
-    mobile: Boolean;
+    name: string;
+    version: string;
+    mobile: boolean;
   };
   os: {
-    name: String;
+    name: string;
   };
-  ipAddress: String;
-  userName: String;
+  ipAddress: string;
+  userName: string;
   userId: {
     type: Types.ObjectId;
     ref: 'users';
@@ -19,8 +19,8 @@ export interface RequestTemplate {
       select: 'name';
     };
   };
-  language: String;
+  language: string;
   date: Date;
-  isAdmin: Boolean;
-  isDeveloper: Boolean;
+  isAdmin: boolean;
+  isDeveloper: boolean;
 }

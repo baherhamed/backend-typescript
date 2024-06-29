@@ -1,4 +1,4 @@
-import mongoose, { Schema, PaginateOptions } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
 import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
 const ObjectId = mongoose.Schema.Types.ObjectId;
@@ -69,8 +69,7 @@ TokenSchema.plugin(autopopulate);
 
 type TokenModel = Pagination<IToken>;
 
-export const Token: TokenModel = mongoose.model<
-  IToken,
-  Pagination<IToken>,
-  PaginateOptions
->('tokens', TokenSchema);
+export const Token: TokenModel = mongoose.model<IToken, Pagination<IToken>>(
+  'tokens',
+  TokenSchema,
+);

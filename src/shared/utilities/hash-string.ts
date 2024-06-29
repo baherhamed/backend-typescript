@@ -109,6 +109,7 @@ export const hashString = async (text: string) => {
   const newText = text.split(',');
   let hashedText = '';
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for await (const _elm of newText) {
     const newWord = text.split('');
     for await (const nw of newWord) {

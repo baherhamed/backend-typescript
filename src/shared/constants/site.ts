@@ -47,7 +47,8 @@ export const site = {
       'deletePermission',
     ],
   },
-  pagination: (result: PaginationModel) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pagination: (result: PaginationModel | any) => {
     return {
       totalDocs: result.totalDocs,
       totalPages: result.totalPages,

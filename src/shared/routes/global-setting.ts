@@ -2,9 +2,7 @@ import express, { Request, Response } from 'express';
 import {
   GlobalSetting,
   PermissionsNames,
-  RoutesNames,
   checkUserPermission,
-  checkUserRoutes,
   handleError,
   handleGetActiveResponse,
   handleUpdateResponse,
@@ -16,14 +14,13 @@ const update = async (req: Request, res: Response) => {
 
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.globalSetting);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.setGlobalSetting,
   );
 
-  if (!hasRoute || !hasPermission) return;
+  if (!hasPermission) return;
   try {
     let doc;
     if (!_id) {
@@ -49,10 +46,11 @@ const update = async (req: Request, res: Response) => {
       _id: Object(doc)._id,
       displaySetting: Object(doc).displaySetting,
     };
-    handleUpdateResponse({ language: requestInfo.language, data }, res);
+    handleUpdateResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`System Setting => Update System Setting ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -69,16 +67,11 @@ const getGlobalSystemSetting = async (req: Request, res: Response) => {
       },
     };
 
-    handleGetActiveResponse(
-      {
-        language: requestInfo.language,
-        data,
-      },
-      res,
-    );
+    handleGetActiveResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`System Setting => Get Active System Setting ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -91,16 +84,11 @@ const getActive = async (req: Request, res: Response) => {
     //   ...doc,
     // };
 
-    handleGetActiveResponse(
-      {
-        language: requestInfo.language,
-        data,
-      },
-      res,
-    );
+    handleGetActiveResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`System Setting => Get Active System Setting ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 

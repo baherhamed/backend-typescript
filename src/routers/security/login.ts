@@ -4,7 +4,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import browser from 'browser-detect';
 import bcrypt from 'bcrypt';
 import {
-  GlobalSetting,
+
   checkUserLogin,
   handleLoginFailResponse,
   handleLoginSuccessResponse,
@@ -110,17 +110,6 @@ const login = async (req: Request, res: Response) => {
   await newToken.save();
   const routesList = Object(foundUser)?.routesList;
   const permissionsList = Object(foundUser)?.permissionsList;
-  const sysetmSetting = await GlobalSetting.findOne({});
-
-  // const globalSetting = JSON.stringify({
-  // const globalSetting = {
-  //   displayRecordDetails:
-  //     Object(sysetmSetting)?.displaySetting.displayRecordDetails,
-  //   showTooltip: Object(sysetmSetting)?.displaySetting.showTooltip,
-  //   tooltipPosition: Object(sysetmSetting)?.displaySetting.tooltipPosition.name,
-  // };
-  // });
-
   const hasedRoutesList = (await hashString(routesList.toString())).hashedText;
   const hasedPermissionsList = (await hashString(permissionsList.toString()))
     .hashedText;
@@ -129,7 +118,6 @@ const login = async (req: Request, res: Response) => {
     token,
     routesList: hasedRoutesList,
     permissionsList: hasedPermissionsList,
-    // globalSetting: sysetmSetting ? JSON.stringify(sysetmSetting) : undefined,
     language: Object(foundUser?.languageId).name,
   };
   handleLoginSuccessResponse({ language: requestLanguage, data }, res);

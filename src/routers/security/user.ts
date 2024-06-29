@@ -1,9 +1,7 @@
 import express, { Request, Response } from 'express';
 import {
   PermissionsNames,
-  RoutesNames,
   checkUserPermission,
-  checkUserRoutes,
   handleAddResponse,
   handleDeleteResponse,
   handleError,
@@ -14,9 +12,9 @@ import {
   handleSearchResponse,
   handleUpdateResponse,
   handleValidateData,
+  handleViewResponse,
   hashPassword,
   inputsLength,
-  pagination,
   responseLanguage,
   responseMessages,
   setDocumentDetails,
@@ -30,14 +28,13 @@ import { Permission, Route, Token, User } from '../../interfaces';
 const add = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.addUser,
   );
 
-  if (!hasRoute || !hasPermission) return;
+  if (!hasPermission) return;
   try {
     const checkData = await validateData(req, res);
 
@@ -61,6 +58,7 @@ const add = async (req: Request, res: Response) => {
 
     if (checkNewUser) {
       const response = await handleExisitData({
+        req,
         language: requestInfo.language,
         message: responseMessages.userExisit,
       });
@@ -104,10 +102,12 @@ const add = async (req: Request, res: Response) => {
         ? await setDocumentDetails(requestInfo, doc?.addInfo)
         : undefined,
     };
-    handleAddResponse({ language: requestInfo.language, data }, res);
+    handleAddResponse({ req, language: requestInfo.language, data }, res);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`User => Add User ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -115,14 +115,13 @@ const update = async (req: Request, res: Response) => {
   const request = req.body;
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.updateUser,
   );
 
-  if (!hasRoute || !hasPermission) return;
+  if (!hasPermission) return;
   try {
     const checkData = await validateData(req, res);
 
@@ -147,6 +146,7 @@ const update = async (req: Request, res: Response) => {
 
     if (checkIfUserExisit && String(checkIfUserExisit['_id']) !== String(_id)) {
       const response = await handleExisitData({
+        req,
         language: requestInfo.language,
         message: responseMessages.userExisit,
       });
@@ -253,26 +253,29 @@ const update = async (req: Request, res: Response) => {
             ? await setDocumentDetails(requestInfo, doc!.lastUpdateInfo)
             : undefined,
         };
-        handleUpdateResponse({ language: requestInfo.language, data }, res);
+        handleUpdateResponse(
+          { req, language: requestInfo.language, data },
+          res,
+        );
       }
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`User => Update User ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
 const deleted = async (req: Request, res: Response) => {
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.deleteUser,
   );
 
-  if (!hasRoute || !hasPermission) return;
+  if (!hasPermission) return;
   try {
     const selectedUserToDelete = {
       _id,
@@ -281,7 +284,10 @@ const deleted = async (req: Request, res: Response) => {
     const selectedUser = await User.findOne(selectedUserToDelete);
 
     if (!selectedUser) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -295,19 +301,19 @@ const deleted = async (req: Request, res: Response) => {
       new: true,
     });
     handleDeleteResponse(
-      { language: requestInfo.language, data: { _id: doc?._id } },
+      { req, language: requestInfo.language, data: { _id: doc?._id } },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`User => Delete User ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
 const getAll = async (req: Request, res: Response) => {
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
-  if (!hasRoute) return;
+
   try {
     let where;
 
@@ -331,7 +337,10 @@ const getAll = async (req: Request, res: Response) => {
     const result = await User.paginate(where);
 
     if (!result?.docs.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -416,23 +425,24 @@ const getAll = async (req: Request, res: Response) => {
     }
     handleGetAllResponse(
       {
+        req,
         language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
       },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`User => Get All User ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
 const search = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
-  if (!hasRoute) return;
+
   try {
     let where = { query: {} };
     if (requestInfo.isDeveloper) {
@@ -466,7 +476,10 @@ const search = async (req: Request, res: Response) => {
     const result = await User.paginate(where);
 
     if (!result?.docs.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -546,15 +559,17 @@ const search = async (req: Request, res: Response) => {
 
     handleSearchResponse(
       {
+        req,
         language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
       },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`User => Search User ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -584,9 +599,10 @@ const logout = async (req: Request, res: Response) => {
       },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`User => logout ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -595,9 +611,7 @@ const view = async (req: Request, res: Response) => {
 
   const _id = request._id;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.users);
 
-  if (!hasRoute) return;
   try {
     const doc = await User.findOne({ _id });
     const routesList = [];
@@ -648,7 +662,7 @@ const view = async (req: Request, res: Response) => {
       }
     }
 
-    return res.send({
+    const data = {
       success: true,
       statusCode: site.responseStatusCodes.view,
       data: {
@@ -670,10 +684,12 @@ const view = async (req: Request, res: Response) => {
             ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
             : undefined,
       },
-    });
+    };
+    handleViewResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Users => View Users ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 

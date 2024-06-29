@@ -18,7 +18,7 @@ import {
   IHandleViewResponse,
   IUserLogin,
 } from '../interfaces';
-import { responseLanguage } from '.';
+import { logger, responseLanguage } from '.';
 import { responseMessages, site } from '..';
 
 export const handleError = async (data: IHandleError) => {
@@ -36,6 +36,7 @@ export const handleNoData = async (data: IHandleNoData) => {
     data.language,
     responseMessages.noData,
   );
+  logger(data.req, message);
   return {
     success: false,
     statusCode: site.responseStatusCodes.noData,
@@ -45,6 +46,7 @@ export const handleNoData = async (data: IHandleNoData) => {
 
 export const handleExisitData = async (data: IHandleExisitData) => {
   const message = await responseLanguage(data.language, data.message);
+  logger(data.req, message);
   return {
     success: false,
     statusCode: site.responseStatusCodes.exisit,
@@ -83,6 +85,7 @@ export const handleAddResponse = async (
     result.language,
     responseMessages.saved,
   );
+  logger(result.req);
   return res.send({
     success: true,
     statusCode: site.responseStatusCodes.add,
@@ -99,7 +102,7 @@ export const handleUpdateResponse = async (
     result.language,
     responseMessages.updated,
   );
-
+  logger(result.req);
   return res.send({
     success: true,
     statusCode: site.responseStatusCodes.update,
@@ -132,7 +135,8 @@ export const handleGetAllResponse = async (
     result.language,
     responseMessages.done,
   );
-  return res.send({
+  logger(result.req);
+  res.send({
     success: true,
     statusCode: site.responseStatusCodes.getAll,
     message,
@@ -149,6 +153,7 @@ export const handleSearchResponse = async (
     result.language,
     responseMessages.done,
   );
+  logger(result.req);
   return res.send({
     success: true,
     statusCode: site.responseStatusCodes.search,
@@ -166,6 +171,7 @@ export const handleGetActiveResponse = async (
   //   result.language,
   //   responseMessages.done,
   // );
+  logger(result.req);
   return res.send({
     success: true,
     statusCode: site.responseStatusCodes.getActive,
@@ -182,6 +188,7 @@ export const handleViewResponse = async (
   //   result.language,
   //   responseMessages.done,
   // );
+  logger(result.req);
   return res.send({
     success: true,
     statusCode: site.responseStatusCodes.getActive,

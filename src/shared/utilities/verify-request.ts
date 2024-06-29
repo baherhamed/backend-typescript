@@ -5,10 +5,12 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import {
   handleUnauthorization,
   handleUserLoginResponse,
+  logger,
   setRequestLanguage,
 } from '.';
 
 import { Token, User } from '../../interfaces';
+import { site } from '..';
 
 export const verifyJwtToken = async (
   req: Request,
@@ -23,7 +25,10 @@ export const verifyJwtToken = async (
     const ip = req.ip?.split('fff:');
     const userAgent = req.headers['user-agent'];
     const ipAddress = req.socket.remoteAddress || ip?.[1];
+    const path = req.path.split(site.api)[1].split('/')[0];
     if (!req.headers?.authorization || !userAgent) {
+      const error = `No authorization || no  UserAgent ${path}`;
+      logger(req, error);
       handleUnauthorization({ language, res });
     }
 
@@ -32,6 +37,8 @@ export const verifyJwtToken = async (
     const token = authorization?.split('Bearer ')[1] || '';
 
     if (!token) {
+      const error = `No token ${path}`;
+      logger(req, error);
       handleUnauthorization({ language, res });
     }
 
@@ -43,6 +50,8 @@ export const verifyJwtToken = async (
     const validateExisitToken = await Token.findOne({ token });
 
     if (!validateExisitToken || !validateExisitToken.active) {
+      const error = `User not authorized to access URL ${path}`;
+      logger(req, error);
       handleUnauthorization({ language, res });
     }
 
@@ -52,6 +61,12 @@ export const verifyJwtToken = async (
       deleted: false,
     });
 
+    if (!selectedUser || !selectedUser?.routesList.includes(path)) {
+      const error = `User not authorized to access URL ${path}`;
+      logger(req, error);
+
+      return handleUnauthorization({ language, res });
+    }
     req.body['requestInfo'] = {
       userAgent,
       ipAddress,
@@ -63,9 +78,8 @@ export const verifyJwtToken = async (
     next();
   } catch (error) {
     console.log('Verify  ===>errror', error);
-
-    handleUnauthorization({ language, res });
-    return console.log(`Verify Request ${error}`);
+    logger(req, String(error));
+    return handleUnauthorization({ language, res });
   }
 };
 
@@ -75,7 +89,9 @@ export const checkUserLogin = async (req: Request, res: Response) => {
     const language = await setRequestLanguage(req);
 
     const _id = req.body.userId;
-
+    const ip = req.ip?.split('fff:');
+    const userAgent = req.headers['user-agent'];
+    const ipAddress = req.socket.remoteAddress || ip?.[1];
     if (!_id) {
       return handleUnauthorization({ language, res });
     }
@@ -86,6 +102,19 @@ export const checkUserLogin = async (req: Request, res: Response) => {
     });
 
     if (!selectedUser || !selectedUser?.routesList.includes(navToRoute)) {
+      const error = `User not authorized to access URL ${navToRoute}`;
+
+      const loggerData = {
+        path: '/api/login/isLogin',
+        body: {
+          requestInfo: {
+            ipAddress,
+            userAgent,
+            userId: _id,
+          },
+        },
+      };
+      logger(loggerData, error);
       return handleUserLoginResponse({ success: false }, res);
     }
     return handleUserLoginResponse({ success: true }, res);

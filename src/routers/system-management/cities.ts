@@ -2,9 +2,7 @@ import express, { Request, Response } from 'express';
 
 import {
   PermissionsNames,
-  RoutesNames,
   checkUserPermission,
-  checkUserRoutes,
   handleAddResponse,
   handleDeleteResponse,
   handleError,
@@ -17,7 +15,6 @@ import {
   handleValidateData,
   handleViewResponse,
   inputsLength,
-  pagination,
   responseLanguage,
   responseMessages,
   setDocumentDetails,
@@ -29,14 +26,13 @@ import { City } from '../../interfaces';
 const add = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.addCity,
   );
 
-  if (!hasRoute || !hasPermission) return;
+  if (!hasPermission) return;
   try {
     const checkData = await validateData(req, res);
 
@@ -52,6 +48,7 @@ const add = async (req: Request, res: Response) => {
 
     if (checkNewCity) {
       const response = await handleExisitData({
+        req,
         language: requestInfo.language,
         message: responseMessages.cityExisit,
       });
@@ -74,10 +71,11 @@ const add = async (req: Request, res: Response) => {
         : undefined,
     };
 
-    handleAddResponse({ language: requestInfo.language, data }, res);
+    handleAddResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`City => Add City ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -85,14 +83,14 @@ const update = async (req: Request, res: Response) => {
   const request = req.body;
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
+
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.updateCity,
   );
 
-  if (!hasRoute || !hasPermission) return;
+  if (!hasPermission) return;
   try {
     const checkData = await validateData(req, res);
 
@@ -108,6 +106,7 @@ const update = async (req: Request, res: Response) => {
 
     if (selectedCity && String(selectedCity['_id']) !== String(_id)) {
       const response = await handleExisitData({
+        req,
         language: requestInfo.language,
         message: responseMessages.cityExisit,
       });
@@ -144,25 +143,26 @@ const update = async (req: Request, res: Response) => {
           ? await setDocumentDetails(requestInfo, doc!.lastUpdateInfo)
           : undefined,
       };
-      handleUpdateResponse({ language: requestInfo.language, data }, res);
+      handleUpdateResponse({ req, language: requestInfo.language, data }, res);
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`City => Update City ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
 const deleted = async (req: Request, res: Response) => {
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
+
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.deleteCity,
   );
 
-  if (!hasRoute || !hasPermission) return;
+  if (!hasPermission) return;
   try {
     const selectedCityToDelete = {
       _id,
@@ -172,7 +172,10 @@ const deleted = async (req: Request, res: Response) => {
     const selectedCity = await City.findOne(selectedCityToDelete);
 
     if (!selectedCity) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -187,19 +190,19 @@ const deleted = async (req: Request, res: Response) => {
     });
 
     handleDeleteResponse(
-      { language: requestInfo.language, data: { _id: doc?._id } },
+      { req, language: requestInfo.language, data: { _id: doc?._id } },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`City => Delete City ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
 const getAll = async (req: Request, res: Response) => {
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
-  if (!hasRoute) return;
+
   try {
     const where = {
       query: {
@@ -211,7 +214,10 @@ const getAll = async (req: Request, res: Response) => {
     const result = await City.paginate(where);
 
     if (!result?.docs.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -240,23 +246,24 @@ const getAll = async (req: Request, res: Response) => {
 
     handleGetAllResponse(
       {
+        req,
         language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
       },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`City => Get All City ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
 const search = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.cities);
-  if (!hasRoute) return;
+
   try {
     const where = {
       query: {
@@ -276,7 +283,10 @@ const search = async (req: Request, res: Response) => {
     const result = await City.paginate(where);
 
     if (!result?.docs.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -305,15 +315,17 @@ const search = async (req: Request, res: Response) => {
 
     handleSearchResponse(
       {
+        req,
         language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
       },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`City => Search All ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -331,7 +343,10 @@ const getCitiesByGov = async (req: Request, res: Response) => {
     const result = await City.find(where);
 
     if (!result.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -343,16 +358,11 @@ const getCitiesByGov = async (req: Request, res: Response) => {
         name: doc.name,
       });
     }
-    handleGetActiveResponse(
-      {
-        language: requestInfo.language,
-        data,
-      },
-      res,
-    );
+    handleGetActiveResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`City => Get Cities By Gov ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -368,7 +378,10 @@ const getActive = async (req: Request, res: Response) => {
     const result = await City.find(where);
 
     if (!result.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -385,16 +398,11 @@ const getActive = async (req: Request, res: Response) => {
       });
     }
 
-    handleGetActiveResponse(
-      {
-        language: requestInfo.language,
-        data,
-      },
-      res,
-    );
+    handleGetActiveResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`City => Get Active City ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -402,9 +410,6 @@ const view = async (req: Request, res: Response) => {
   const request = req.body;
   const _id = request._id;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
-
-  if (!hasRoute) return;
   try {
     const doc = await City.findOne({ _id });
     const data = {
@@ -424,16 +429,11 @@ const view = async (req: Request, res: Response) => {
           : undefined,
     };
 
-    handleViewResponse(
-      {
-        language: requestInfo.language,
-        data,
-      },
-      res,
-    );
+    handleViewResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`City => View City ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 

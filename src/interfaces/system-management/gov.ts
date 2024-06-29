@@ -1,4 +1,4 @@
-import mongoose, { Schema, PaginateOptions } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
 import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
 import { RequestTemplate, inputsLength } from '../../shared';
@@ -51,8 +51,7 @@ GovSchema.plugin(autopopulate);
 
 type GovModel = Pagination<IGov>;
 
-export const Gov: GovModel = mongoose.model<
-  IGov,
-  Pagination<IGov>,
-  PaginateOptions
->('govs', GovSchema);
+export const Gov: GovModel = mongoose.model<IGov, Pagination<IGov>>(
+  'govs',
+  GovSchema,
+);

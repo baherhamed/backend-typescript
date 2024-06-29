@@ -1,9 +1,7 @@
 import express, { Request, Response } from 'express';
 import {
   PermissionsNames,
-  RoutesNames,
   checkUserPermission,
-  checkUserRoutes,
   handleAddResponse,
   handleDeleteResponse,
   handleError,
@@ -28,14 +26,13 @@ const add = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
   try {
-    const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
     const hasPermission = await checkUserPermission(
       req,
       res,
       PermissionsNames.addGov,
     );
 
-    if (!hasRoute || !hasPermission) return;
+    if (!hasPermission) return;
     const checkData = await validateData(req, res);
 
     if (!checkData?.valid) return;
@@ -49,6 +46,7 @@ const add = async (req: Request, res: Response) => {
 
     if (checkNewGov) {
       const response = await handleExisitData({
+        req,
         language: requestInfo.language,
         message: responseMessages.govExisit,
       });
@@ -70,10 +68,11 @@ const add = async (req: Request, res: Response) => {
         : undefined,
     };
 
-    handleAddResponse({ language: requestInfo.language, data }, res);
+    handleAddResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Gov => Add Gov ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -81,14 +80,13 @@ const update = async (req: Request, res: Response) => {
   const request = req.body;
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.updateGov,
   );
 
-  if (!hasRoute || !hasPermission) return;
+  if (!hasPermission) return;
   try {
     const checkData = await validateData(req, res);
 
@@ -103,6 +101,7 @@ const update = async (req: Request, res: Response) => {
 
     if (selectedGov && String(selectedGov['_id']) !== String(_id)) {
       const response = await handleExisitData({
+        req,
         language: requestInfo.language,
         message: responseMessages.govExisit,
       });
@@ -137,25 +136,25 @@ const update = async (req: Request, res: Response) => {
             ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
             : undefined,
       };
-      handleUpdateResponse({ language: requestInfo.language, data }, res);
+      handleUpdateResponse({ req, language: requestInfo.language, data }, res);
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Gov => Update Gov ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
 const deleted = async (req: Request, res: Response) => {
   const _id = req.body._id;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
   const hasPermission = await checkUserPermission(
     req,
     res,
     PermissionsNames.deleteGov,
   );
 
-  if (!hasRoute || !hasPermission) return;
+  if (!hasPermission) return;
   try {
     const selectedGovToDelete = {
       _id,
@@ -163,7 +162,10 @@ const deleted = async (req: Request, res: Response) => {
     };
     const selectedGov = await Gov.findOne(selectedGovToDelete);
     if (!selectedGov) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -178,19 +180,18 @@ const deleted = async (req: Request, res: Response) => {
     });
 
     handleDeleteResponse(
-      { language: requestInfo.language, data: { _id: doc?._id } },
+      { req, language: requestInfo.language, data: { _id: doc?._id } },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Gov => Delete Gov ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
 const getAll = async (req: Request, res: Response) => {
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
-  if (!hasRoute) return;
 
   try {
     const where = {
@@ -203,7 +204,10 @@ const getAll = async (req: Request, res: Response) => {
     const result = await Gov.paginate(where);
 
     if (!result?.docs.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -230,23 +234,25 @@ const getAll = async (req: Request, res: Response) => {
 
     handleGetAllResponse(
       {
+        req,
         language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
       },
       res,
     );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Gov => Get All Gov ${error}`);
-    handleError({ message: error.message, res });
+
+    return handleError({ req, message: error.message, res });
   }
 };
 
 const search = async (req: Request, res: Response) => {
   const request = req.body;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
-  if (!hasRoute) return;
   try {
     const where = {
       query: {
@@ -266,7 +272,10 @@ const search = async (req: Request, res: Response) => {
     const result = await Gov.paginate(where);
 
     if (!result?.docs.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -291,15 +300,17 @@ const search = async (req: Request, res: Response) => {
 
     handleSearchResponse(
       {
+        req,
         language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
       },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Gov => Search All ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -315,7 +326,10 @@ const getActive = async (req: Request, res: Response) => {
     const result = await Gov.find(where);
 
     if (!result.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -329,16 +343,11 @@ const getActive = async (req: Request, res: Response) => {
       });
     }
 
-    handleGetActiveResponse(
-      {
-        language: requestInfo.language,
-        data,
-      },
-      res,
-    );
+    handleGetActiveResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Gov => Get Active Gov ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -346,9 +355,7 @@ const view = async (req: Request, res: Response) => {
   const request = req.body;
   const _id = request._id;
   const requestInfo = req.body.requestInfo;
-  const hasRoute = await checkUserRoutes(req, res, RoutesNames.govs);
 
-  if (!hasRoute) return;
   try {
     const doc = await Gov.findOne({ _id });
 
@@ -366,16 +373,12 @@ const view = async (req: Request, res: Response) => {
           : undefined,
     };
 
-    handleViewResponse(
-      {
-        language: requestInfo.language,
-        data,
-      },
-      res,
-    );
+    handleViewResponse({ req, language: requestInfo.language, data }, res);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Gov => View Gov ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 

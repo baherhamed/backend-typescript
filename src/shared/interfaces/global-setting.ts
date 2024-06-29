@@ -1,21 +1,21 @@
-import mongoose, { PaginateModel, PaginateOptions, Schema } from 'mongoose';
-
+import mongoose, { Schema } from 'mongoose';
+import { Pagination } from 'mongoose-paginate-ts';
 interface GeneralSystemSetting {
   // displaySetting: object;\
   displaySetting: {
     displayRecordDetails: {
-      type: Boolean;
+      type: boolean;
       default: false;
     };
     showTooltip: {
-      type: Boolean;
+      type: boolean;
       default: false;
     };
     tooltipPosition: {
-      id: Number;
-      name: String;
-      ar: String;
-      en: String;
+      id: number;
+      name: string;
+      ar: string;
+      en: string;
     };
     displayTooltipPosition: string;
   };
@@ -45,10 +45,9 @@ const GlobalSettingSchema = new Schema<GeneralSystemSetting>(
   },
 );
 
-type GlobalSystemSettingModel = PaginateModel<GeneralSystemSetting>;
+type GlobalSystemSettingModel = Pagination<GeneralSystemSetting>;
 
 export const GlobalSetting: GlobalSystemSettingModel = mongoose.model<
   GeneralSystemSetting,
-  PaginateModel<GeneralSystemSetting>,
-  PaginateOptions
+  Pagination<GeneralSystemSetting>
 >('globalSettings', GlobalSettingSchema);

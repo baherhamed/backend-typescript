@@ -1,4 +1,4 @@
-import mongoose, { Schema, PaginateOptions } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 import autopopulate from 'mongoose-autopopulate';
 import { RequestTemplate, inputsLength } from '../../shared';
@@ -55,8 +55,7 @@ CitySchema.plugin(autopopulate);
 
 type CityModel = Pagination<ICity>;
 
-export const City: CityModel = mongoose.model<
-  ICity,
-  Pagination<ICity>,
-  PaginateOptions
->('cities', CitySchema);
+export const City: CityModel = mongoose.model<ICity, Pagination<ICity>>(
+  'cities',
+  CitySchema,
+);

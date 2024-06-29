@@ -1,4 +1,4 @@
-import mongoose, { Schema, PaginateOptions } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
 import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
 const ObjectId = mongoose.Schema.Types.ObjectId;
@@ -57,8 +57,7 @@ RoutesSchema.plugin(autopopulate);
 
 type RouteModel = Pagination<IRoute>;
 
-export const Route: RouteModel = mongoose.model<
-  IRoute,
-  Pagination<IRoute>,
-  PaginateOptions
->('routes', RoutesSchema);
+export const Route: RouteModel = mongoose.model<IRoute, Pagination<IRoute>>(
+  'routes',
+  RoutesSchema,
+);

@@ -14,7 +14,6 @@ import {
   handleValidateData,
   handleViewResponse,
   inputsLength,
-  pagination,
   responseLanguage,
   responseMessages,
   setDocumentDetails,
@@ -57,6 +56,7 @@ const add = async (req: Request, res: Response) => {
 
     if (checkNewRoute) {
       const response = await handleExisitData({
+        req,
         language: requestInfo.language,
         message: responseMessages.routeExisit,
       });
@@ -96,10 +96,6 @@ const add = async (req: Request, res: Response) => {
       }
     }
 
-    const message = await responseLanguage(
-      requestInfo.language,
-      responseMessages.saved,
-    );
     await doc.save();
 
     const data = {
@@ -109,10 +105,11 @@ const add = async (req: Request, res: Response) => {
         : undefined,
       permissionsList,
     };
-    handleAddResponse({ language: requestInfo.language, data }, res);
+    handleAddResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Route => Add Route ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -151,6 +148,7 @@ const update = async (req: Request, res: Response) => {
 
     if (selectedRoute && String(selectedRoute['_id']) !== String(_id)) {
       const response = await handleExisitData({
+        req,
         language: requestInfo.language,
         message: responseMessages.routeExisit,
       });
@@ -246,11 +244,12 @@ const update = async (req: Request, res: Response) => {
             ? await setDocumentDetails(requestInfo, doc?.lastUpdateInfo)
             : undefined,
       };
-      handleUpdateResponse({ language: requestInfo.language, data }, res);
+      handleUpdateResponse({ req, language: requestInfo.language, data }, res);
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Route => Update Route ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -272,7 +271,10 @@ const deleted = async (req: Request, res: Response) => {
     const selectedRoute = await Route.findOne(selectedRouteToDelete);
 
     if (!selectedRoute) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -300,12 +302,13 @@ const deleted = async (req: Request, res: Response) => {
     }
 
     handleDeleteResponse(
-      { language: requestInfo.language, data: { _id: doc?._id } },
+      { req, language: requestInfo.language, data: { _id: doc?._id } },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Route => Delete Route ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -323,7 +326,10 @@ const getAll = async (req: Request, res: Response) => {
     const result = await Route.paginate(where);
 
     if (!result?.docs.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -368,15 +374,17 @@ const getAll = async (req: Request, res: Response) => {
 
     handleGetAllResponse(
       {
+        req,
         language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
       },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Route => Get All Route ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -405,7 +413,10 @@ const search = async (req: Request, res: Response) => {
     const result = await Route.paginate(where);
 
     if (!result?.docs.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -448,15 +459,17 @@ const search = async (req: Request, res: Response) => {
 
     handleSearchResponse(
       {
+        req,
         language: requestInfo.language,
         data,
         paginationInfo: site.pagination(result),
       },
       res,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Route => Search Route ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -472,7 +485,10 @@ const getActive = async (req: Request, res: Response) => {
     const result = await Route.find(where);
 
     if (!result.length) {
-      const response = await handleNoData({ language: requestInfo.language });
+      const response = await handleNoData({
+        req,
+        language: requestInfo.language,
+      });
       return res.send(response);
     }
 
@@ -507,16 +523,11 @@ const getActive = async (req: Request, res: Response) => {
       });
     }
 
-    handleGetActiveResponse(
-      {
-        language: requestInfo.language,
-        data,
-      },
-      res,
-    );
+    handleGetActiveResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Routes => Get Active routes ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 
@@ -562,16 +573,11 @@ const view = async (req: Request, res: Response) => {
           : undefined,
     };
 
-    handleViewResponse(
-      {
-        language: requestInfo.language,
-        data,
-      },
-      res,
-    );
+    handleViewResponse({ req, language: requestInfo.language, data }, res);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.log(`Route => View Route ${error}`);
-    handleError({ message: error.message, res });
+    handleError({ req, message: error.message, res });
   }
 };
 

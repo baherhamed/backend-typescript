@@ -1,4 +1,4 @@
-import mongoose, { Schema, PaginateOptions } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
 import { Pagination, mongoosePagination } from 'mongoose-paginate-ts';
 const ObjectId = mongoose.Schema.Types.ObjectId;
@@ -94,8 +94,7 @@ UsersSchema.plugin(autopopulate);
 
 type UserModel = Pagination<IUser>;
 
-export const User: UserModel = mongoose.model<
-  IUser,
-  Pagination<IUser>,
-  PaginateOptions
->('users', UsersSchema);
+export const User: UserModel = mongoose.model<IUser, Pagination<IUser>>(
+  'users',
+  UsersSchema,
+);

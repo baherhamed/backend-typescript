@@ -1,6 +1,7 @@
 import { GlobalSetting } from '..';
 import { User } from '../../interfaces';
 import browser from 'browser-detect';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const setDocumentDetails = async (requestInfo: any, data?: any) => {
   const globalSetting = await GlobalSetting.findOne({});
 
@@ -37,6 +38,8 @@ export const setDocumentDetails = async (requestInfo: any, data?: any) => {
         ipAddress,
         date,
         language,
+        isAdmin,
+        isDeveloper,
       };
     }
   } catch (error) {

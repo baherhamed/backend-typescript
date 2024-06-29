@@ -4,10 +4,10 @@ export class PaginationModel {
   totalPages: number | undefined;
   page: number | undefined;
   pagingCounter: number | undefined;
-  hasPrevPage: Boolean | undefined = false;
-  hasNextPage: Boolean | undefined = false;
+  hasPrevPage: boolean | undefined = false;
+  hasNextPage: boolean | undefined = false;
   prevPage: number | undefined;
   nextPage: number | undefined;
-  hasMore: Boolean | undefined = false;
+  hasMore: boolean | undefined = false;
   // docs: any[] = [];
 }

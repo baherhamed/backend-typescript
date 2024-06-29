@@ -1,13 +1,12 @@
 import 'dotenv/config';
 import * as dotenv from 'dotenv';
+dotenv.config({ path: __dirname + '/.env' });
 import cluster from 'cluster';
 import os from 'os';
-dotenv.config({ path: __dirname + '/.env' });
 
 import bodyParser from 'body-parser';
 import express from 'express';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 // const sslConfig = require('ssl-config')('modern');
 import * as http from 'http';
 import * as https from 'https';
@@ -37,7 +36,8 @@ if (cluster.isPrimary) {
     cluster.fork();
   }
 
-  cluster.on('exit', (worker, code, signal) => {
+  cluster.on('exit', (worker) => {
+    //code, signal
     console.log(`Worker process ${worker.process.pid} died. Restarting...`);
     cluster.fork();
   });
