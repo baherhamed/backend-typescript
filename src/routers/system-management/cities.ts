@@ -2,7 +2,10 @@ import express, { Request, Response } from 'express';
 
 import {
   PermissionsNames,
+  cashedCollectionsList,
   checkUserPermission,
+  collectionsCachenamesList,
+  getCollectionsToMemory,
   handleAddResponse,
   handleDeleteResponse,
   handleError,
@@ -368,6 +371,14 @@ const getCitiesByGov = async (req: Request, res: Response) => {
 
 const getActive = async (req: Request, res: Response) => {
   const requestInfo = req.body.requestInfo;
+  if (cashedCollectionsList.includes(site.apps.govs.split('/')[0])) {
+    return getCollectionsToMemory(
+      req,
+      res,
+      site.apps.cities,
+      collectionsCachenamesList.city,
+    );
+  }
 
   try {
     const where = {

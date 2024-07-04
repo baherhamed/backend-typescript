@@ -4,3 +4,4 @@ export * from './permissions-names';
 export * from './routes-names';
 export * from './site';
 export * from './response-messages';
+export * from './collections-cache-name';

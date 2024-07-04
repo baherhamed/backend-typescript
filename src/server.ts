@@ -26,7 +26,7 @@ import citiesRouters from './routers/system-management/cities';
 
 import globalSystemSettingRouters from './shared/routes/global-setting';
 import jsonRouters from './shared/routes/json';
-import { systemDefaults } from './shared';
+import { loadCollectionsToMemory, systemDefaults } from './shared';
 
 const numCPUs = os.cpus().length;
 console.log('numCPUs', numCPUs);
@@ -72,6 +72,7 @@ if (cluster.isPrimary) {
 
       await mongoose.connect(String(process.env.url), options);
       await systemDefaults();
+      await loadCollectionsToMemory();
 
       console.log('Successfully Connected To Database');
     } catch (error) {

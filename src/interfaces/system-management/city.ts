@@ -22,7 +22,7 @@ const CitySchema = new Schema<ICity>(
       type: ObjectId,
       ref: 'govs',
       autopopulate: {
-        select: '  name active deleted',
+        select: '_id name code active deleted',
       },
       required: [true, 'Please Select Gov'],
     },
