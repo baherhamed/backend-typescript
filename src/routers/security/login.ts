@@ -4,7 +4,6 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import browser from 'browser-detect';
 import bcrypt from 'bcrypt';
 import {
-
   checkUserLogin,
   handleLoginFailResponse,
   handleLoginSuccessResponse,
@@ -15,8 +14,9 @@ import {
   responseMessages,
   setRequestLanguage,
   site,
+  Token,
 } from '../../shared';
-import { Token, User } from '../../interfaces';
+import { User } from '../../interfaces';
 
 const login = async (req: Request, res: Response) => {
   const requestLanguage = await setRequestLanguage(req);

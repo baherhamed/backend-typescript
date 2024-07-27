@@ -11,9 +11,6 @@ interface ILanguage {
   name: string;
   active?: boolean;
   deleted?: boolean;
-  // addInfo: RequestTemplate;
-  // lastUpdateInfo: RequestTemplate;
-  // deletedInfo: RequestTemplate;
 }
 
 const LanguageSchema = new Schema<ILanguage>(

@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import {
   PermissionsNames,
+  Token,
   checkUserPermission,
   handleAddResponse,
   handleDeleteResponse,
@@ -23,7 +24,7 @@ import {
 } from '../../shared';
 
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { Permission, Route, Token, User } from '../../interfaces';
+import { Permission, Route, User } from '../../interfaces';
 
 const add = async (req: Request, res: Response) => {
   const request = req.body;

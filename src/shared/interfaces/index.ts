@@ -4,3 +4,4 @@ export * from './response-template';
 export * from './message-language';
 export * from './language';
 export * from './pagination-model';
+export * from './token';

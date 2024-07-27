@@ -9,8 +9,8 @@ import {
   setRequestLanguage,
 } from '.';
 
-import { Token, User } from '../../interfaces';
-import { site } from '..';
+import { User } from '../../interfaces';
+import { site, Token } from '..';
 
 export const verifyJwtToken = async (
   req: Request,
@@ -77,7 +77,7 @@ export const verifyJwtToken = async (
     };
     next();
   } catch (error) {
-    console.log('Verify  ===>errror', error);
+    console.log('Verify  ===> errror', error);
     logger(req, String(error));
     return handleUnauthorization({ language, res });
   }
